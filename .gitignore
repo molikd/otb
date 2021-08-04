@@ -137,3 +137,12 @@ tags
 
 #sif files for testing
 *.sif
+
+#bio files
+*.fasta
+*.fastq
+*.fasta.gz
+*.fastq.gz
+*.sam
+*.bam
+*.bg2
