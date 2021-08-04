@@ -138,6 +138,10 @@ tags
 #sif files for testing
 *.sif
 
+#nextflow things
+.nextflow.log*
+.nextflow
+
 #bio files
 *.fasta
 *.fastq
@@ -146,3 +150,6 @@ tags
 *.sam
 *.bam
 *.bg2
+
+#slurm
+*.slurm

@@ -6,22 +6,12 @@ params.readf = "$baseDir/data/*_R1.fastq.gz"
 params.readr = "$baseDir/data/*_R2.fastq.gz"
 params.outfasta = "genome.reorinted.fasta"
 params.outdir = 'results'
+
+/*TODO gotta be a better way to handle cluster stuff
+*/
 params.threads = 40
 
 bam_ch = Channel.fromPath(params.bam)
-reads_ch = Channel.fromFilePairs(params.reads)
-
-process stats.sh {
-  publishDir params.outdir, mode: 'copy'
-
-  input:
-    file fasta from fasta_res_ch
-  output:
-    file '*.stats'
-  """
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
-  """
-}
 
 process HiFiAdapterFilt {
   input:
@@ -38,7 +28,7 @@ process HiFiASM {
     file fasta from filt_fasta_ch
   output:
     file '*.gfa' into gfa_ch
-    file '*.ec.fa' in fasta_ec_ch
+    file '*.ec.fa' into fasta_ec_ch
   """
     hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec --h1 ${params.readf} --h2 ${params.readr} ${fasta}
   """
@@ -48,20 +38,22 @@ process gfa2fasta {
   input:
     file gfa from gfa_ch
   output:
-    file '*.fasta' into fasta_res_ch
+    file '*.fasta' into gfa2fasta_fasta_res_ch
     file '*.hic.p_ctg.fasta' optional true into fasta_unoriented_ch
   """
-    any2fasta ${gfa} > $(echo ${gfa} | sed 's/\.gfa/\.fasta/g')
+    any2fasta ${gfa} > ${gfa}.fasta
   """
 }
 
-process ragtag.py {
+process ragtag_dot_py {
   input:
     file fasta from fasta_unoriented_ch
     file fasta_ec from fasta_ec_ch
   output:
-    file './${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_res_ch
+    file './${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into ragtag_fasta_res_ch
     file './${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_genome_ch
+    file './${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_fai_genome_ch
+    file './${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_sshquis_genome_ch
   """
     ragtag.py patch --aligner unimap -t ${params.threads} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
   """
@@ -69,9 +61,9 @@ process ragtag.py {
 
 process faidx {
   input:
-   file genome from fasta_genome_ch
-  ouput:
-   file '*.fai' info fai_ch
+   file genome from fasta_fai_genome_ch
+  output:
+   file '*.fai' into fai_ch
   """
     samtools faidx -o ${genome}.fai ${genome}
   """
@@ -92,16 +84,54 @@ process hicstuff {
   """
 }
 
-process Shhquis.jl {
+process Shhquis_dot_jl {
   publishDir params.outdir, mode: 'rellink'
 
   input:
     file abs from abs_ch
     file contig from contigs_ch
-    file genome from fasta_genome_ch
+    file genome from fasta_sshquis_genome_ch
     file fai from fai_ch
+  output:
+    file '${params.outfasta}' into shhquis_fasta_res_ch
 
   """
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
+  """
+}
+
+process gfa2fasta_stats_dot_sh {
+  publishDir params.outdir, mode: 'copy'
+
+  input:
+    file fasta from gfa2fasta_fasta_res_ch
+  output:
+    file '*.stats'
+  """
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+  """
+}
+
+process ragtag_stats_dot_sh {
+  publishDir params.outdir, mode: 'copy'
+
+  input:
+    file fasta from ragtag_fasta_res_ch
+  output:
+    file '*.stats'
+  """
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+  """
+}
+
+process sshquis_stats_do_sh {
+  publishDir params.outdir, mode: 'copy'
+
+  input:
+    file fasta from shhquis_fasta_res_ch
+  output:
+    file '*.stats'
+  """
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
   """
 }
