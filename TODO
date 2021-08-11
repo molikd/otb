@@ -1,4 +1,8 @@
 add GenomeScope
 add BLOBTools2
 
+version output
+stats 
+busco
+
 linkeage types for hclust in shhquis
