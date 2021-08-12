@@ -1,6 +1,7 @@
 add GenomeScope
 add BLOBTools2
 add my own samtools container
+make yak contaienr
 
 version output
 add busco
