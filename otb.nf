@@ -20,6 +20,8 @@ process HiFiAdapterFilt {
     file '*.fasta' into filt_fasta_ch
   """
     pbadapterfilt.sh ${bam} -t ${params.threads}
+    echo "finished adapter filtering"
+    exit 0;
   """
 }
 
@@ -31,6 +33,8 @@ process HiFiASM {
     file '*.ec.fa' into fasta_ec_ch
   """
     hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec --h1 ${params.readf} --h2 ${params.readr} ${fasta}
+    echo "finished alignment"
+    exit 0;
   """
 }
 
@@ -42,6 +46,8 @@ process gfa2fasta {
     file '*.hic.p_ctg.fasta' optional true into fasta_unoriented_ch
   """
     any2fasta ${gfa} > ${gfa}.fasta
+    echo "finished gfa to fasta conversion"
+    exit 0;
   """
 }
 
@@ -56,6 +62,8 @@ process ragtag_dot_py {
     file './${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_sshquis_genome_ch
   """
     ragtag.py patch --aligner unimap -t ${params.threads} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
+    echo "finished patching"
+    exit 0;
   """
 }
 
@@ -66,6 +74,8 @@ process faidx {
    file '*.fai' into fai_ch
   """
     samtools faidx -o ${genome}.fai ${genome}
+    echo "finished indexing"
+    exit 0;
   """
 }
 
@@ -81,6 +91,8 @@ process hicstuff {
     file 'hicstuff_out/plots/frags_hist.pdf'
   """
     hicstuff pipeline -t ${params.threads} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${params.readf} ${params.readr}
+    echo "finished fragment calculations"
+    exit 0;
   """
 }
 
@@ -97,6 +109,8 @@ process Shhquis_dot_jl {
 
   """
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
+    echo "finished reorientation"
+    exit 0;
   """
 }
 
@@ -109,6 +123,8 @@ process gfa2fasta_stats_dot_sh {
     file '*.stats'
   """
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
   """
 }
 
@@ -121,6 +137,8 @@ process ragtag_stats_dot_sh {
     file '*.stats'
   """
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
   """
 }
 
@@ -133,5 +151,7 @@ process sshquis_stats_do_sh {
     file '*.stats'
   """
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
   """
 }
