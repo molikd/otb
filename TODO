@@ -1,8 +1,8 @@
 add GenomeScope
 add BLOBTools2
+add my own samtools container
 
 version output
-stats 
-busco
+add busco
 
 linkeage types for hclust in shhquis
