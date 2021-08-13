@@ -6,7 +6,7 @@ params.readf = "$baseDir/data/*_R1.fastq.gz"
 params.readr = "$baseDir/data/*_R2.fastq.gz"
 params.outfasta = "genome.reorinted.fasta"
 params.outdir = 'results'
-params.mode = 'phasing'
+params.mode = 'homozygous'
 
 /*TODO gotta be a better way to handle cluster stuff
 */
@@ -66,7 +66,7 @@ process HiFiASM {
 
 process gfa2fasta {
   input:
-    file gfa from gfa_ch
+    file gfa from gfa_ch.flatten()
   output:
     file '*.fasta' into gfa2fasta_fasta_res_ch
     file '*.hic.p_ctg.fasta' optional true into fasta_unoriented_ch
@@ -144,7 +144,7 @@ process gfa2fasta_stats_dot_sh {
   publishDir params.outdir, mode: 'copy'
 
   input:
-    file fasta from gfa2fasta_fasta_res_ch
+    file fasta from gfa2fasta_fasta_res_ch.flatten()
   output:
     file '*.stats'
   """
@@ -158,7 +158,7 @@ process ragtag_stats_dot_sh {
   publishDir params.outdir, mode: 'copy'
 
   input:
-    file fasta from ragtag_fasta_res_ch
+    file fasta from ragtag_fasta_res_ch.flatten()
   output:
     file '*.stats'
   """
@@ -172,7 +172,7 @@ process sshquis_stats_do_sh {
   publishDir params.outdir, mode: 'copy'
 
   input:
-    file fasta from shhquis_fasta_res_ch
+    file fasta from shhquis_fasta_res_ch.flatten()
   output:
     file '*.stats'
   """
