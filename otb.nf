@@ -1,17 +1,18 @@
 #!/usr/bin/env nextflow
 
 params.assembly = "hmai"
-params.bam = "$baseDir/data/*.bam"
+params.readbam = "$baseDir/data/*.bam"
 params.readf = "$baseDir/data/*_R1.fastq.gz"
 params.readr = "$baseDir/data/*_R2.fastq.gz"
 params.outfasta = "genome.reorinted.fasta"
 params.outdir = 'results'
+params.mode = 'phasing'
 
 /*TODO gotta be a better way to handle cluster stuff
 */
 params.threads = 40
 
-bam_ch = Channel.fromPath(params.bam)
+bam_ch = Channel.fromPath(params.readbam)
 
 process HiFiAdapterFilt {
   input:
@@ -31,11 +32,30 @@ process HiFiASM {
   output:
     file '*.gfa' into gfa_ch
     file '*.ec.fa' into fasta_ec_ch
+  script:
+
+  if( params.mode == 'phasing' )
   """
     hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec --h1 ${params.readf} --h2 ${params.readr} ${fasta}
     echo "finished alignment"
     exit 0;
   """
+  else if( params.mode == 'homozygous' )
+  """
+    hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec -l0 ${fasta}
+  """
+  else if( params.mode == 'heterozygous')
+  """
+    hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec ${fasta}
+  """
+  else if ( params.mode == 'trio')
+  """
+    yak count -b37 -t${params.threads} -o pat.yak <(cat ${params.readf}) <(cat ${params.readf})
+    yak count -b37 -t${params.threads} -o mat.yak <(cat ${params.readr}) <(cat ${params.readr})
+    hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta}
+  """
+  else
+    error "Invalid alignment mode: ${params.mode}"
 }
 
 process gfa2fasta {
