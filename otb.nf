@@ -36,20 +36,24 @@ process HiFiASM {
 
   if( params.mode == 'phasing' )
   """
+    #!/bin/sh
     hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec --h1 ${params.readf} --h2 ${params.readr} ${fasta}
     echo "finished alignment"
     exit 0;
   """
   else if( params.mode == 'homozygous' )
   """
+    #!/bin/sh
     hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec -l0 ${fasta}
   """
   else if( params.mode == 'heterozygous')
   """
+    #!/bin/sh
     hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec ${fasta}
   """
   else if ( params.mode == 'trio')
   """
+    #!/bin/sh
     yak count -b37 -t${params.threads} -o pat.yak <(cat ${params.readf}) <(cat ${params.readf})
     yak count -b37 -t${params.threads} -o mat.yak <(cat ${params.readr}) <(cat ${params.readr})
     hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta}

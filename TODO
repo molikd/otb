@@ -2,6 +2,7 @@ add GenomeScope
 add BLOBTools2
 add my own samtools container
 make yak contaienr
+expand hifiasm to include different modes depending on input.
 
 version output
 add busco
