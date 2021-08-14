@@ -1,22 +1,25 @@
 #!/usr/bin/env nextflow
 
 params.assembly = "hmai"
+params.readfilt = "$baseDir/data/pacbio_vectors_*"
 params.readbam = "$baseDir/data/*.bam"
 params.readf = "$baseDir/data/*_R1.fastq.gz"
 params.readr = "$baseDir/data/*_R2.fastq.gz"
 params.outfasta = "genome.reorinted.fasta"
 params.outdir = 'results'
-params.mode = 'homozygous'
+params.mode = 'heterozygous'
 
 /*TODO gotta be a better way to handle cluster stuff
 */
 params.threads = 40
 
 bam_ch = Channel.fromPath(params.readbam)
+filt_ch = Channel.fromPath(params.readfilt)
 
 process HiFiAdapterFilt {
   input:
     file bam from bam_ch
+    file filts from filt_ch
   output:
     file '*.fasta' into filt_fasta_ch
   """
