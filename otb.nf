@@ -14,12 +14,10 @@ params.mode = 'heterozygous'
 params.threads = 40
 
 bam_ch = Channel.fromPath(params.readbam)
-filt_ch = Channel.fromPath(params.readfilt)
 
 process HiFiAdapterFilt {
   input:
     file bam from bam_ch
-    file filts from filt_ch
   output:
     file '*.fasta' into filt_fasta_ch
   """
