@@ -1,10 +1,6 @@
 add GenomeScope
-add BLOBTools2
-add my own samtools container
-make yak contaienr
-expand hifiasm to include different modes depending on input.
+add busco
 
 version output
-add busco
 
 linkeage types for hclust in shhquis

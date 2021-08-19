@@ -121,7 +121,7 @@ process faidx {
 
 process hicstuff {
   publishDir params.outdir, mode: 'rellink'
-  container = 'koszullab/hicstuff' 
+  container = 'koszullab/hicstuff'
   cpus = params.threads
 
   input:
@@ -204,4 +204,134 @@ process sshquis_stats_do_sh {
     echo "finished stats"
     exit 0;
   """
+}
+
+process HiFiASM_Version {
+  container = 'dmolik/hifiasm'
+  cpus 1
+
+  output:
+    stdout hifiasm_version
+
+  """
+    hifiasm --version
+    exit 0;
+  """
+}
+
+process any2fasta_Version {
+  container = 'pvstodghill/any2fasta'
+  cpus 1
+
+  output:
+    stdout any2fasta_version
+
+  """
+    any2fasta -v
+    exit 0;
+  """
+}
+
+process ragtag_Version {
+  container = 'dmolik/ragtag'
+  cpus 1
+
+  output:
+    stdout ragtag_version
+
+  """
+    ragtag.py --version
+    exit 0;
+  """
+}
+
+process samtools_Version {
+  container = 'dmolik/samtools'
+  cpus 1
+
+  output:
+    stdout samtools_version
+
+  """
+    samtools --version
+    exit 0;
+  """
+}
+
+process hicstuff_Version {
+  container = 'koszullab/hicstuff'
+  cpus 1
+
+  output:
+    stdout hicstuff_version
+
+  """
+    hicstuff --version
+    exit 0;
+  """
+}
+
+process bbtools_Version {
+  container = 'bryce911/bbtools'
+  cpus 1
+
+  output:
+    stdout bbtools_version
+
+  """
+    stats.sh --version
+    exit 0;
+  """
+}
+
+process Other_Version {
+  cpus 1
+
+  output:
+    stdout other_version
+
+  """
+    echo "Shhquis.jl - - - - - 0.1.0
+    echo "HiFiAdapterFilt  - - v1.0.0
+  """
+}
+
+pbadapterfilt_version.subscribe {
+  println "HiFiAdapterFilt Version"
+  println "$it"
+}
+
+hifiasm_version.subscribe {
+  println "HiFiASM Version"
+  println "$it"
+}
+
+any2fasta_version.subscribe {
+  println "any2fasta Version"
+  println "$it"
+}
+
+ragtag_version.subscribe {
+  println "RagTag Version"
+  println "$it"
+}
+
+samtools_version.subscribe {
+  println "Samtools Version"
+  println "$it"
+}
+
+hicstuff_version.subscribe {
+  println "hicstuff Version"
+  println "$it"
+}
+
+bbtools_version.subscribe {
+  println "BBMap Version"
+  println "$it"
+}
+
+other_version.subscribe {
+  println "Other Versions"
+  ptintln "$it"
 }
