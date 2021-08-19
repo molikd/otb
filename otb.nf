@@ -7,20 +7,20 @@ params.readr = "$baseDir/data/*_R2.fastq.gz"
 params.outfasta = "genome.reorinted.fasta"
 params.outdir = 'results'
 params.mode = 'heterozygous'
-
-/*TODO gotta be a better way to handle cluster stuff
-*/
-params.threads = 40
+params.threads = '40'
 
 bam_ch = Channel.fromPath(params.readbam)
 
 process HiFiAdapterFilt {
+  container = 'dmolik/pbadapterfilt'
+  cpus = params.threads
+
   input:
     file bam from bam_ch
   output:
     file '*.fasta' into filt_fasta_ch
   """
-    pbadapterfilt.sh ${bam} -t ${params.threads}
+    pbadapterfilt.sh ${bam} -t ${task.cpus}
     echo "finished adapter filtering"
     exit 0;
   """
@@ -28,6 +28,8 @@ process HiFiAdapterFilt {
 
 process HiFiASM {
   publishDir params.outdir, mode: 'rellink'
+  container = 'dmolik/hifiasm'
+  cpus = params.threads
 
   input:
     file fasta from filt_fasta_ch
@@ -39,27 +41,27 @@ process HiFiASM {
 
   if( params.mode == 'phasing' )
   """
-    hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec --h1 ${params.readf} --h2 ${params.readr} ${fasta}
+    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${params.readf} --h2 ${params.readr} ${fasta}
     echo "finished alignment"
     exit 0;
   """
   else if( params.mode == 'homozygous' )
   """
-    hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec -l0 ${fasta}
+    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -l0 ${fasta}
     echo "finished alignment"
     exit 0;
   """
   else if( params.mode == 'heterozygous')
   """
-    hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec ${fasta}
+    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta}
     echo "finished alignment"
     exit 0;
   """
   else if ( params.mode == 'trio')
   """
-    yak count -b37 -t${params.threads} -o pat.yak <(cat ${params.readf}) <(cat ${params.readf})
-    yak count -b37 -t${params.threads} -o mat.yak <(cat ${params.readr}) <(cat ${params.readr})
-    hifiasm -o ${params.assembly} -t ${params.threads} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta}
+    yak count -b37 -t${task.cpus} -o pat.yak <(cat ${params.readf}) <(cat ${params.readf})
+    yak count -b37 -t${task.cpus} -o mat.yak <(cat ${params.readr}) <(cat ${params.readr})
+    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta}
     echo "finished alignment"
     exit 0;
   """
@@ -68,6 +70,9 @@ process HiFiASM {
 }
 
 process gfa2fasta {
+  container = 'pvstodghill/any2fasta'
+  cpus 1
+
   input:
     file gfa from gfa_ch.flatten()
   output:
@@ -81,6 +86,9 @@ process gfa2fasta {
 }
 
 process ragtag_dot_py {
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
   input:
     file fasta from fasta_unoriented_ch
     file fasta_ec from fasta_ec_ch
@@ -90,13 +98,16 @@ process ragtag_dot_py {
     file './${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_fai_genome_ch
     file './${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_sshquis_genome_ch
   """
-    ragtag.py patch --aligner unimap -t ${params.threads} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
+    ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
     echo "finished patching"
     exit 0;
   """
 }
 
 process faidx {
+  container = 'dmolik/samtools'
+  cpus 1
+
   input:
    file genome from fasta_fai_genome_ch
   output:
@@ -110,6 +121,8 @@ process faidx {
 
 process hicstuff {
   publishDir params.outdir, mode: 'rellink'
+  container = 'koszullab/hicstuff' 
+  cpus = params.threads
 
   input:
     file genome from fasta_genome_ch
@@ -119,7 +132,7 @@ process hicstuff {
     file 'hicstuff_out/info_contigs.txt' into contigs_ch
     file 'hicstuff_out/plots/frags_hist.pdf'
   """
-    hicstuff pipeline -t ${params.threads} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${params.readf} ${params.readr}
+    hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${params.readf} ${params.readr}
     echo "finished fragment calculations"
     exit 0;
   """
@@ -127,6 +140,8 @@ process hicstuff {
 
 process Shhquis_dot_jl {
   publishDir params.outdir, mode: 'rellink'
+  container = 'dmolik/shhquis'
+  cpus 1
 
   input:
     file abs from abs_ch
@@ -145,6 +160,8 @@ process Shhquis_dot_jl {
 
 process gfa2fasta_stats_dot_sh {
   publishDir params.outdir, mode: 'copy'
+  container = 'bryce911/bbtools'
+  cpus 1
 
   input:
     file fasta from gfa2fasta_fasta_res_ch.flatten()
@@ -159,6 +176,8 @@ process gfa2fasta_stats_dot_sh {
 
 process ragtag_stats_dot_sh {
   publishDir params.outdir, mode: 'copy'
+  container = 'bryce911/bbtools'
+  cpus 1
 
   input:
     file fasta from ragtag_fasta_res_ch.flatten()
@@ -173,6 +192,8 @@ process ragtag_stats_dot_sh {
 
 process sshquis_stats_do_sh {
   publishDir params.outdir, mode: 'copy'
+  container = 'bryce911/bbtools'
+  cpus 1
 
   input:
     file fasta from shhquis_fasta_res_ch.flatten()
