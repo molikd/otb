@@ -108,7 +108,7 @@ process gfa2fasta {
     file gfa from gfa_ch.flatten()
   output:
     file '*.fasta' into gfa2fasta_fasta_res_ch
-    file '*.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch
+    file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch
   """
     any2fasta ${gfa} > ${gfa}.fasta
     echo "finished gfa to fasta conversion"
