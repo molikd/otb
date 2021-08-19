@@ -37,6 +37,9 @@ process HiFiASM {
     file '*.gfa' into gfa_ch
     file '*.ec.fa' into fasta_ec_ch
     file '*hap[12].p_ctg.gfa.fasta' optional true
+    file 'R1.fastq.gz' optional true into fastqR1_ch
+    file 'R2.fastq.gz' optional true into fastqR2_ch
+
   script:
 
   if( params.mode == 'phasing' )
@@ -59,14 +62,42 @@ process HiFiASM {
   """
   else if ( params.mode == 'trio')
   """
-    yak count -b37 -t${task.cpus} -o pat.yak <(cat ${params.readf}) <(cat ${params.readf})
-    yak count -b37 -t${task.cpus} -o mat.yak <(cat ${params.readr}) <(cat ${params.readr})
+    yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${params.readf}) <(zcat ${params.readf})
+    yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${params.readr}) <(zcat ${params.readr})
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta}
+    ln -s ${params.readf} R1.fastq.gz
+    ln -s ${params.readr} R2.fastq.gz
     echo "finished alignment"
     exit 0;
   """
   else
     error "Invalid alignment mode: ${params.mode}"
+}
+
+process gzip_fastqR1_ch {
+  cpus 1
+
+  input:
+    file R1 from fastqR1_ch
+  output:
+    file 'R1.fastq' into fastqR1_d_ch
+
+  """
+    gzip -d -c $R1 >'R1.fastq'
+  """
+}
+
+process gzip_fastqR2_ch {
+  cpus 1
+
+  input:
+    file R2 from fastqR2_ch
+  output:
+    file 'R2.fastq' into fastqR2_d_ch
+
+  """
+    gzip -d -c $R2 > 'R2.fastq'
+  """
 }
 
 process gfa2fasta {
@@ -155,6 +186,41 @@ process Shhquis_dot_jl {
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
     echo "finished reorientation"
     exit 0;
+  """
+}
+
+process jellyfish {
+  container = 'dmolik/jellyfish'
+  cpus = params.threads
+
+  input:
+    file fastqr from fastqR1_d_ch
+    file fastqf from fastqR2_d_ch
+  output:
+    file '*.histo' into jellyfish_histo_ch
+    file 'version.txt' into jellyfish_ver_ch
+
+  """
+    jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} *.fastq -o reads.jf
+    jellyfish histo -t ${task.cpus} reads.jf > ${params.assembly}.histo
+    jellyfish cite > version.txt
+  """
+}
+
+process genomescope2 {
+  publishDir params.outdir, mode 'rellink'
+  container = 'dmolik/genomescope2'
+  cpus = params.threads
+
+  input:
+    file histo from jellyfish_histo_ch
+  output:
+    file '${params.assembly}/*'
+    file 'version.txt' into genomescope_ver_ch
+
+  """
+    genomescope.R -i ${histo} -o ${params.assembly} -k 21
+    genomescope.R --version > version.txt
   """
 }
 
@@ -284,6 +350,34 @@ process bbtools_Version {
   """
 }
 
+process jellyfish_Version {
+  cpus 1
+
+  input
+    file version form jellyfish_ver_ch
+
+  output:
+    stdout jellyfish_version
+
+  """
+    cat $version
+  """
+}
+
+process genomescope_Version {
+  cpus 1
+
+  input
+    file version from genomescope_ver_ch
+
+  output:
+    stdout genomescope_version
+
+  """
+    cat $version
+  """
+}
+
 process Other_Version {
   cpus 1
 
@@ -328,6 +422,16 @@ hicstuff_version.subscribe {
 
 bbtools_version.subscribe {
   println "BBMap Version"
+  println "$it"
+}
+
+jellyfish_version.subscribe {
+  println "Jellyfish Version"
+  println "$it"
+}
+
+genomescope_version.subscribe {
+  println "GenomeScope 2.0 Version"
   println "$it"
 }
 
