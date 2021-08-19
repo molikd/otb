@@ -8,6 +8,7 @@ params.outfasta = "genome.reorinted.fasta"
 params.outdir = 'results'
 params.mode = 'heterozygous'
 params.threads = '40'
+params.linreage = 'insecta'
 
 bam_ch = Channel.fromPath(params.readbam)
 
@@ -27,7 +28,6 @@ process HiFiAdapterFilt {
 }
 
 process HiFiASM {
-  publishDir params.outdir, mode: 'rellink'
   container = 'dmolik/hifiasm'
   cpus = params.threads
 
@@ -36,7 +36,6 @@ process HiFiASM {
   output:
     file '*.gfa' into gfa_ch
     file '*.ec.fa' into fasta_ec_ch
-    file '*hap[12].p_ctg.gfa.fasta' optional true
     file 'R1.fastq.gz' optional true into fastqR1_ch
     file 'R2.fastq.gz' optional true into fastqR2_ch
 
@@ -101,6 +100,7 @@ process gzip_fastqR2_ch {
 }
 
 process gfa2fasta {
+  publishDir params.outdir, mode: 'rellink'
   container = 'pvstodghill/any2fasta'
   cpus 1
 
@@ -109,10 +109,40 @@ process gfa2fasta {
   output:
     file '*.fasta' into gfa2fasta_fasta_res_ch
     file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch
+    file '*.p_ctg.gfa.fasta' optional true into fasta_busco_ch
+    file '*hap[12].p_ctg.gfa.fasta' optional true
   """
     any2fasta ${gfa} > ${gfa}.fasta
     echo "finished gfa to fasta conversion"
     exit 0;
+  """
+}
+
+process busco_gfa {
+  publishDir "${params.outdir}/busco", mode 'rellink'
+  container = 'ezlabgva/busco:v5.2.2_cv1'
+  cpus = params.threads
+
+  input:
+    file fasta from fasta_busco_ch.flatten()
+  output
+    path './${params.assembly}*'
+
+  if( params.linreage == 'auto-lineage' )
+  """
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+  """
+  else if( params.linreage == 'auto-lineage-prok' )
+  """
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+  """
+  else if( params.linreage == 'auto-lineage-euk' )
+  """
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+  """
+  else
+  """
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
 }
 
@@ -181,11 +211,40 @@ process Shhquis_dot_jl {
     file fai from fai_ch
   output:
     file '${params.outfasta}' into shhquis_fasta_res_ch
+    file '${params.outfasta}' into sshquis_genome_ch
 
   """
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
     echo "finished reorientation"
     exit 0;
+  """
+}
+
+process busco_fasta {
+  publishDir "${params.outdir}/busco", mode 'rellink'
+  container = 'ezlabgva/busco:v5.2.2_cv1'
+  cpus = params.threads
+
+  input:
+    file fasta from shhquis_genome_ch
+  output
+    path './${params.assembly}*'
+
+  if( params.linreage == 'auto-lineage' )
+  """
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+  """
+  else if( params.linreage == 'auto-lineage-prok' )
+  """
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+  """
+  else if( params.linreage == 'auto-lineage-euk' )
+  """
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+  """
+  else
+  """
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
 }
 
@@ -387,6 +446,7 @@ process Other_Version {
   """
     echo "Shhquis.jl - - - - - 0.1.0
     echo "HiFiAdapterFilt  - - v1.0.0
+    echo "BUSCO  - - - - - - - v5.2.2_cv1
   """
 }
 
