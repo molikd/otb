@@ -462,11 +462,6 @@ process Other_Version {
   """
 }
 
-pbadapterfilt_version.subscribe {
-  println "HiFiAdapterFilt Version"
-  println "$it"
-}
-
 hifiasm_version.subscribe {
   println "HiFiASM Version"
   println "$it"
