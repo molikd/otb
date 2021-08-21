@@ -504,5 +504,5 @@ genomescope_version.subscribe {
 
 other_version.subscribe {
   println "Other Versions"
-  ptintln "$it"
+  println "$it"
 }
