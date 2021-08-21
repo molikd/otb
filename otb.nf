@@ -456,9 +456,9 @@ process Other_Version {
     stdout other_version
 
   """
-    echo "Shhquis.jl - - - - - 0.1.0
-    echo "HiFiAdapterFilt  - - v1.0.0
-    echo "BUSCO  - - - - - - - v5.2.2_cv1
+    echo "Shhquis.jl - - - - - 0.1.0"
+    echo "HiFiAdapterFilt  - - v1.0.0"
+    echo "BUSCO  - - - - - - - v5.2.2_cv1"
   """
 }
 
