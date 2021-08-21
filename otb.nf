@@ -424,7 +424,7 @@ process bbtools_Version {
 process jellyfish_Version {
   cpus 1
 
-  input
+  input:
     file version form jellyfish_ver_ch
 
   output:
