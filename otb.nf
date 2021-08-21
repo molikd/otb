@@ -425,7 +425,7 @@ process jellyfish_Version {
   cpus 1
 
   input:
-    file version form jellyfish_ver_ch
+    file version from jellyfish_ver_ch
 
   output:
     stdout jellyfish_version
