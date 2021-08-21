@@ -217,7 +217,7 @@ process Shhquis_dot_jl {
     file fai from fai_ch
   output:
     file '${params.outfasta}' into shhquis_fasta_res_ch
-    file '${params.outfasta}' into sshquis_genome_ch
+    file '${params.outfasta}' into shhquis_genome_ch
 
   """
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
