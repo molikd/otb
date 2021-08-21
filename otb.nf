@@ -128,6 +128,8 @@ process busco_gfa {
   output:
     path './${params.assembly}*'
 
+  script:
+
   if( params.linreage == 'auto-lineage' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
@@ -233,6 +235,8 @@ process busco_fasta {
     file fasta from shhquis_genome_ch
   output:
     path './${params.assembly}*'
+
+  script:
 
   if( params.linreage == 'auto-lineage' )
   """
