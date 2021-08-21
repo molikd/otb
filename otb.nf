@@ -438,7 +438,7 @@ process jellyfish_Version {
 process genomescope_Version {
   cpus 1
 
-  input
+  input:
     file version from genomescope_ver_ch
 
   output:
