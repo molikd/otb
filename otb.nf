@@ -119,7 +119,7 @@ process gfa2fasta {
 }
 
 process busco_gfa {
-  publishDir "${params.outdir}/busco", mode 'rellink'
+  publishDir params.outdir, mode 'rellink'
   container = 'ezlabgva/busco:v5.2.2_cv1'
   cpus = params.threads
 
@@ -227,7 +227,7 @@ process Shhquis_dot_jl {
 }
 
 process busco_fasta {
-  publishDir "${params.outdir}/busco", mode 'rellink'
+  publishDir params.outdir, mode 'rellink'
   container = 'ezlabgva/busco:v5.2.2_cv1'
   cpus = params.threads
 
