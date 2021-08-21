@@ -125,24 +125,28 @@ process busco_gfa {
 
   input:
     file fasta from fasta_busco_ch.flatten()
-  output
+  output:
     path './${params.assembly}*'
 
   if( params.linreage == 'auto-lineage' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    exit 0;
   """
   else if( params.linreage == 'auto-lineage-prok' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    exit 0;
   """
   else if( params.linreage == 'auto-lineage-euk' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    exit 0;
   """
   else
   """
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.lineage}
+    exit 0;
   """
 }
 
@@ -227,24 +231,28 @@ process busco_fasta {
 
   input:
     file fasta from shhquis_genome_ch
-  output
+  output:
     path './${params.assembly}*'
 
   if( params.linreage == 'auto-lineage' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    exit 0;
   """
   else if( params.linreage == 'auto-lineage-prok' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    exit 0;
   """
   else if( params.linreage == 'auto-lineage-euk' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    exit 0;
   """
   else
   """
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.lineage}
+    exit 0;
   """
 }
 
