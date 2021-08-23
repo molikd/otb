@@ -133,22 +133,18 @@ process busco_gfa {
   if( params.linreage == 'auto-lineage' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
-    exit 0;
   """
   else if( params.linreage == 'auto-lineage-prok' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
-    exit 0;
   """
   else if( params.linreage == 'auto-lineage-euk' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
-    exit 0;
   """
   else
   """
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.lineage}
-    exit 0;
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
 }
 
@@ -241,22 +237,18 @@ process busco_fasta {
   if( params.linreage == 'auto-lineage' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
-    exit 0;
   """
   else if( params.linreage == 'auto-lineage-prok' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
-    exit 0;
   """
   else if( params.linreage == 'auto-lineage-euk' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
-    exit 0;
   """
   else
   """
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.lineage}
-    exit 0;
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
 }
 
@@ -279,7 +271,7 @@ process jellyfish {
 }
 
 process genomescope2 {
-  publishDir params.outdir, mode 'rellink'
+  publishDir params.outdir, mode: 'rellink'
   container = 'dmolik/genomescope2'
   cpus = params.threads
 
