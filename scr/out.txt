@@ -1,0 +1,68 @@
+fetch location is:
+/afs/crc.nd.edu/user/d/dmolik/.singularity/nextflow
+Build submitted! Once it is complete, the image can be retrieved by running:
+	singularity pull --library https://library.sylabs.io library://molikd/remote-builds/rb-6126cc70d78bf1ce9c212511:latest
+
+Alternatively, you can access it from a browser at:
+	https://cloud.sylabs.io/library/molikd/remote-builds/rb-6126cc70d78bf1ce9c212511:latest
+INFO:    Build complete: bryce911-bbtools.img
+Build submitted! Once it is complete, the image can be retrieved by running:
+	singularity pull --library https://library.sylabs.io library://molikd/remote-builds/rb-6126cc70d78bf1ce9c212512:latest
+
+Alternatively, you can access it from a browser at:
+	https://cloud.sylabs.io/library/molikd/remote-builds/rb-6126cc70d78bf1ce9c212512:latest
+INFO:    Build complete: dmolik-genomescope2.img
+Build submitted! Once it is complete, the image can be retrieved by running:
+	singularity pull --library https://library.sylabs.io library://molikd/remote-builds/rb-6126cc70a267b3f6a3832aca:latest
+
+Alternatively, you can access it from a browser at:
+	https://cloud.sylabs.io/library/molikd/remote-builds/rb-6126cc70a267b3f6a3832aca:latest
+INFO:    Build complete: dmolik-hifiasm.img
+Build submitted! Once it is complete, the image can be retrieved by running:
+	singularity pull --library https://library.sylabs.io library://molikd/remote-builds/rb-6126cc71a267b3f6a3832acb:latest
+
+Alternatively, you can access it from a browser at:
+	https://cloud.sylabs.io/library/molikd/remote-builds/rb-6126cc71a267b3f6a3832acb:latest
+INFO:    Build complete: dmolik-jellyfish.img
+Build submitted! Once it is complete, the image can be retrieved by running:
+	singularity pull --library https://library.sylabs.io library://molikd/remote-builds/rb-6126cc71596e300e6bbddba2:latest
+
+Alternatively, you can access it from a browser at:
+	https://cloud.sylabs.io/library/molikd/remote-builds/rb-6126cc71596e300e6bbddba2:latest
+INFO:    Build complete: dmolik-pbadapterfilt.img
+Build submitted! Once it is complete, the image can be retrieved by running:
+	singularity pull --library https://library.sylabs.io library://molikd/remote-builds/rb-6126cc71d78bf1ce9c212513:latest
+
+Alternatively, you can access it from a browser at:
+	https://cloud.sylabs.io/library/molikd/remote-builds/rb-6126cc71d78bf1ce9c212513:latest
+INFO:    Build complete: dmolik-ragtag.img
+Build submitted! Once it is complete, the image can be retrieved by running:
+	singularity pull --library https://library.sylabs.io library://molikd/remote-builds/rb-6126cc72a267b3f6a3832acc:latest
+
+Alternatively, you can access it from a browser at:
+	https://cloud.sylabs.io/library/molikd/remote-builds/rb-6126cc72a267b3f6a3832acc:latest
+INFO:    Build complete: mgibio-samtools:1.9.img
+Build submitted! Once it is complete, the image can be retrieved by running:
+	singularity pull --library https://library.sylabs.io library://molikd/remote-builds/rb-6126cc72596e300e6bbddba3:latest
+
+Alternatively, you can access it from a browser at:
+	https://cloud.sylabs.io/library/molikd/remote-builds/rb-6126cc72596e300e6bbddba3:latest
+INFO:    Build complete: dmolik-shhquis.img
+Build submitted! Once it is complete, the image can be retrieved by running:
+	singularity pull --library https://library.sylabs.io library://molikd/remote-builds/rb-6126cc72d78bf1ce9c212514:latest
+
+Alternatively, you can access it from a browser at:
+	https://cloud.sylabs.io/library/molikd/remote-builds/rb-6126cc72d78bf1ce9c212514:latest
+INFO:    Build complete: ezlabgva-busco:v5.2.2_cv1.img
+Build submitted! Once it is complete, the image can be retrieved by running:
+	singularity pull --library https://library.sylabs.io library://molikd/remote-builds/rb-6126cc73a267b3f6a3832acd:latest
+
+Alternatively, you can access it from a browser at:
+	https://cloud.sylabs.io/library/molikd/remote-builds/rb-6126cc73a267b3f6a3832acd:latest
+INFO:    Build complete: koszullab-hicstuff.img
+Build submitted! Once it is complete, the image can be retrieved by running:
+	singularity pull --library https://library.sylabs.io library://molikd/remote-builds/rb-6126cc73d78bf1ce9c212515:latest
+
+Alternatively, you can access it from a browser at:
+	https://cloud.sylabs.io/library/molikd/remote-builds/rb-6126cc73d78bf1ce9c212515:latest
+INFO:    Build complete: pvstodghill-any2fasta.img
