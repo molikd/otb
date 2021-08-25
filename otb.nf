@@ -168,7 +168,7 @@ process ragtag_dot_py {
 }
 
 process faidx {
-  container = 'dmolik/samtools'
+  container = 'mgibio/samtools:1.9'
   cpus 1
 
   input:
@@ -375,7 +375,7 @@ process ragtag_Version {
 }
 
 process samtools_Version {
-  container = 'dmolik/samtools'
+  container = 'mgibio/samtools:1.9'
   cpus 1
 
   output:

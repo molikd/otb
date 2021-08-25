@@ -13,7 +13,7 @@ singularity pull dmolik-hifiasm.img docker://dmolik/hifiasm
 singularity pull dmolik-jellyfish.img docker://dmolik/jellyfish
 singularity pull dmolik-pbadapterfilt.img docker://dmolik/pbadapterfilt
 singularity pull dmolik-ragtag.img docker://dmolik/ragtag
-singularity pull dmolik-samtools.img docker://dmolik/samtools
+singularity pull mgibio-samtools:1.9.img docker://mgibio/samtools:1.9
 singularity pull dmolik-shhquis.img docker://dmolik/shhquis
 singularity pull ezlabgva-busco:v5.2.2_cv1.img docker://ezlabgva/busco:v5.2.2_cv1
 singularity pull koszullab-hicstuff.img docker://koszullab/hicstuff
