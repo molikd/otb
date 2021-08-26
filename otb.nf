@@ -9,6 +9,7 @@ params.outdir = 'results'
 params.mode = 'heterozygous'
 params.threads = '40'
 params.linreage = 'insecta'
+params.nobusco = 'false'
 
 bam_ch = Channel.fromPath(params.readbam)
 
@@ -130,21 +131,26 @@ process busco_gfa {
 
   script:
 
-  if( params.linreage == 'auto-lineage' )
+  if( params.linreage == 'auto-lineage' && params.nobusco = 'false ')
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
-  else if( params.linreage == 'auto-lineage-prok' )
+  else if( params.linreage == 'auto-lineage-prok' && params.nobusco = 'false' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
-  else if( params.linreage == 'auto-lineage-euk' )
+  else if( params.linreage == 'auto-lineage-euk' && params.nobusco = 'false' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
-  else
+  else if( params.nobusco = 'false' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+  """
+  else 
+  """
+    echo "BUSCO no run"
+    echo "BUSCO no run" > "busco.out.txt"
   """
 }
 
