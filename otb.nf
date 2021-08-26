@@ -131,19 +131,19 @@ process busco_gfa {
 
   script:
 
-  if( params.linreage == 'auto-lineage' && params.nobusco = 'false ')
+  if( params.linreage == 'auto-lineage' && params.nobusco == 'false ')
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
-  else if( params.linreage == 'auto-lineage-prok' && params.nobusco = 'false' )
+  else if( params.linreage == 'auto-lineage-prok' && params.nobusco == 'false' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
-  else if( params.linreage == 'auto-lineage-euk' && params.nobusco = 'false' )
+  else if( params.linreage == 'auto-lineage-euk' && params.nobusco == 'false' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
-  else if( params.nobusco = 'false' )
+  else if( params.nobusco == 'false' )
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
