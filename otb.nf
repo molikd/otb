@@ -356,6 +356,7 @@ process HiFiASM_Version {
     stdout hifiasm_version
 
   """
+    echo "HiFiASM Version:"
     hifiasm --version
     exit 0;
   """
@@ -369,6 +370,7 @@ process any2fasta_Version {
     stdout any2fasta_version
 
   """
+    echo "any2fasta Version:"
     any2fasta -v
     exit 0;
   """
@@ -382,12 +384,14 @@ process ragtag_Version {
     stdout ragtag_version
 
   """
+    echo "Ragtag Version:"
     ragtag.py --version
     exit 0;
   """
 }
 
 process samtools_Version {
+  echo "Samtools Version"
   container = 'mgibio/samtools:1.9'
   cpus 1
 
@@ -395,6 +399,7 @@ process samtools_Version {
     stdout samtools_version
 
   """
+    echo "Samtools Version:"
     samtools --version
     exit 0;
   """
@@ -408,6 +413,7 @@ process hicstuff_Version {
     stdout hicstuff_version
 
   """
+    echo "HiCStuff Version:"
     hicstuff --version
     exit 0;
   """
@@ -418,6 +424,7 @@ process bbtools_Version {
   cpus 1
 
   output:
+    echo "BBTools Version:"
     stdout bbtools_version
 
   """
@@ -436,6 +443,7 @@ process jellyfish_Version {
     stdout jellyfish_version
 
   """
+    echo "Jellyfish Version:"
     cat $version
   """
 }
@@ -450,6 +458,7 @@ process genomescope_Version {
     stdout genomescope_version
 
   """
+    echo "GenomeScope Version:"
     cat $version
   """
 }
@@ -468,46 +477,37 @@ process Other_Version {
 }
 
 hifiasm_version.subscribe {
-  println "HiFiASM Version"
   println "$it"
 }
 
 any2fasta_version.subscribe {
-  println "any2fasta Version"
   println "$it"
 }
 
 ragtag_version.subscribe {
-  println "RagTag Version"
   println "$it"
 }
 
 samtools_version.subscribe {
-  println "Samtools Version"
   println "$it"
 }
 
 hicstuff_version.subscribe {
-  println "hicstuff Version"
   println "$it"
 }
 
 bbtools_version.subscribe {
-  println "BBMap Version"
   println "$it"
 }
 
 jellyfish_version.subscribe {
-  println "Jellyfish Version"
   println "$it"
 }
 
 genomescope_version.subscribe {
-  println "GenomeScope 2.0 Version"
-  println "$it"
+  print "$it"
 }
 
 other_version.subscribe {
-  println "Other Versions"
   println "$it"
 }
