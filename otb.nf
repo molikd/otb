@@ -163,10 +163,10 @@ process ragtag_dot_py {
     file fasta from fasta_unoriented_ch
     file fasta_ec from fasta_ec_ch
   output:
-    file './${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into ragtag_fasta_res_ch
-    file './${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_genome_ch
-    file './${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_fai_genome_ch
-    file './${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_sshquis_genome_ch
+    file '${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into ragtag_fasta_res_ch
+    file '${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_genome_ch
+    file '${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_fai_genome_ch
+    file '${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta' into fasta_sshquis_genome_ch
   """
     ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
     echo "finished patching"
