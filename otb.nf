@@ -463,6 +463,21 @@ process genomescope_Version {
   """
 }
 
+
+process Other_Version {
+  cpus 1
+
+    output:
+    stdout other_version
+
+  """
+    echo "Other Versions:"
+    echo "Shhquis.jl - - - - - 0.1.0"
+    echo "HiFiAdapterFilt  - - v1.0.0"
+    echo "BUSCO  - - - - - - - v5.2.2_cv1"
+  """
+}
+
 hifiasm_version.subscribe {
   println "$it"
 }
