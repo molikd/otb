@@ -478,38 +478,38 @@ process Other_Version {
   """
 }
 
-hifiasm_version.subscribe {
-  println "$it"
-}
+hifiasm_version
+   .collectFile(name:'hifiasm_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .view{ it.text }
 
-any2fasta_version.subscribe {
-  println "$it"
-}
+any2fasta_version
+   .collectFile(name:'any2fasta_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .view{ it.text }
 
-ragtag_version.subscribe {
-  println "$it"
-}
+ragtag_version
+   .collectFile(name:'ragtag_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .view{ it.text }
 
-samtools_version.subscribe {
-  println "$it"
-}
+samtools_version
+   .collectFile(name:'samtools_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .view{ it.text }
 
-hicstuff_version.subscribe {
-  println "$it"
-}
+hicstuff_version
+   .collectFile(name:'hicstuff_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .view{ it.text }
 
-bbtools_version.subscribe {
-  println "$it"
-}
+bbtools_version
+   .collectFile(name:'bbtools_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .view{ it.text }
 
-jellyfish_version.subscribe {
-  println "$it"
-}
+jellyfish_version
+   .collectFile(name:'jellyfish_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .view{ it.text }
 
-genomescope_version.subscribe {
-  print "$it"
-}
+genomescope_version
+   .collectFile(name:'genomescope_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .view{ it.text }
 
-other_version.subscribe {
-  println "$it"
-}
+other_version
+   .collectFile(name:'other_versions.txt', newLine: true, storeDir: "${params.outdir}")
+   .view{ it.text }
