@@ -2,8 +2,8 @@
 
 params.assembly = "hmai"
 params.readbam = "$baseDir/data/*.bam"
-params.readf = "$baseDir/data/*_R1.fastq.gz"
-params.readr = "$baseDir/data/*_R2.fastq.gz"
+params.readf = " "
+params.readr = " "
 params.outfasta = "genome.reorinted.fasta"
 params.outdir = 'results'
 params.mode = 'heterozygous'
