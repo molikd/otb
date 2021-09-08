@@ -9,9 +9,42 @@ params.outdir = 'results'
 params.mode = 'heterozygous'
 params.threads = '40'
 params.linreage = 'insecta'
-params.nobusco = 'false'
+params.busco = 'false'
+params.polish = 'true'
 
 bam_ch = Channel.fromPath(params.readbam)
+
+process check_bam {
+  container = 'mgibio/samtools:1.9'
+  cpus = 1
+
+  """
+   stat ${params.readbam}
+   samtools flagstat ${params.readbam}
+   exit 0;
+  """
+}
+
+process check_R1 {
+  cpus = 1
+ 
+  """
+   stat ${params.readf}
+   grep -q "^>" -m1 ${params.readf} && echo true || echo false
+   exit 0;
+  """
+}
+
+process check_R2 {
+  cpus = 1
+
+  """
+   stat ${params.readr}
+   grep -q "^>" -m1 ${params.readf} && echo true || echo false
+   exit 0;
+  """
+}
+
 
 process HiFiAdapterFilt {
   container = 'dmolik/pbadapterfilt'
@@ -111,6 +144,7 @@ process gfa2fasta {
   output:
     file '*.fasta' into gfa2fasta_fasta_res_ch
     file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch
+    file '*.bp.p_ctg.gfa.fasta' optional true into fasta_genome_ch
     file '*.p_ctg.gfa.fasta' optional true into fasta_busco_ch
     file '*hap[12].p_ctg.gfa.fasta' optional true
   """
@@ -130,29 +164,26 @@ process busco_gfa {
   output:
     file '*'
 
+  when:
+  params.busco == 'true'
+
   script:
 
-  if( params.linreage == 'auto-lineage' && params.nobusco == 'false')
+  if( params.linreage == 'auto-lineage')
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
-  else if( params.linreage == 'auto-lineage-prok' && params.nobusco == 'false' )
+  else if( params.linreage == 'auto-lineage-prok')
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
-  else if( params.linreage == 'auto-lineage-euk' && params.nobusco == 'false' )
+  else if( params.linreage == 'auto-lineage-euk')
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
-  else if( params.nobusco == 'false' )
+  else
   """
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
-  """
-  else 
-  """
-    echo "BUSCO no run"
-    mkdir "${params.assembly}"
-    echo "BUSCO no run" > "${params.assembly}/busco.out.txt"
   """
 }
 
@@ -160,12 +191,15 @@ process ragtag_dot_py {
   container = 'dmolik/ragtag'
   cpus = params.threads
 
+  when:
+  params.polish == 'true' 
+
   input:
     file fasta from fasta_unoriented_ch
     file fasta_ec from fasta_ec_ch
   output:
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch
-    file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into fasta_genome_ch
+    file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_genome_ch
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into fasta_fai_genome_ch
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into fasta_sshquis_genome_ch
   """
@@ -178,6 +212,9 @@ process ragtag_dot_py {
 process faidx {
   container = 'mgibio/samtools:1.9'
   cpus 1
+
+  when:
+  params.polish == 'true'
 
   input:
    file genome from fasta_fai_genome_ch
@@ -198,12 +235,34 @@ process hicstuff {
   input:
     file genome from fasta_genome_ch
   output:
-    file 'hicstuff_out/abs_fragments_contacts_weighted.bg2' into abs_ch
     file 'hicstuff_out/fragments_list.txt'
-    file 'hicstuff_out/info_contigs.txt' into contigs_ch
     file 'hicstuff_out/plots/frags_hist.pdf'
   """
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${params.readf} ${params.readr}
+    echo "finished fragment calculations"
+    exit 0;
+  """
+}
+
+process hicstuff_polish {
+  publishDir params.outdir, mode: 'rellink'
+  container = 'koszullab/hicstuff'
+  cpus = params.threads
+
+  when:
+  params.polish == 'true'
+
+  input:
+    file genome from ragtag_fasta_genome_ch
+  output:
+    file 'hicstuff_out/abs_fragments_contacts_weighted.bg2' into abs_ch
+    file 'hicstuff_out/polish_fragments_list.txt'
+    file 'hicstuff_out/info_contigs.txt' into contigs_ch
+    file 'hicstuff_out/plots/polish_frags_hist.pdf'
+  """
+    hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${params.readf} ${params.readr}
+    mv hicstuff_out/fragments_list.txt hicstuff_out/polish_fragments_list.txt
+    mv hicstuff_out/plots/frags_hist.pdf hicstuff_out/plots/polish_frags_hist.pdf
     echo "finished fragment calculations"
     exit 0;
   """
@@ -214,6 +273,9 @@ process Shhquis_dot_jl {
   container = 'dmolik/shhquis'
   cpus 1
 
+  when:
+  params.polish == 'true'
+
   input:
     file abs from abs_ch
     file contig from contigs_ch
@@ -222,6 +284,7 @@ process Shhquis_dot_jl {
   output:
     file "${params.outfasta}" into shhquis_fasta_res_ch
     file "${params.outfasta}" into shhquis_genome_ch
+    file "${params.outfasta}"
 
   """
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
@@ -235,6 +298,9 @@ process busco_fasta {
   container = 'ezlabgva/busco:v5.2.2_cv1'
   cpus = params.threads
 
+  when:
+  params.polish == 'true' && params.busco == 'true'
+
   input:
     file fasta from shhquis_genome_ch
   output:
@@ -242,27 +308,21 @@ process busco_fasta {
 
   script:
 
-  if( params.linreage == 'auto-lineage' && params.nobusco == 'false')
+  if( params.linreage == 'auto-lineage')
   """
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
-  else if( params.linreage == 'auto-lineage-prok' && params.nobusco == 'false' )
+  else if( params.linreage == 'auto-lineage-prok')
   """
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
-  else if( params.linreage == 'auto-lineage-euk' && params.nobusco == 'false' )
+  else if( params.linreage == 'auto-lineage-euk')
   """
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
-  else if( params.nobusco == 'false' )
+  else
   """
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
-  """
-  else 
-  """
-    echo "BUSCO no run"
-    mkdir "${params.assembly}"
-    echo "BUSCO no run" > "${params.assembly}/busco.out.txt"
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
 }
 
@@ -322,6 +382,9 @@ process ragtag_stats_dot_sh {
   container = 'bryce911/bbtools'
   cpus 1
 
+  when:
+  params.polish == 'true'
+
   input:
     file fasta from ragtag_fasta_res_ch.flatten()
   output:
@@ -337,6 +400,9 @@ process sshquis_stats_do_sh {
   publishDir params.outdir, mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
+
+  when:
+  params.polish == 'true'
 
   input:
     file fasta from shhquis_fasta_res_ch.flatten()
@@ -465,55 +531,89 @@ process genomescope_Version {
 }
 
 
-process Other_Version {
+process BUSCO_Version {
   cpus 1
 
-    output:
-    stdout other_version
+  output:
+  stdout busco_version 
+
+  when:
+  params.busco == 'true'
 
   """
-    echo "Other Versions:"
-    echo "Shhquis.jl - - - - - 0.1.0"
-    echo "HiFiAdapterFilt  - - v1.0.0"
-    echo "BUSCO  - - - - - - - v5.2.2_cv1"
+   echo "BUSCO  - - - - - - - v5.2.2_cv1"
+  """   
+
+}
+
+process shhquis_Version {
+  cpus 1
+
+  output:
+  stdout shhquis_version
+
+  when:
+  params.polish == 'true'
+
+  """
+   echo "Shhquis.jl - - - - - 0.1.0"
+  """
+}
+
+process HiFiAdapterFilt_Version {
+  cpus 1
+
+  output:
+  stdout pbadapterfilt_version  
+
+  """
+   echo "HiFiAdapterFilt  - - v1.0.0"
   """
 }
 
 pbadapterfilt_output
-   .collect(name:'filtering_information.txt', newLine: true, storeDir:"${params.outdir}")
+   .collectFile(name:'filtering_information.txt', newLine: true, storeDir:"${params.outdir}/software_versions")
 
 hifiasm_version
-   .collectFile(name:'hifiasm_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .collectFile(name:'hifiasm_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 any2fasta_version
-   .collectFile(name:'any2fasta_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .collectFile(name:'any2fasta_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 ragtag_version
-   .collectFile(name:'ragtag_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .collectFile(name:'ragtag_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 samtools_version
-   .collectFile(name:'samtools_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .collectFile(name:'samtools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 hicstuff_version
-   .collectFile(name:'hicstuff_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .collectFile(name:'hicstuff_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 bbtools_version
-   .collectFile(name:'bbtools_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .collectFile(name:'bbtools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 jellyfish_version
-   .collectFile(name:'jellyfish_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .collectFile(name:'jellyfish_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 genomescope_version
-   .collectFile(name:'genomescope_version.txt', newLine: true, storeDir: "${params.outdir}")
+   .collectFile(name:'genomescope_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
-other_version
-   .collectFile(name:'other_versions.txt', newLine: true, storeDir: "${params.outdir}")
+busco_version
+   .collectFile(name:'busco_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+   .view{ it.text }
+
+shhquis_version
+   .collectFile(name:'shhquis_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+   .view{ it.text }
+
+pbadapterfilt_version
+   .collectFile(name:'pbadapterfilt_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
