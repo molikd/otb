@@ -21,6 +21,7 @@ process HiFiAdapterFilt {
     file bam from bam_ch
   output:
     file '*.fasta' into filt_fasta_ch
+    stdout pbadapterfilt_output
   """
     pbadapterfilt.sh ${bam} -t ${task.cpus}
     echo "finished adapter filtering"
@@ -477,6 +478,9 @@ process Other_Version {
     echo "BUSCO  - - - - - - - v5.2.2_cv1"
   """
 }
+
+pbadapterfilt_output
+   .collect(name:'filtering_information.txt', newLine: true, storeDir:"${params.outdir}")
 
 hifiasm_version
    .collectFile(name:'hifiasm_version.txt', newLine: true, storeDir: "${params.outdir}")
