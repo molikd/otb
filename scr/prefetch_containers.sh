@@ -3,9 +3,13 @@
 
 location=$( pwd )
 echo "fetch location is:"
-echo $NXF_SINGULARITY_CACHEDIR 
+if [ -n "$NXF_SINGULARITY_CACHEDIR" ]; then
+ echo $NXF_SINGULARITY_CACHEDIR
+ cd $NXF_SINGULARITY_CACHEDIR
+else
+ echo "..not set, please set NXF_SINGULARITY_CACHEDIR"
+fi
 
-cd $NXF_SINGULARITY_CACHEDIR
 
 singularity pull bryce911-bbtools.img docker://bryce911/bbtools
 singularity pull dmolik-genomescope2.img docker://dmolik/genomescope2
