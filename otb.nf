@@ -495,7 +495,7 @@ process bbtools_Version {
     stdout bbtools_version
 
   """
-    stats.sh --version
+    stats.sh --version 2>&1
     exit 0;
   """
 }
