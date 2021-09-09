@@ -18,5 +18,6 @@ singularity pull dmolik-shhquis.img docker://dmolik/shhquis
 singularity pull ezlabgva-busco:v5.2.2_cv1.img docker://ezlabgva/busco:v5.2.2_cv1
 singularity pull koszullab-hicstuff.img docker://koszullab/hicstuff
 singularity pull pvstodghill-any2fasta.img docker://pvstodghill/any2fasta
+singularity pull dmolik-blobtools.img docker://dmolik/blobtools
 
 cd $location
