@@ -6,8 +6,11 @@ echo "fetch location is:"
 if [ -n "$NXF_SINGULARITY_CACHEDIR" ]; then
  echo $NXF_SINGULARITY_CACHEDIR
  cd $NXF_SINGULARITY_CACHEDIR
+elif [ -n $1 ]; then
+ echo $1
+ cd $1
 else
- echo "..not set, please set NXF_SINGULARITY_CACHEDIR"
+ echo "..not set, please set NXF_SINGULARITY_CACHEDIR or give me a location"
 fi
 
 
