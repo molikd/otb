@@ -18,11 +18,14 @@ process check_bam {
   container = 'mgibio/samtools:1.9'
   cpus = 1
 
-  """
+  shell
+  '''
    stat ${params.readbam}
-   samtools flagstat ${params.readbam}
+   for bam in ${params.readbam}; do 
+     samtools flagstat ${params.readbam}
+   done;
    exit 0;
-  """
+  '''
 }
 
 process check_R1 {

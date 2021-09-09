@@ -1,7 +1,16 @@
 #!/bin/bash
 
-echo "Generic things"
-echo "$( 
+if [ command -v io.sh &> /dev/null ] || [ -f "io.sh" ]; then
+  source io.sh
+elif [ -f "scr/io.sh" ]; then 
+  source scr/io.sh
+else
+  echo >&2 "[$(date)] I require io.sh to run, but io.sh has not been found, aborting"; exit 1; 
+fi
+
+state "YOUR ENVIRONMENT"
+
+describe "$( 
 # thanks to linux mafia for this script http://linuxmafia.com/faq/Admin/release-files.html
 OS=`uname -s`
 REV=`uname -r`
@@ -46,18 +55,18 @@ fi
 
 echo ${OSSTR}
 )"
-echo ""
-echo "ENV Variables"
-echo "[SINGULARITY_LOCALCADHEDIR] Singularity local cache directory: $SINGULARITY_LOCALCADHEDIR"
-echo "[SINGULARITY_CACHEDIR] Singularity cache directory: $SINGULARITY_CACHEDIR"
-echo "[SINGULARITY_TMPDIR] Singularity temporary directory: $SINGULARITY_TMPDIR"
-echo "[NXF_SINGULARITY_CACHEDIR] Nextflow's Singularity cache directory: $NXF_SINGULARITY_CACHEDIR"
-echo ""
-echo "Singularity Things"
-echo "[which singularity] Which Singularity? $( which singularity )"
-echo "[singularity version] Singularity versioning: $( singularity version )" 
-echo ""
-echo "Nextflow Things"
-echo "[which nextflow] Which Nextflow? $( which nextflow )"
-echo "[nextflow info] Nextflow versioning:"
-echo "$( nextflow info )"
+
+state "ENV Variables"
+describe "[SINGULARITY_LOCALCADHEDIR] Singularity local cache directory: $SINGULARITY_LOCALCADHEDIR"
+describe "[SINGULARITY_CACHEDIR] Singularity cache directory: $SINGULARITY_CACHEDIR"
+describe "[SINGULARITY_TMPDIR] Singularity temporary directory: $SINGULARITY_TMPDIR"
+describe "[NXF_SINGULARITY_CACHEDIR] Nextflow's Singularity cache directory: $NXF_SINGULARITY_CACHEDIR"
+describe ""
+state "Singularity Things"
+describe "[which singularity] Which Singularity? $( which singularity )"
+describe "[singularity version] Singularity versioning: $( singularity version )" 
+describe ""
+describe"Nextflow Things"
+describe "[which nextflow] Which Nextflow? $( which nextflow )"
+describe "[nextflow info] Nextflow versioning:"
+describe "$( nextflow info )"
