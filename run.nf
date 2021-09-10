@@ -13,39 +13,43 @@ params.busco = 'false'
 params.polish = 'false'
 
 bam_ch = Channel.fromPath(params.readbam)
+bam_check_ch = Channel.fromPath(params.readbam) 
 
 process check_bam {
   container = 'mgibio/samtools:1.9'
   cpus = 1
+ 
+  input:
+    file bam from bam_check_ch.flatten()
 
-  shell
-  '''
-   stat ${params.readbam}
-   for bam in ${params.readbam}; do 
-     samtools flagstat ${params.readbam}
-   done;
+  """
+   stat ${bam}
+   samtools quickcheck ${bam}
    exit 0;
-  '''
+  """
 }
 
-process check_R1 {
+process check_fastq {
   cpus = 1
  
-  """
-   stat ${params.readf}
+  shell:
+  '''
+   left=!{params.readr}
+   right=!{params.readf}
+   [[ $left =~ ^/.* ]] || left="!{basDir}/$left"    
+   [[ $right =~ ^/.* ]] || right="!{baseDir}/$right"
+   stat $left
+   stat $right
+
+   [[ $left  =~ .*gz$ ]] && first=$(zcat $left | awk '{ print $1; exit }') || first=$( cat $left | awk '{ print $1; exit }')
+   [[ $right =~ .*gz$ ]] && second=$(zcat $right | awk '{ print $1; exit }') || second=$( cat $right | awk '{ print $1; exit }')
+
+   [[ $first =~ ^\>.* ]] || exit 1;
+   [[ $second =~ ^\>.* ]] || exit 1;
+
    exit 0;
-  """
+  '''
 }
-
-process check_R2 {
-  cpus = 1
-
-  """
-   stat ${params.readr}
-   exit 0;
-  """
-}
-
 
 process HiFiAdapterFilt {
   container = 'dmolik/pbadapterfilt'
