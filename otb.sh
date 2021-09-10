@@ -16,6 +16,9 @@ help(){
     -v or --version
        display otb version and exit
 
+    -s or --supress
+       supress stop and checks, and submit without sending to background
+
 
   required:
     -f or --forward
@@ -67,6 +70,7 @@ while [ $# -gt 0 ] ; do
   case $1 in
     -h | --help) help ;;
     -v | --version) version ;;
+    -s | --supress) SUPRESS="true";;
     -f | --forward) R1="$2" ;;
     -r | --reverse) R2="$2" ;;
     -b | --bam) BAM="$2" ;;
@@ -125,10 +129,10 @@ fi
 [ -n "$BAM" ] && RUN+="--readbam=\"$BAM\" " || error "bam file(s) not given, exiting"
 [ -z "$NAME" ] && NAME="$(date +%s)" && state "name not given, setting name to: $NAME"
 RUN+="--assembly=\"$NAME\" "
-RUN+="-bg"
+[ -z "$SUPRESS" ] && RUN+="-bg"
 
 pizzaz "$RUN"
-stop_check "check that the command is expected, continue"
+[ -z "$SUPRESS" ] && stop_check "check that the command is expected, continue"
 
 state "Prefetching singularity containers"
 [ -n "$NXF_SINGULARITY_CACHEDIR" ] && "Nextflow Singularity cache directory set: $NXF_SINGULARITY_CACHEDIR, will use for singularity images" || warn "NXF_SINGULARITY_CACHEDIR not set, using ./work/singularity instead"
@@ -136,5 +140,5 @@ state "Prefetching singularity containers"
 
 #TODO, check that all the containers work
 
-stop_check "proceed with run"
+[ -z "$SUPRESS" ] && stop_check "proceed with run"
 eval $RUN
