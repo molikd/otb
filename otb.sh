@@ -4,6 +4,11 @@ source scr/io.sh
 help(){
   display_header
   describe "otb: Only The Best (Genome Assemblies)
+  [NOTE] otb must be run from the directory it is in, only ./otb.sh will work
+  [NOTE] run.nf must be in the same directory as otb.sh
+  [NOTE] ./config holds grid config files
+  [NOTE] ./scr holds scripts on which otb relies 
+
   utilities 
     -h or --help
        display this message and exit
