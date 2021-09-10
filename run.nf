@@ -2,15 +2,15 @@
 
 params.assembly = "hmai"
 params.readbam = "$baseDir/data/*.bam"
-params.readf = "$baseDir/data/Hmai.HiC.R1.fastq.gz"
-params.readr = "$baseDir/data/Hmai.HiC.R2.fastq.gz"
+params.readf = "$baseDir/data/*.R1.fastq.gz"
+params.readr = "$baseDir/data/*.R2.fastq.gz"
 params.outfasta = "genome.reorinted.fasta"
 params.outdir = 'results'
-params.mode = 'heterozygous'
+params.mode = 'homozygous'
 params.threads = '40'
 params.linreage = 'insecta'
 params.busco = 'false'
-params.polish = 'true'
+params.polish = 'false'
 
 bam_ch = Channel.fromPath(params.readbam)
 

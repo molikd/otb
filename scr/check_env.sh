@@ -8,7 +8,7 @@ else
   echo >&2 "[$(date)] I require io.sh to run, but io.sh has not been found, aborting"; exit 1; 
 fi
 
-state "YOUR ENVIRONMENT"
+state "checking computing environment"
 
 describe "$( 
 # thanks to linux mafia for this script http://linuxmafia.com/faq/Admin/release-files.html
@@ -57,16 +57,23 @@ echo ${OSSTR}
 )"
 
 state "ENV Variables"
-describe "[SINGULARITY_LOCALCADHEDIR] Singularity local cache directory: $SINGULARITY_LOCALCADHEDIR"
-describe "[SINGULARITY_CACHEDIR] Singularity cache directory: $SINGULARITY_CACHEDIR"
-describe "[SINGULARITY_TMPDIR] Singularity temporary directory: $SINGULARITY_TMPDIR"
-describe "[NXF_SINGULARITY_CACHEDIR] Nextflow's Singularity cache directory: $NXF_SINGULARITY_CACHEDIR"
+printf "%b\n" "\e[96m[SINGULARITY_LOCALCADHEDIR]\e[0m Singularity local cache directory:" 2>&1;
+pizzaz "$SINGULARITY_LOCALCADHEDIR"
+printf "%b\n" "\e[96m[SINGULARITY_CACHEDIR]\e[0m Singularity cache directory:" 2>&1;
+pizzaz "$SINGULARITY_CACHEDIR"
+printf "%b\n" "\e[96m[SINGULARITY_TMPDIR]\e[0m Singularity temporary directory:" 2>&1;
+pizzaz "$SINGULARITY_TMPDIR"
+printf "%b\n" "\e[96m[NXF_SINGULARITY_CACHEDIR]\e[0m Nextflow's Singularity cache directory:" 2>&1;
+pizzaz "$NXF_SINGULARITY_CACHEDIR"
 describe ""
 state "Singularity Things"
-describe "[which singularity] Which Singularity? $( which singularity )"
-describe "[singularity version] Singularity versioning: $( singularity version )" 
+printf "%b\n" "\e[96m[which singularity]\e[0m Which Singularity?" 2>&1;
+pizzaz "$( which singularity )"
+printf "%b\n" "\e[96m[singularity version]\e[0m Singularity versioning:" 2>&1;
+pizzaz "$( singularity version )" 
 describe ""
-describe"Nextflow Things"
-describe "[which nextflow] Which Nextflow? $( which nextflow )"
-describe "[nextflow info] Nextflow versioning:"
-describe "$( nextflow info )"
+state "Nextflow Things"
+printf "%b\n" "\e[96m[which nextflow]\e[0m Which Nextflow?" 2>&1;
+pizzaz "$( which nextflow )"
+printf "%b\n" "\e[96m[nextflow info]\e[0m Nextflow versioning:" 2>&1;
+pizzaz "$( nextflow info )"
