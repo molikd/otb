@@ -129,8 +129,7 @@ process gfa2fasta {
     file gfa from gfa_ch.flatten()
   output:
     file '*.fasta' into gfa2fasta_fasta_res_ch
-    file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch
-    file '*.bp.p_ctg.gfa.fasta' optional true into fasta_genome_ch
+    file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch
     file '*.p_ctg.gfa.fasta' optional true into fasta_busco_ch
     file '*hap[12].p_ctg.gfa.fasta' optional true
   """
@@ -184,10 +183,7 @@ process ragtag_dot_py {
     file fasta from fasta_unoriented_ch
     file fasta_ec from fasta_ec_ch
   output:
-    file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch
-    file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_genome_ch
-    file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into fasta_fai_genome_ch
-    file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into fasta_sshquis_genome_ch
+    file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch, ragtag_fasta_genome_ch, fasta_fai_genome_ch, fasta_sshquis_genome_ch
   """
     ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
     echo "finished patching"
