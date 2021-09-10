@@ -21,7 +21,6 @@ process check_bam {
  
   input:
     file bam from bam_check_ch.flatten()
-
   """
    stat ${bam}
    samtools quickcheck ${bam}
@@ -36,7 +35,9 @@ process check_fastq {
   '''
    left=!{params.readr}
    right=!{params.readf}
-   [[ $left =~ ^/.* ]] || left="!{basDir}/$left"    
+   [[ $left =~ ^/.* ]] || left="!{basDir
+
+}/$left"    
    [[ $right =~ ^/.* ]] || right="!{baseDir}/$right"
    stat $left
    stat $right
