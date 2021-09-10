@@ -24,8 +24,8 @@
 *o*nly *t*he *b*est (genome assemblies) is a Hi-C / HiFi pipeline specifically designed for phasing
 
 In order to utilize this pipeline:
-  - singularity \(https://sylabs.io/singularity/\) must be installed 
-  - nextflow \(https://www.nextflow.io/\) must be installed 
+  - singularity \(https://sylabs.io/singularity/) must be installed 
+  - nextflow \(https://www.nextflow.io/) must be installed 
 Most HPC support groups will either already have these tools installed, or be willing to install them as [modules](http://modules.sourceforge.net/)
 
 otb operates from a local directory, and must be operated as ./otb.sh since it sources some shell scripts
