@@ -21,4 +21,33 @@
                                                                          
 ```
 
+*o*nly *t*he *b*est (genome assemblies) is a Hi-C / HiFi pipeline specifically designed for phasing
 
+In order to utilize this pipeline:
+  - singularity \(https://sylabs.io/singularity/\) must be installed 
+  - nextflow \(https://www.nextflow.io/\) must be installed 
+Most HPC support groups will either already have these tools installed, or be willing to install them as [modules](http://modules.sourceforge.net/)
+
+otb operates from a local directory, and must be operated as ./otb.sh since it sources some shell scripts
+
+in order to use otb download this directory and use ./otb.sh, an example:
+
+```bash
+ ./otb.sh --sge --mode homozygous --threads 40 -f otb.sh -r otb.sh --polish --bam otb.sh
+```
+
+otb is fully featured and utilzes the following softwares:
+- bbtools
+- genomescope2
+- hifiasm
+- jellyfish
+- pbadapterfilt
+- ragtag
+- samtools
+- shhquis
+- busco
+- hicstuff
+- any2fasta
+- blobtools
+
+otb is in the public domain in the United States per 17 U.S.C. § 105
