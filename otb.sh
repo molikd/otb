@@ -2,8 +2,59 @@
 source scr/io.sh
 
 help(){
+  display_header
   describe "otb: Only The Best (Genome Assemblies)
-  help"
+  utilities 
+    -h or --help
+       display this message and exit
+
+    -v or --version
+       display otb version and exit
+
+
+  required:
+    -f or --forward
+       a fastq or fastq.gz file for the pipline, order does not matter
+
+    -r or --reverse
+       another fastq or fastq.gz file for the pipeline, order does not matter
+
+    -b or --bam
+       path to bam file, may include a wildcard for multiple ban files
+
+
+  suggested:
+    -m or --mode
+       mode to use, must be one of \"phasing\",\"homozygous\",\"heterozygous\",\"trio\", default: homozygous
+
+    -t or --threads
+       number of threads to use, clusters sometimes use this as number of cores, default: 20
+
+    -n or --name
+       a name for the assembly 
+
+    grid computing:
+       select one of the following, defaults to local which is highly not-recomended
+    --sge
+    --slurm
+    --slurm-usda
+
+    --polish
+       turn on polishing, effectivly ragtag patching and shhquis rearangement
+ 
+    busco:
+       busco options, requires a lineage option
+    --busco
+       busco flag turns on busco
+    select one of the following:
+       --auto-lineage
+          try to use auto lineage finder from busco
+       --auto-lineage-prok
+          try to use auto lineage finder from busco, but limit to prokaryotes
+       --auto-lineage-euk
+          try to use auto linage finder from busco, but limit to eukaryotes
+       -l or --lineage
+          use a specific lineage with busco (recomended)"
   exit 0;
 }
 
@@ -32,19 +83,19 @@ done
 
 display_header
 
+state "checking for run.nf"
+[ -f "./run.nf" ] || error "run.nf not found aborting"
+state "using ./work/ for work directory"
 state "checking for nextflow"
 command -v nextflow >/dev/null 2>&1 || error "nextflow could not be found, aborting"
 state "using $(which nextflow) for nextflow"
-
 state "checking for singularity"
 command -v singularity >/dev/null 2>&1 || error "singularity could not be found, aborting" 
 state "using $(which singularity) for singularity"
-
 state "output user environment"
 bash scr/check_env.sh 
 
 RUN="nextflow run run.nf "
-
 [ -n "$RUNNER" ] && RUN+="-c config/${RUNNER}.cfg " || warn "no grid computing environment set, using local. this is not recomended."
 if [ -n "$MODE" ]; then
   case $MODE in
