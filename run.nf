@@ -12,16 +12,16 @@ params.linreage = 'insecta'
 params.busco = 'false'
 params.polish = 'false'
 
-bam_ch = Channel.fromPath(params.readbam)
-bam_check_ch = Channel.fromPath(params.readbam) 
+bam_check_ch = Channel.fromPath(params.readbam)
 
 process check_bam {
   container = 'mgibio/samtools:1.9'
   cpus = 1
- 
+
   input:
     file bam from bam_check_ch.flatten()
-
+  output:
+    file '*.bam' into bam_ch
   """
    stat ${bam}
    samtools quickcheck ${bam}
@@ -31,21 +31,21 @@ process check_bam {
 
 process check_fastq {
   cpus = 1
- 
+
   shell:
   '''
    left=!{params.readr}
    right=!{params.readf}
-   [[ $left =~ ^/.* ]] || left="!{basDir}/$left"    
+   [[ $left =~ ^/.* ]] || left="!{baseDir}/$left"
    [[ $right =~ ^/.* ]] || right="!{baseDir}/$right"
    stat $left
    stat $right
 
-   [[ $left  =~ .*gz$ ]] && first=$(zcat $left | awk '{ print $1; exit }') || first=$( cat $left | awk '{ print $1; exit }')
-   [[ $right =~ .*gz$ ]] && second=$(zcat $right | awk '{ print $1; exit }') || second=$( cat $right | awk '{ print $1; exit }')
+   [[ $left  =~ ".*gz$" ]] && first=$(zcat $left | awk '{ print $1; exit }') || first=$( cat $left | awk '{ print $1; exit }')
+   [[ $right =~ ".*gz$" ]] && second=$(zcat $right | awk '{ print $1; exit }') || second=$( cat $right | awk '{ print $1; exit }')
 
-   [[ $first =~ ^\>.* ]] || exit 1;
-   [[ $second =~ ^\>.* ]] || exit 1;
+   [[ $first =~ '^>.*' ]] || exit 1;
+   [[ $second =~ '^>.*' ]] || exit 1;
 
    exit 0;
   '''
@@ -72,7 +72,7 @@ process HiFiASM {
   cpus = params.threads
 
   input:
-    file fasta from filt_fasta_ch.flatten()
+    file fasta from filt_fasta_ch.toList()
   output:
     file '*.gfa' into gfa_ch
     file '*.ec.fa' into fasta_ec_ch
