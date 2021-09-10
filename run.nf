@@ -12,15 +12,21 @@ params.linreage = 'insecta'
 params.busco = 'false'
 params.polish = 'false'
 
-bam_ch = Channel.fromPath(params.readbam)
-bam_check_ch = Channel.fromPath(params.readbam) 
+bam_check_ch = Channel.fromPath(params.readbam)
+right_fastq_check = Channel.fromPath(params.readr)
+left_fastq_check = Channel.fromPath(params.readf)
+
+right_fastq_ch.into{ right_fastq_check, right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish}
+left_fastq_ch.into{ left_fastq_check, left_fastq_HiFiASM, left_fastq_hicstuffi, left_fastq_hicstuff_polish}
 
 process check_bam {
   container = 'mgibio/samtools:1.9'
   cpus = 1
- 
+
   input:
     file bam from bam_check_ch.flatten()
+  output:
+    file '*.bam' into bam_ch
   """
    stat ${bam}
    samtools quickcheck ${bam}
@@ -30,23 +36,27 @@ process check_bam {
 
 process check_fastq {
   cpus = 1
- 
+
+  input:
+    file right_fastq from right_fastq_check
+    file left_fastq from left_fastq_check 
+  output:
+    file 'right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish, right_fastq_jellyfish
+    file 'left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuffi, left_fastq_hicstuff_polish, left_fastq_jellyfish
+
   shell:
   '''
-   left=!{params.readr}
-   right=!{params.readf}
-   [[ $left =~ ^/.* ]] || left="!{basDir
+   stat !{right_fastq}
+   stat !{left_fastq}
 
-}/$left"    
-   [[ $right =~ ^/.* ]] || right="!{baseDir}/$right"
-   stat $left
-   stat $right
+   [[ !{right_fastq}  =~ ".*gz$" ]] && first=$(zcat !{right_fastq} | awk '{ print $1; exit }') || first=$( cat !{right_fastq} | awk '{ print $1; exit }')
+   [[ !{left_fastq} =~ ".*gz$" ]] && second=$(zcat !{left_fastq} | awk '{ print $1; exit }') || second=$( cat !{left_fastq} | awk '{ print $1; exit }')
 
-   [[ $left  =~ .*gz$ ]] && first=$(zcat $left | awk '{ print $1; exit }') || first=$( cat $left | awk '{ print $1; exit }')
-   [[ $right =~ .*gz$ ]] && second=$(zcat $right | awk '{ print $1; exit }') || second=$( cat $right | awk '{ print $1; exit }')
+   [[ $first =~ '^>.*' ]] || exit 1;
+   [[ $second =~ '^>.*' ]] || exit 1;
 
-   [[ $first =~ ^\>.* ]] || exit 1;
-   [[ $second =~ ^\>.* ]] || exit 1;
+   [[ !{right_fastq}  =~ ".*gz$" ]] && mv !{right_fastq} right.fastq.gz || (gzip -c !{right_fastq} > left.fastq.gz)
+   [[ !{right_fastq}  =~ ".*gz$" ]] && mv !{left_fastq} left.fastq.gz || (gzip -c !{left_fastq} > left.fastq.gz)
 
    exit 0;
   '''
@@ -73,18 +83,19 @@ process HiFiASM {
   cpus = params.threads
 
   input:
-    file fasta from filt_fasta_ch.flatten()
+    file fasta from filt_fasta_ch.toList()
+    file left from left_fastq_HiFiASM
+    file right from right_fastq_HiFiASM
+
   output:
     file '*.gfa' into gfa_ch
     file '*.ec.fa' into fasta_ec_ch
-    file 'R1.fastq.gz' optional true into fastqR1_ch
-    file 'R2.fastq.gz' optional true into fastqR2_ch
 
   script:
 
   if( params.mode == 'phasing' )
   """
-    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${params.readf} --h2 ${params.readr} ${fasta}
+    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${left} --h2 ${right} ${fasta}
     echo "finished alignment"
     exit 0;
   """
@@ -102,42 +113,14 @@ process HiFiASM {
   """
   else if ( params.mode == 'trio')
   """
-    yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${params.readf}) <(zcat ${params.readf})
-    yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${params.readr}) <(zcat ${params.readr})
+    yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left}) <(zcat ${left})
+    yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${right}) <(zcat ${right})
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta}
-    ln -s ${params.readf} R1.fastq.gz
-    ln -s ${params.readr} R2.fastq.gz
     echo "finished alignment"
     exit 0;
   """
   else
     error "Invalid alignment mode: ${params.mode}"
-}
-
-process gzip_fastqR1_ch {
-  cpus 1
-
-  input:
-    file R1 from fastqR1_ch
-  output:
-    file 'R1.fastq' into fastqR1_d_ch
-
-  """
-    gzip -d -c $R1 >'R1.fastq'
-  """
-}
-
-process gzip_fastqR2_ch {
-  cpus 1
-
-  input:
-    file R2 from fastqR2_ch
-  output:
-    file 'R2.fastq' into fastqR2_d_ch
-
-  """
-    gzip -d -c $R2 > 'R2.fastq'
-  """
 }
 
 process gfa2fasta {
@@ -240,11 +223,13 @@ process hicstuff {
 
   input:
     file genome from fasta_genome_ch
+    file left from left_fastq_hicstuff
+    file right from right_fastq_hicstuff
   output:
     file 'hicstuff_out/fragments_list.txt'
     file 'hicstuff_out/plots/frags_hist.pdf'
   """
-    hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${params.readf} ${params.readr}
+    hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
     echo "finished fragment calculations"
     exit 0;
   """
@@ -260,13 +245,15 @@ process hicstuff_polish {
 
   input:
     file genome from ragtag_fasta_genome_ch
+    file left from left_fastq_hicstuff_polish
+    file right from right_fastq_hicstuff_polish
   output:
     file 'hicstuff_out/abs_fragments_contacts_weighted.bg2' into abs_ch
     file 'hicstuff_out/polish_fragments_list.txt'
     file 'hicstuff_out/info_contigs.txt' into contigs_ch
     file 'hicstuff_out/plots/polish_frags_hist.pdf'
   """
-    hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${params.readf} ${params.readr}
+    hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
     mv hicstuff_out/fragments_list.txt hicstuff_out/polish_fragments_list.txt
     mv hicstuff_out/plots/frags_hist.pdf hicstuff_out/plots/polish_frags_hist.pdf
     echo "finished fragment calculations"
@@ -337,14 +324,14 @@ process jellyfish {
   cpus = params.threads
 
   input:
-    file fastqr from fastqR1_d_ch
-    file fastqf from fastqR2_d_ch
+    file fastqr from right_fastq_jellyfish
+    file fastqf from left_fastq_jellyfish
   output:
     file '*.histo' into jellyfish_histo_ch
     file 'version.txt' into jellyfish_ver_ch
 
   """
-    jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} *.fastq -o reads.jf
+    jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf <(zcat ${fastqr}) <(zcat ${fastqf}) 
     jellyfish histo -t ${task.cpus} reads.jf > ${params.assembly}.histo
     jellyfish cite > version.txt
   """
