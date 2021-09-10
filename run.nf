@@ -70,7 +70,7 @@ process HiFiASM {
   cpus = params.threads
 
   input:
-    file fasta from filt_fasta_ch
+    file fasta from filt_fasta_ch.flatten()
   output:
     file '*.gfa' into gfa_ch
     file '*.ec.fa' into fasta_ec_ch
