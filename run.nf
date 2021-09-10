@@ -33,7 +33,6 @@ process check_R1 {
  
   """
    stat ${params.readf}
-   grep -q "^>" -m1 ${params.readf} && echo true || echo false
    exit 0;
   """
 }
@@ -43,7 +42,6 @@ process check_R2 {
 
   """
    stat ${params.readr}
-   grep -q "^>" -m1 ${params.readf} && echo true || echo false
    exit 0;
   """
 }
