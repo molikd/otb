@@ -49,8 +49,8 @@ process check_fastq {
    [[ !{right_fastq}  =~ ".*gz$" ]] && first=$(zcat !{right_fastq} | awk '{ print $1; exit }') || first=$( cat !{right_fastq} | awk '{ print $1; exit }')
    [[ !{left_fastq} =~ ".*gz$" ]] && second=$(zcat !{left_fastq} | awk '{ print $1; exit }') || second=$( cat !{left_fastq} | awk '{ print $1; exit }')
 
-   [[ $first =~ '^>.*' ]] || exit 1;
-   [[ $second =~ '^>.*' ]] || exit 1;
+   [[ $first =~ '^@.*' ]] || exit 1;
+   [[ $second =~ '^@.*' ]] || exit 1;
 
    [[ !{right_fastq}  =~ ".*gz$" ]] && mv !{right_fastq} right.fastq.gz || (gzip -c !{right_fastq} > left.fastq.gz)
    [[ !{right_fastq}  =~ ".*gz$" ]] && mv !{left_fastq} left.fastq.gz || (gzip -c !{left_fastq} > left.fastq.gz)
