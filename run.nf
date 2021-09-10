@@ -16,9 +16,6 @@ bam_check_ch = Channel.fromPath(params.readbam)
 right_fastq_check = Channel.fromPath(params.readr)
 left_fastq_check = Channel.fromPath(params.readf)
 
-right_fastq_ch.into{ right_fastq_check, right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish}
-left_fastq_ch.into{ left_fastq_check, left_fastq_HiFiASM, left_fastq_hicstuffi, left_fastq_hicstuff_polish}
-
 process check_bam {
   container = 'mgibio/samtools:1.9'
   cpus = 1
@@ -42,7 +39,7 @@ process check_fastq {
     file left_fastq from left_fastq_check 
   output:
     file 'right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish, right_fastq_jellyfish
-    file 'left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuffi, left_fastq_hicstuff_polish, left_fastq_jellyfish
+    file 'left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_fastq_jellyfish
 
   shell:
   '''
