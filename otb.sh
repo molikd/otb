@@ -123,7 +123,7 @@ fi
 [ -f "$R1" ] && RUN+="--readf=\"$R1\" " || error "read pair file one not found, exiting"
 [ -f "$R2" ] && RUN+="--readr=\"$R2\" " || error "read pair file two not found, exiting"
 [ -n "$BUSCO" ] && RUN+="$BUSCO " || state "not running busco"
-[ -n "$POLISH" ] && RUN+="$POLISH " || warn "not polishing, this is not recomended"
+[ -n "$POLISH" ] && RUN+="$POLISH " || warn "not polishing, it is recomended that you polish"
 [ -n "$BUSCO" ] && [ -z "$LINEAGE" ] && error "you want to run BUSCO, but busco lineage not set, exiting"
 [ -n "$LINEAGE" ] && RUN+="--linreage=\"$LINEAGE\" "
 [ -n "$BAM" ] && RUN+="--readbam=\"$BAM\" " || error "bam file(s) not given, exiting"
