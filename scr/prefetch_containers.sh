@@ -33,6 +33,5 @@ fi
 [ ! -f ezlabgva-busco:v5.2.2_cv1.img ] && singularity pull ezlabgva-busco:v5.2.2_cv1.img docker://ezlabgva/busco:v5.2.2_cv1
 [ ! -f koszullab-hicstuff.img ] && singularity pull koszullab-hicstuff.img docker://koszullab/hicstuff
 [ ! -f pvstodghill-any2fasta.img ] && singularity pull pvstodghill-any2fasta.img docker://pvstodghill/any2fasta
-[ ! -f dmolik-blobtools.img ] && singularity pull dmolik-blobtools.img docker://dmolik/blobtools
 
 cd $location
