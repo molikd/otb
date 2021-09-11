@@ -52,8 +52,8 @@ process check_fastq {
    [[ $first =~ '@' ]] || exit 1;
    [[ $second =~ '@' ]] || exit 1;
 
-   [[ !{right_fastq}  =~ ".gz" ]] && ln -s !{right_fastq} right.fastq.gz || (zcat !{right_fastq} > left.fastq.gz)
-   [[ !{right_fastq}  =~ ".gz" ]] && ln -s !{left_fastq} left.fastq.gz || (zcat !{left_fastq} > left.fastq.gz)
+   [[ !{right_fastq}  =~ ".gz" ]] && ln -s !{right_fastq} right.fastq.gz || (zcat !{right_fastq} > right.fastq.gz)
+   [[ !{left_fastq}  =~ ".gz" ]] && ln -s !{left_fastq} left.fastq.gz || (zcat !{left_fastq} > left.fastq.gz)
 
    exit 0;
   '''
