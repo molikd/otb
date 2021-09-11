@@ -12,9 +12,11 @@ params.linreage = 'insecta'
 params.busco = 'false'
 params.polish = 'false'
 
-bam_check_ch = Channel.fromPath(params.readbam)
+bam_ch = Channel.fromPath(params.readbam)
 right_fastq_check = Channel.fromPath(params.readr)
 left_fastq_check = Channel.fromPath(params.readf)
+
+bam_ch.into{ bam_check_ch; bam_Hifi_ch}
 
 process check_bam {
   container = 'mgibio/samtools:1.9'
@@ -22,8 +24,6 @@ process check_bam {
 
   input:
     file bam from bam_check_ch.flatten()
-  output:
-    file '*.bam' into bam_ch
   """
    stat ${bam}
    samtools flagstat ${bam}
@@ -64,7 +64,7 @@ process HiFiAdapterFilt {
   cpus = params.threads
 
   input:
-    file bam from bam_ch
+    file bam from bam_Hifi_ch
   output:
     file '*.fasta' into filt_fasta_ch
     stdout pbadapterfilt_output
