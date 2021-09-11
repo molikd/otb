@@ -26,7 +26,7 @@ process check_bam {
     file '*.bam' into bam_ch
   """
    stat ${bam}
-   samtools quickcheck ${bam}
+   samtools flagstat ${bam}
    exit 0;
   """
 }
