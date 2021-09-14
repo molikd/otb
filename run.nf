@@ -342,7 +342,7 @@ process genomescope2 {
     file 'version.txt' into genomescope_ver_ch
 
   """
-    genomescope.R -i ${histo} -o ${params.assembly} -k 21
+    xvfb-run genomescope.R -i ${histo} -o ${params.assembly} -k 21
     genomescope.R --version > version.txt
   """
 }
