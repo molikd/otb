@@ -129,7 +129,7 @@ fi
 [ -n "$BAM" ] && RUN+="--readbam=\"$BAM\" " || error "bam file(s) not given, exiting"
 [ -z "$NAME" ] && NAME="$(date +%s)" && state "name not given, setting name to: $NAME"
 RUN+="--assembly=\"$NAME\" "
-[ -z "$SUPRESS" ] && RUN+="-bg"
+RUN+="-bg"
 
 pizzaz "$RUN"
 [ -z "$SUPRESS" ] && stop_check "check that the command is expected, continue"
