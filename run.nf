@@ -1,13 +1,13 @@
 #!/usr/bin/env nextflow
 
-params.assembly = "hmai"
+params.assembly = "an_assembly"
 params.readbam = "$baseDir/data/*.bam"
 params.readf = "$baseDir/data/*.R1.fastq.gz"
 params.readr = "$baseDir/data/*.R2.fastq.gz"
-params.outfasta = "genome.reorinted.fasta"
+params.outfasta = "genome.out.fasta"
 params.outdir = 'results'
-params.mode = 'homozygous'
-params.threads = '40'
+params.mode = 'heterozygous'
+params.threads = '20'
 params.linreage = 'insecta'
 params.busco = 'false'
 params.polish = 'false'
