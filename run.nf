@@ -271,7 +271,6 @@ process Shhquis_dot_jl {
     file fai from fai_ch
   output:
     file "${params.outfasta}" into shhquis_fasta_res_ch, shhquis_genome_ch, shhquis_genome_hap1_ch, shhquis_genome_hap2_ch
-    file "${params.outfasta}" into shhquis_genome_ch
     file "${params.outfasta}"
 
   """
