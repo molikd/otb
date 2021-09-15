@@ -131,6 +131,8 @@ process gfa2fasta {
     file '*.fasta' into gfa2fasta_fasta_res_ch
     file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch
     file '*.p_ctg.gfa.fasta' optional true into fasta_busco_ch
+    file '*hap1.p_ctg.gfa.fasta' optional true into fasta_hap1_ch
+    file '*hap1.p_ctg.gfa.fasta' optional true into fasta_hap2_ch
     file '*hap[12].p_ctg.gfa.fasta' optional true
   """
     any2fasta ${gfa} > ${gfa}.fasta
@@ -268,13 +270,55 @@ process Shhquis_dot_jl {
     file genome from fasta_sshquis_genome_ch
     file fai from fai_ch
   output:
-    file "${params.outfasta}" into shhquis_fasta_res_ch
+    file "${params.outfasta}" into shhquis_fasta_res_ch, shhquis_genome_ch, shhquis_genome_hap1_ch, shhquis_genome_hap2_ch
     file "${params.outfasta}" into shhquis_genome_ch
     file "${params.outfasta}"
 
   """
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
     echo "finished reorientation"
+    exit 0;
+  """
+}
+
+process ragtag_dot_py_hap1 {
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  when:
+  params.polish == 'true' 
+
+  input:
+    file fasta_hap1 from fasta_hap1_ch
+    file fasta_genome from shhquis_genome_hap1_ch
+  output:
+    file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta"
+    file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta" into hap1_res_ch
+  """
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap1}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta
+    echo "finished patching"
+    exit 0;
+  """
+}
+
+process ragtag_dot_py_hap1 {
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  when:
+  params.polish == 'true' 
+
+  input:
+    file fasta_hap2 from fasta_hap2_ch
+    file fasta_genome from shhquis_genome_hap2_ch
+  output:
+    file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta"
+    file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta" into hap2_res_ch
+  """
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap2}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta
+    echo "finished patching"
     exit 0;
   """
 }
@@ -392,6 +436,44 @@ process sshquis_stats_do_sh {
 
   input:
     file fasta from shhquis_fasta_res_ch.flatten()
+  output:
+    file '*.stats'
+  """
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
+  """
+}
+
+process ragtag_stats_dot_sh_hap1 {
+  publishDir params.outdir, mode: 'copy'
+  container = 'bryce911/bbtools'
+  cpus 1
+
+  when:
+  params.polish == 'true'
+
+  input:
+    file fasta from hap1_res_ch.flatten()
+  output:
+    file '*.stats'
+  """
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
+  """
+}
+
+process ragtag_stats_dot_sh_hap2 {
+  publishDir params.outdir, mode: 'copy'
+  container = 'bryce911/bbtools'
+  cpus 1
+
+  when:
+  params.polish == 'true'
+
+  input:
+    file fasta from hap2_res_ch.flatten()
   output:
     file '*.stats'
   """
