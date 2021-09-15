@@ -302,7 +302,7 @@ process ragtag_dot_py_hap1 {
   """
 }
 
-process ragtag_dot_py_hap1 {
+process ragtag_dot_py_hap2 {
   container = 'dmolik/ragtag'
   cpus = params.threads
 
