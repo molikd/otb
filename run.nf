@@ -56,9 +56,9 @@ process check_fastq {
    state "stat !{left_fastq}..."
    stat !{left_fastq}
 
-   state "if !{right_fastq} is gz, zcat, and if not gz, cat the first line of the first fastq, save."
+   state "if !{right_fastq} ends in gz zcat, and if it does not, cat the first line, save."
    [[ !{right_fastq}  =~ ".gz" ]] && first=$(zcat !{right_fastq} | awk '{ print $1; exit }') || first=$( cat !{right_fastq} | awk '{ print $1; exit }')
-   state "if !{left_fastq} gz, zcat, and if not gz, cat the first line of the second fastq, save"
+   state "if !{left_fastq} end in gz zcat, and if it does not, cat the first line, save"
    [[ !{left_fastq} =~ ".gz" ]] && second=$(zcat !{left_fastq} | awk '{ print $1; exit }') || second=$( cat !{left_fastq} | awk '{ print $1; exit }')
 
    state "if the first line of the fastqs doesn't start with an @, error out, otherwise continue"
@@ -75,6 +75,8 @@ process check_fastq {
    state "make softlinks for both files"
    [[ !{right_fastq}  =~ ".gz" ]] && ln -s !{right_fastq} right.fastq.gz || (zcat !{right_fastq} > right.fastq.gz)
    [[ !{left_fastq}  =~ ".gz" ]] && ln -s !{left_fastq} left.fastq.gz || (zcat !{left_fastq} > left.fastq.gz)
+
+   state "successful completion"
 
    exit 0;
   '''
