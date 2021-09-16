@@ -27,6 +27,7 @@ process check_bam {
   output:
     stdout check_bam_output
   """
+   touch check_bam.flag.txt
    stat ${bam}
    samtools flagstat ${bam}
    exit 0;
@@ -45,6 +46,7 @@ process check_fastq {
     stdout check_fastq_output
   shell:
   '''
+   touch check_fastq.flag.txt
    stat !{right_fastq}
    stat !{left_fastq}
 
@@ -71,6 +73,7 @@ process HiFiAdapterFilt {
     file '*.fasta' into filt_fasta_ch
     stdout pbadapterfilt_output
   """
+    touch pbadapterfilt.flag.txt
     pbadapterfilt.sh ${bam} -t ${task.cpus}
     echo "finished adapter filtering"
     exit 0;
@@ -94,24 +97,28 @@ process HiFiASM {
 
   if( params.mode == 'phasing' )
   """
+    touch hifiasm.flag.txt
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${left} --h2 ${right} ${fasta}
     echo "finished alignment"
     exit 0;
   """
   else if( params.mode == 'homozygous' )
   """
+    touch hifiasm.flag.txt
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -l0 ${fasta}
     echo "finished alignment"
     exit 0;
   """
   else if( params.mode == 'heterozygous')
   """
+    touch hifiasm.flag.txt
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta}
     echo "finished alignment"
     exit 0;
   """
   else if ( params.mode == 'trio')
   """
+    touch hifiasm.flag.txt
     yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left}) <(zcat ${left})
     yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${right}) <(zcat ${right})
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta}
@@ -138,6 +145,7 @@ process gfa2fasta {
     file '*hap[12].p_ctg.gfa.fasta' optional true
     stdout gfa2fasta_output
   """
+    touch any2fasta.flag.txt
     any2fasta ${gfa} > ${gfa}.fasta
     echo "finished gfa to fasta conversion"
     exit 0;
@@ -161,18 +169,22 @@ process busco_gfa {
 
   if( params.linreage == 'auto-lineage')
   """
+    touch busco.flag.txt
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok')
   """
+    touch busco.flag.txt 
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk')
   """
+    touch busco.flag.txt 
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else
   """
+    touch busco.flag.txt 
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
 }
@@ -190,6 +202,7 @@ process ragtag_dot_py {
    when:
     params.polish
   """
+    touch ragtag.flag.txt 
     ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
     echo "finished patching"
     exit 0;
@@ -209,6 +222,7 @@ process faidx {
    file '*.fai' into fai_ch
    stdout faidx_output
   """
+    touch faidx.flag.txt
     samtools faidx -o ${genome}.fai ${genome}
     echo "finished indexing"
     exit 0;
@@ -229,6 +243,7 @@ process hicstuff {
     file 'hicstuff_out/plots/frags_hist.pdf'
     stdout hicstuff_output
   """
+    touch hicstuff.flag.txt
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
     echo "finished fragment calculations"
     exit 0;
@@ -254,6 +269,7 @@ process hicstuff_polish {
     file 'hicstuff_out/plots/polish_frags_hist.pdf'
     stdout hicstuff_polish_output
   """
+    touch hicstuff_for_polished.flag.txt 
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
     mv hicstuff_out/fragments_list.txt hicstuff_out/polish_fragments_list.txt
     mv hicstuff_out/plots/frags_hist.pdf hicstuff_out/plots/polish_frags_hist.pdf
@@ -280,6 +296,7 @@ process Shhquis_dot_jl {
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
   """
+    touch shhquis.flag.txt
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
     echo "finished reorientation"
     exit 0;
@@ -302,6 +319,7 @@ process ragtag_dot_py_hap1 {
     file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta" into hap1_res_ch
     stdout ragtag_dot_py_hap1_output
   """
+    touch ragtag.hap1.flag.txt
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap1}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta
     echo "finished patching"
@@ -325,6 +343,7 @@ process ragtag_dot_py_hap2 {
     file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta" into hap2_res_ch
     stdout ragtag_dot_py_hap2_output
   """
+    touch ragtag.hap2.flag.txt
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap2}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta
     echo "finished patching"
@@ -349,18 +368,22 @@ process busco_fasta {
 
   if( params.linreage == 'auto-lineage')
   """
+    touch busco_for_polished.flag.txt
     busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok')
   """
+    touch busco_for_polished.flag.txt
     busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk')
   """
+    touch busco_for_polished.flag.txt
     busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else
   """
+    touch busco_for_polished.flag.txt
     busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
 }
@@ -377,6 +400,7 @@ process jellyfish {
     file 'version.txt' into jellyfish_ver_ch
     stdout jellyfish_output
   """
+    touch jellyfish.flag.txt
     jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf <(zcat ${fastqr}) <(zcat ${fastqf}) 
     jellyfish histo -t ${task.cpus} reads.jf > ${params.assembly}.histo
     jellyfish cite > version.txt
@@ -395,6 +419,7 @@ process genomescope2 {
     file 'version.txt' into genomescope_ver_ch
     stdout genomescope2_output
   """
+    touch genomescope.flag.txt
     xvfb-run genomescope.R -i ${histo} -o ${params.assembly} -k 21
     genomescope.R --version > version.txt
   """
@@ -410,6 +435,7 @@ process gfa2fasta_stats_dot_sh {
   output:
     file '*.stats'
   """
+    touch any2fasta_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
@@ -429,6 +455,7 @@ process ragtag_stats_dot_sh {
   output:
     file '*.stats'
   """
+    touch ragtag_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
@@ -448,6 +475,7 @@ process sshquis_stats_do_sh {
   output:
     file '*.stats'
   """
+    touch shhquis_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
@@ -467,6 +495,7 @@ process ragtag_stats_dot_sh_hap1 {
   output:
     file '*.stats'
   """
+    touch ragtag_hap1_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
@@ -486,6 +515,7 @@ process ragtag_stats_dot_sh_hap2 {
   output:
     file '*.stats'
   """
+    touch ragtag_hap2_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
@@ -500,6 +530,7 @@ process HiFiASM_Version {
     stdout hifiasm_version
 
   """
+    touch HiFiASM_version.flag.txt
     echo "HiFiASM Version:"
     hifiasm --version
     exit 0;
@@ -514,6 +545,7 @@ process any2fasta_Version {
     stdout any2fasta_version
 
   """
+    touch any2fasta_version.flag.txt
     echo "any2fasta Version:"
     any2fasta -v
     exit 0;
@@ -528,6 +560,7 @@ process ragtag_Version {
     stdout ragtag_version
 
   """
+    touch ragtag_version.flag.txt
     echo "Ragtag Version:"
     ragtag.py --version
     exit 0;
@@ -543,6 +576,7 @@ process samtools_Version {
     stdout samtools_version
 
   """
+    touch samtools_version.flag.txt
     echo "Samtools Version:"
     samtools --version
     exit 0;
@@ -557,6 +591,7 @@ process hicstuff_Version {
     stdout hicstuff_version
 
   """
+    touch hicstuff_version.flag.txt
     echo "HiCStuff Version:"
     hicstuff --version
     exit 0;
@@ -568,10 +603,11 @@ process bbtools_Version {
   cpus 1
 
   output:
-    echo "BBTools Version:"
     stdout bbtools_version
 
   """
+    touch bbtools_version.flag.txt
+    echo "BBTools Version"
     stats.sh --version 2>&1
     exit 0;
   """
@@ -587,6 +623,7 @@ process jellyfish_Version {
     stdout jellyfish_version
 
   """
+    touch jellyfish_version.flag.txt
     echo "Jellyfish Version:"
     cat $version
   """
@@ -602,6 +639,7 @@ process genomescope_Version {
     stdout genomescope_version
 
   """
+    touch genomescope_version.flag.txt
     echo "GenomeScope Version:"
     cat $version
   """
@@ -618,6 +656,7 @@ process BUSCO_Version {
   params.busco == 'true'
 
   """
+   touch busco_version.flag.txt
    echo "BUSCO  - - - - - - - v5.2.2_cv1"
   """   
 
@@ -633,6 +672,7 @@ process shhquis_Version {
   params.polish == 'true'
 
   """
+   touch shhquis_version.flag.txt
    echo "Shhquis.jl - - - - - 0.1.0"
   """
 }
@@ -644,6 +684,7 @@ process HiFiAdapterFilt_Version {
   stdout pbadapterfilt_version  
 
   """
+   touch hifiadapterfilt_version.flag.txt
    echo "HiFiAdapterFilt  - - v1.0.0"
   """
 }
