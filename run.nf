@@ -130,19 +130,18 @@ process HiFiASM {
 }
 
 process gfa2fasta {
-  publishDir "${params.outdir}/genomes", mode: 'rellink'
+  publishDir "${params.outdir}/genome", mode: 'rellink'
   container = 'pvstodghill/any2fasta'
   cpus 1
 
   input:
     file gfa from gfa_ch.flatten()
   output:
-    file '*.fasta' into gfa2fasta_fasta_res_ch
-    file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch
-    file '*.p_ctg.gfa.fasta' optional true into fasta_busco_ch
+    file '*.p_ctg.gfa.fasta' into gfa2fasta_fasta_res_ch
+    file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch
     file '*hap1.p_ctg.gfa.fasta' optional true into fasta_hap1_ch
-    file '*hap1.p_ctg.gfa.fasta' optional true into fasta_hap2_ch
-    file '*hap[12].p_ctg.gfa.fasta' optional true
+    file '*hap2.p_ctg.gfa.fasta' optional true into fasta_hap2_ch
+    file '*.p_ctg.gfa.fasta' optional true
     stdout gfa2fasta_output
   """
     touch any2fasta.flag.txt
@@ -277,7 +276,7 @@ process hicstuff_polish {
 }
 
 process Shhquis_dot_jl {
-  publishDir "${params.outdir}/genomes", mode: 'rellink'
+  publishDir "${params.outdir}/genome", mode: 'rellink'
   container = 'dmolik/shhquis'
   cpus 1
 
@@ -301,7 +300,7 @@ process Shhquis_dot_jl {
 }
 
 process ragtag_dot_py_hap1 {
-  publishDir "${params.outdir}/genomes", mode: 'rellink'
+  publishDir "${params.outdir}/genome", mode: 'rellink'
   container = 'dmolik/ragtag'
   cpus = params.threads
 
@@ -324,7 +323,7 @@ process ragtag_dot_py_hap1 {
 }
 
 process ragtag_dot_py_hap2 {
-  publishDir "${params.outdir}/genomes", mode: 'rellink'
+  publishDir "${params.outdir}/genome", mode: 'rellink'
   container = 'dmolik/ragtag'
   cpus = params.threads
 
@@ -421,7 +420,7 @@ process genomescope2 {
 }
 
 process gfa2fasta_stats_dot_sh {
-  publishDir "${params.outdir}/genomes", mode: 'copy'
+  publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
 
@@ -438,7 +437,7 @@ process gfa2fasta_stats_dot_sh {
 }
 
 process ragtag_stats_dot_sh {
-  publishDir "${params.outdir}/genomes", mode: 'copy'
+  publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
 
@@ -457,7 +456,7 @@ process ragtag_stats_dot_sh {
 }
 
 process sshquis_stats_do_sh {
-  publishDir "${params.outdir}/genomes", mode: 'copy'
+  publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
 
@@ -476,7 +475,7 @@ process sshquis_stats_do_sh {
 }
 
 process ragtag_stats_dot_sh_hap1 {
-  publishDir "${params.outdir}/genomes", mode: 'copy'
+  publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
 
@@ -495,7 +494,7 @@ process ragtag_stats_dot_sh_hap1 {
 }
 
 process ragtag_stats_dot_sh_hap2 {
-  publishDir "${params.outdir}/genomes", mode: 'copy'
+  publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
 
