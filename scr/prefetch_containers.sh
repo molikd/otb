@@ -28,9 +28,9 @@ fi
 [ ! -f dmolik-jellyfish.img ] && singularity pull dmolik-jellyfish.img docker://dmolik/jellyfish
 [ ! -f dmolik-pbadapterfilt.img ] && singularity pull dmolik-pbadapterfilt.img docker://dmolik/pbadapterfilt
 [ ! -f dmolik-ragtag.img ] && singularity pull dmolik-ragtag.img docker://dmolik/ragtag
-[ ! -f mgibio-samtools:1.9.img ] && singularity pull mgibio-samtools:1.9.img docker://mgibio/samtools:1.9
+[ ! -f mgibio-samtools-1.9.img ] && singularity pull mgibio-samtools:1.9.img docker://mgibio/samtools:1.9
 [ ! -f dmolik-shhquis.img ] && singularity pull dmolik-shhquis.img docker://dmolik/shhquis
-[ ! -f ezlabgva-busco:v5.2.2_cv1.img ] && singularity pull ezlabgva-busco:v5.2.2_cv1.img docker://ezlabgva/busco:v5.2.2_cv1
+[ ! -f ezlabgva-busco-v5.2.2_cv1.img ] && singularity pull ezlabgva-busco:v5.2.2_cv1.img docker://ezlabgva/busco:v5.2.2_cv1
 [ ! -f koszullab-hicstuff.img ] && singularity pull koszullab-hicstuff.img docker://koszullab/hicstuff
 [ ! -f pvstodghill-any2fasta.img ] && singularity pull pvstodghill-any2fasta.img docker://pvstodghill/any2fasta
 
