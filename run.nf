@@ -8,7 +8,7 @@ params.outfasta = "genome.out.fasta"
 params.outdir = 'results'
 params.mode = 'heterozygous'
 params.threads = '20'
-params.linreage = 'insecta'
+params.linreage = 'insecta_odb10'
 params.busco = false
 params.polish = false
 
