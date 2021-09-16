@@ -9,8 +9,8 @@ params.outdir = 'results'
 params.mode = 'heterozygous'
 params.threads = '20'
 params.linreage = 'insecta'
-params.busco = 'false'
-params.polish = 'false'
+params.busco = false
+params.polish = false
 
 bam_ch = Channel.fromPath(params.readbam)
 right_fastq_check = Channel.fromPath(params.readr)
@@ -155,7 +155,7 @@ process busco_gfa {
     file '*'
     stdout busco_gfa_output
   when:
-  params.busco == 'true'
+    params.busco
 
   script:
 
@@ -181,15 +181,14 @@ process ragtag_dot_py {
   container = 'dmolik/ragtag'
   cpus = params.threads
 
-  when:
-  params.polish == 'true' 
-
   input:
     file fasta from fasta_unoriented_ch
     file fasta_ec from fasta_ec_ch
   output:
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch, ragtag_fasta_genome_ch, fasta_fai_genome_ch, fasta_sshquis_genome_ch
     stdout ragtag_dot_py_output
+   when:
+    params.polish
   """
     ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
     echo "finished patching"
