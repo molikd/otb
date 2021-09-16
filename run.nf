@@ -46,16 +46,33 @@ process check_fastq {
     stdout check_fastq_output
   shell:
   '''
+   state () { printf "%b\n" "[$(date)]: $*" 2>&1; }
+   error () { printf "%b\n" "[$(date)]: $*" >&2; exit 1; }
+
+   state "use touch to create a flag, so that I can be found easily"
    touch check_fastq.flag.txt
+   state "stat !{right_fastq}..."
    stat !{right_fastq}
+   state "stat !{left_fastq}..."
    stat !{left_fastq}
 
+   state "if !{right_fastq} is gz, zcat, and if not gz, cat the first line of the first fastq, save."
    [[ !{right_fastq}  =~ ".gz" ]] && first=$(zcat !{right_fastq} | awk '{ print $1; exit }') || first=$( cat !{right_fastq} | awk '{ print $1; exit }')
+   state "if !{left_fastq} gz, zcat, and if not gz, cat the first line of the second fastq, save"
    [[ !{left_fastq} =~ ".gz" ]] && second=$(zcat !{left_fastq} | awk '{ print $1; exit }') || second=$( cat !{left_fastq} | awk '{ print $1; exit }')
 
-   [[ $first =~ '@' ]] || exit 1;
-   [[ $second =~ '@' ]] || exit 1;
+   state "if the first line of the fastqs doesn't start with an @, error out, otherwise continue"
+   [[ $first =~ '@' ]] || error "!{right_fastq} doesn't start with an @";
+   [[ $second =~ '@' ]] || errror "!{left_fastq} doesn't start with an @";
 
+   state "check to make sure that fastqs are divisable by 4"
+   [[ !{right_fastq}  =~ ".gz" ]] && first=$(zcat !{right_fastq} | wc -l) || first=$( cat !{right_fastq} | wc -l)
+   [[ !{left_fastq} =~ ".gz" ]] && second=$(zcat !{left_fastq} | wc -l) || second=$( cat !{left_fastq} | wc -l )
+
+   [[ $(( $first % 4 )) -eq 0 ]] || error "number of lines in !{right_fastq} not divisable by four"
+   [[ $(( $second % 4 )) -eq 0 ]] || error "number of lines in !{left_fastq} not divisable by four"
+
+   state "make softlinks for both files"
    [[ !{right_fastq}  =~ ".gz" ]] && ln -s !{right_fastq} right.fastq.gz || (zcat !{right_fastq} > right.fastq.gz)
    [[ !{left_fastq}  =~ ".gz" ]] && ln -s !{left_fastq} left.fastq.gz || (zcat !{left_fastq} > left.fastq.gz)
 
