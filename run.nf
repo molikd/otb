@@ -163,7 +163,7 @@ process busco_gfa {
     file '*'
     stdout busco_gfa_output
   when:
-  params.busco == 'true'
+    params.busco == 'true'
 
   script:
 
@@ -214,14 +214,13 @@ process faidx {
   container = 'mgibio/samtools:1.9'
   cpus 1
 
-  when:
-  params.polish == 'true'
-
   input:
    file genome from fasta_fai_genome_ch
   output:
    file '*.fai' into fai_ch
    stdout faidx_output
+  when:
+    params.polish == 'true'
   """
     touch faidx.flag.txt
     samtools faidx -o ${genome}.fai ${genome}
@@ -256,9 +255,6 @@ process hicstuff_polish {
   container = 'koszullab/hicstuff'
   cpus = params.threads
 
-  when:
-  params.polish == 'true'
-
   input:
     file genome from ragtag_fasta_genome_ch
     file left from left_fastq_hicstuff_polish
@@ -269,6 +265,8 @@ process hicstuff_polish {
     file 'hicstuff_out/info_contigs.txt' into contigs_ch
     file 'hicstuff_out/plots/polish_frags_hist.pdf'
     stdout hicstuff_polish_output
+  when:
+    params.polish == 'true'
   """
     touch hicstuff_for_polished.flag.txt 
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
@@ -284,9 +282,6 @@ process Shhquis_dot_jl {
   container = 'dmolik/shhquis'
   cpus 1
 
-  when:
-  params.polish == 'true'
-
   input:
     file abs from abs_ch
     file contig from contigs_ch
@@ -296,6 +291,8 @@ process Shhquis_dot_jl {
     file "${params.outfasta}" into shhquis_fasta_res_ch, shhquis_genome_ch, shhquis_genome_hap1_ch, shhquis_genome_hap2_ch
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
+  when:
+    params.polish == 'true'
   """
     touch shhquis.flag.txt
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
@@ -309,9 +306,6 @@ process ragtag_dot_py_hap1 {
   container = 'dmolik/ragtag'
   cpus = params.threads
 
-  when:
-  params.polish == 'true' 
-
   input:
     file fasta_hap1 from fasta_hap1_ch
     file fasta_genome from shhquis_genome_hap1_ch
@@ -319,6 +313,8 @@ process ragtag_dot_py_hap1 {
     file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta"
     file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta" into hap1_res_ch
     stdout ragtag_dot_py_hap1_output
+  when:
+    params.polish == 'true'
   """
     touch ragtag.hap1.flag.txt
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap1}
@@ -333,9 +329,6 @@ process ragtag_dot_py_hap2 {
   container = 'dmolik/ragtag'
   cpus = params.threads
 
-  when:
-  params.polish == 'true' 
-
   input:
     file fasta_hap2 from fasta_hap2_ch
     file fasta_genome from shhquis_genome_hap2_ch
@@ -343,6 +336,8 @@ process ragtag_dot_py_hap2 {
     file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta"
     file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta" into hap2_res_ch
     stdout ragtag_dot_py_hap2_output
+  when:
+    params.polish == 'true'
   """
     touch ragtag.hap2.flag.txt
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap2}
@@ -357,14 +352,14 @@ process busco_fasta {
   container = 'ezlabgva/busco:v5.2.2_cv1'
   cpus = params.threads
 
-  when:
-  params.polish == 'true' && params.busco == 'true'
-
   input:
     file fasta from shhquis_genome_ch
   output:
     file '*'
     stdout busco_fasta_output
+  when:
+    params.polish == 'true' && params.busco == 'true'
+
   script:
 
   if( params.linreage == 'auto-lineage')
@@ -448,13 +443,13 @@ process ragtag_stats_dot_sh {
   container = 'bryce911/bbtools'
   cpus 1
 
-  when:
-  params.polish == 'true'
-
   input:
     file fasta from ragtag_fasta_res_ch.flatten()
   output:
     file '*.stats'
+  when:
+    params.polish == 'true'
+
   """
     touch ragtag_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -488,13 +483,12 @@ process ragtag_stats_dot_sh_hap1 {
   container = 'bryce911/bbtools'
   cpus 1
 
-  when:
-  params.polish == 'true'
-
   input:
     file fasta from hap1_res_ch.flatten()
   output:
     file '*.stats'
+  when:
+    params.polish == 'true'
   """
     touch ragtag_hap1_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -508,13 +502,12 @@ process ragtag_stats_dot_sh_hap2 {
   container = 'bryce911/bbtools'
   cpus 1
 
-  when:
-  params.polish == 'true'
-
   input:
     file fasta from hap2_res_ch.flatten()
   output:
     file '*.stats'
+  when:
+    params.polish == 'true'
   """
     touch ragtag_hap2_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -619,7 +612,6 @@ process jellyfish_Version {
 
   input:
     file version from jellyfish_ver_ch
-
   output:
     stdout jellyfish_version
 
@@ -635,7 +627,6 @@ process genomescope_Version {
 
   input:
     file version from genomescope_ver_ch
-
   output:
     stdout genomescope_version
 
@@ -651,10 +642,9 @@ process BUSCO_Version {
   cpus 1
 
   output:
-  stdout busco_version 
-
+    stdout busco_version 
   when:
-  params.busco == 'true'
+    params.busco == 'true'
 
   """
    touch busco_version.flag.txt
@@ -667,10 +657,9 @@ process shhquis_Version {
   cpus 1
 
   output:
-  stdout shhquis_version
-
+    stdout shhquis_version
   when:
-  params.polish == 'true'
+    params.polish == 'true'
 
   """
    touch shhquis_version.flag.txt
@@ -682,7 +671,7 @@ process HiFiAdapterFilt_Version {
   cpus 1
 
   output:
-  stdout pbadapterfilt_version  
+    stdout pbadapterfilt_version  
 
   """
    touch hifiadapterfilt_version.flag.txt
