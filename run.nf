@@ -199,7 +199,7 @@ process ragtag_dot_py {
   output:
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch, ragtag_fasta_genome_ch, fasta_fai_genome_ch, fasta_sshquis_genome_ch
     stdout ragtag_dot_py_output
-   when:
+  when:
     params.polish
   """
     touch ragtag.flag.txt 
@@ -213,14 +213,13 @@ process faidx {
   container = 'mgibio/samtools:1.9'
   cpus 1
 
-  when:
-  params.polish == 'true'
-
   input:
-   file genome from fasta_fai_genome_ch
+    file genome from fasta_fai_genome_ch
   output:
-   file '*.fai' into fai_ch
-   stdout faidx_output
+    file '*.fai' into fai_ch
+    stdout faidx_output
+  when:
+    params.polish
   """
     touch faidx.flag.txt
     samtools faidx -o ${genome}.fai ${genome}
