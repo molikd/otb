@@ -199,9 +199,9 @@ process ragtag_dot_py {
   input:
     file fasta from fasta_unoriented_ch
     file fasta_ec from fasta_ec_ch
-    stdout ragtag_dot_py_output
   output:
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch, ragtag_fasta_genome_ch, fasta_fai_genome_ch, fasta_sshquis_genome_ch
+    stdout ragtag_dot_py_output
   """
     touch ragtag.flag.txt 
     ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
@@ -339,10 +339,10 @@ process ragtag_dot_py_hap2 {
   input:
     file fasta_hap2 from fasta_hap2_ch
     file fasta_genome from shhquis_genome_hap2_ch
-    stdout ragtag_dot_py_hap2_output
   output:
     file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta"
     file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta" into hap2_res_ch
+    stdout ragtag_dot_py_hap2_output
   """
     touch ragtag.hap2.flag.txt
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap2}
@@ -717,7 +717,7 @@ ragtag_dot_py_output
 faidx_output
    .collectFile(name:'faidx.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
-Shhquis_dot_jl
+Shhquis_dot_jl_output
    .collectFile(name:'shhquis.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
 ragtag_dot_py_hap1_output
