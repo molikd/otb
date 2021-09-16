@@ -24,6 +24,8 @@ process check_bam {
 
   input:
     file bam from bam_check_ch.flatten()
+  output:
+    stdout check_bam_output
   """
    stat ${bam}
    samtools flagstat ${bam}
@@ -40,7 +42,7 @@ process check_fastq {
   output:
     file 'right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish, right_fastq_jellyfish
     file 'left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_fastq_jellyfish
-
+    stdout check_fastq_output
   shell:
   '''
    stat !{right_fastq}
@@ -87,7 +89,7 @@ process HiFiASM {
   output:
     file '*.gfa' into gfa_ch
     file '*.ec.fa' into fasta_ec_ch
-
+    stdout HiFiASM_output
   script:
 
   if( params.mode == 'phasing' )
@@ -121,7 +123,7 @@ process HiFiASM {
 }
 
 process gfa2fasta {
-  publishDir params.outdir, mode: 'rellink'
+  publishDir "${params.outdir}/genomes", mode: 'rellink'
   container = 'pvstodghill/any2fasta'
   cpus 1
 
@@ -134,6 +136,7 @@ process gfa2fasta {
     file '*hap1.p_ctg.gfa.fasta' optional true into fasta_hap1_ch
     file '*hap1.p_ctg.gfa.fasta' optional true into fasta_hap2_ch
     file '*hap[12].p_ctg.gfa.fasta' optional true
+    stdout gfa2fasta_output
   """
     any2fasta ${gfa} > ${gfa}.fasta
     echo "finished gfa to fasta conversion"
@@ -142,7 +145,7 @@ process gfa2fasta {
 }
 
 process busco_gfa {
-  publishDir params.outdir, mode: 'rellink'
+  publishDir "${params.outdir}/busco_no_polish", mode: 'rellink'
   container = 'ezlabgva/busco:v5.2.2_cv1'
   cpus = params.threads
 
@@ -150,7 +153,7 @@ process busco_gfa {
     file fasta from fasta_busco_ch.flatten()
   output:
     file '*'
-
+    stdout busco_gfa_output
   when:
   params.busco == 'true'
 
@@ -184,6 +187,7 @@ process ragtag_dot_py {
   input:
     file fasta from fasta_unoriented_ch
     file fasta_ec from fasta_ec_ch
+    stdout ragtag_dot_py_output
   output:
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch, ragtag_fasta_genome_ch, fasta_fai_genome_ch, fasta_sshquis_genome_ch
   """
@@ -204,6 +208,7 @@ process faidx {
    file genome from fasta_fai_genome_ch
   output:
    file '*.fai' into fai_ch
+   stdout faidx_output
   """
     samtools faidx -o ${genome}.fai ${genome}
     echo "finished indexing"
@@ -212,7 +217,7 @@ process faidx {
 }
 
 process hicstuff {
-  publishDir params.outdir, mode: 'rellink'
+  publishDir "${params.outdir}/hicstuff", mode: 'rellink'
   container = 'koszullab/hicstuff'
   cpus = params.threads
 
@@ -223,6 +228,7 @@ process hicstuff {
   output:
     file 'hicstuff_out/fragments_list.txt'
     file 'hicstuff_out/plots/frags_hist.pdf'
+    stdout hicstuff_output
   """
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
     echo "finished fragment calculations"
@@ -231,7 +237,7 @@ process hicstuff {
 }
 
 process hicstuff_polish {
-  publishDir params.outdir, mode: 'rellink'
+  publishDir "${params.outdir}/hicstuff", mode: 'rellink'
   container = 'koszullab/hicstuff'
   cpus = params.threads
 
@@ -247,6 +253,7 @@ process hicstuff_polish {
     file 'hicstuff_out/polish_fragments_list.txt'
     file 'hicstuff_out/info_contigs.txt' into contigs_ch
     file 'hicstuff_out/plots/polish_frags_hist.pdf'
+    stdout hicstuff_polish_output
   """
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
     mv hicstuff_out/fragments_list.txt hicstuff_out/polish_fragments_list.txt
@@ -257,7 +264,7 @@ process hicstuff_polish {
 }
 
 process Shhquis_dot_jl {
-  publishDir params.outdir, mode: 'rellink'
+  publishDir "${params.outdir}/genomes", mode: 'rellink'
   container = 'dmolik/shhquis'
   cpus 1
 
@@ -272,7 +279,7 @@ process Shhquis_dot_jl {
   output:
     file "${params.outfasta}" into shhquis_fasta_res_ch, shhquis_genome_ch, shhquis_genome_hap1_ch, shhquis_genome_hap2_ch
     file "${params.outfasta}"
-
+    stdout Shhquis_dot_jl_output
   """
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
     echo "finished reorientation"
@@ -281,6 +288,7 @@ process Shhquis_dot_jl {
 }
 
 process ragtag_dot_py_hap1 {
+  publishDir "${params.outdir}/genomes", mode: 'rellink'
   container = 'dmolik/ragtag'
   cpus = params.threads
 
@@ -293,6 +301,7 @@ process ragtag_dot_py_hap1 {
   output:
     file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta"
     file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta" into hap1_res_ch
+    stdout ragtag_dot_py_hap1_output
   """
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap1}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta
@@ -302,6 +311,7 @@ process ragtag_dot_py_hap1 {
 }
 
 process ragtag_dot_py_hap2 {
+  publishDir "${params.outdir}/genomes", mode: 'rellink'
   container = 'dmolik/ragtag'
   cpus = params.threads
 
@@ -311,6 +321,7 @@ process ragtag_dot_py_hap2 {
   input:
     file fasta_hap2 from fasta_hap2_ch
     file fasta_genome from shhquis_genome_hap2_ch
+    stdout ragtag_dot_py_hap2_output
   output:
     file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta"
     file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta" into hap2_res_ch
@@ -323,7 +334,7 @@ process ragtag_dot_py_hap2 {
 }
 
 process busco_fasta {
-  publishDir params.outdir, mode: 'rellink'
+  publishDir "${params.outdir}/busco_polish", mode: 'rellink'
   container = 'ezlabgva/busco:v5.2.2_cv1'
   cpus = params.threads
 
@@ -334,7 +345,7 @@ process busco_fasta {
     file fasta from shhquis_genome_ch
   output:
     file '*'
-
+    stdout busco_fasta_output
   script:
 
   if( params.linreage == 'auto-lineage')
@@ -365,7 +376,7 @@ process jellyfish {
   output:
     file '*.histo' into jellyfish_histo_ch
     file 'version.txt' into jellyfish_ver_ch
-
+    stdout jellyfish_output
   """
     jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf <(zcat ${fastqr}) <(zcat ${fastqf}) 
     jellyfish histo -t ${task.cpus} reads.jf > ${params.assembly}.histo
@@ -374,7 +385,7 @@ process jellyfish {
 }
 
 process genomescope2 {
-  publishDir params.outdir, mode: 'rellink'
+  publishDir "${params.outdir}/genomescope", mode: 'rellink'
   container = 'dmolik/genomescope2'
   cpus = params.threads
 
@@ -383,7 +394,7 @@ process genomescope2 {
   output:
     file "${params.assembly}/*"
     file 'version.txt' into genomescope_ver_ch
-
+    stdout genomescope2_output
   """
     xvfb-run genomescope.R -i ${histo} -o ${params.assembly} -k 21
     genomescope.R --version > version.txt
@@ -391,7 +402,7 @@ process genomescope2 {
 }
 
 process gfa2fasta_stats_dot_sh {
-  publishDir params.outdir, mode: 'copy'
+  publishDir "${params.outdir}/genomes", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
 
@@ -407,7 +418,7 @@ process gfa2fasta_stats_dot_sh {
 }
 
 process ragtag_stats_dot_sh {
-  publishDir params.outdir, mode: 'copy'
+  publishDir "${params.outdir}/genomes", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
 
@@ -426,7 +437,7 @@ process ragtag_stats_dot_sh {
 }
 
 process sshquis_stats_do_sh {
-  publishDir params.outdir, mode: 'copy'
+  publishDir "${params.outdir}/genomes", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
 
@@ -445,7 +456,7 @@ process sshquis_stats_do_sh {
 }
 
 process ragtag_stats_dot_sh_hap1 {
-  publishDir params.outdir, mode: 'copy'
+  publishDir "${params.outdir}/genomes", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
 
@@ -464,7 +475,7 @@ process ragtag_stats_dot_sh_hap1 {
 }
 
 process ragtag_stats_dot_sh_hap2 {
-  publishDir params.outdir, mode: 'copy'
+  publishDir "${params.outdir}/genomes", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
 
@@ -639,7 +650,52 @@ process HiFiAdapterFilt_Version {
 }
 
 pbadapterfilt_output
-   .collectFile(name:'filtering_information.txt', newLine: true, storeDir:"${params.outdir}/software_versions")
+   .collectFile(name:'filtering_information.log.txt', newLine: true, storeDir:"${params.outdir}/filtering")
+
+check_fastq_output
+   .collectFile(name:'fastq_check.log.txt', newLine: true, storeDir:"${params.outdir}/filtering")
+
+check_bam_output
+   .collectFile(name:'bam_check.log.txt', newLine: true, storeDir:"${params.outdir}/filtering")
+
+HiFiASM_output
+   .collectFile(name:'HiFiASM.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+gfa2fasta_output
+   .collectFile(name:'gfa2fasta.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+hicstuff_output
+   .collectFile(name:'hicstuff.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+hicstuff_polish_output
+   .collectFile(name:'hicstuff_polish.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+ragtag_dot_py_output
+   .collectFile(name:'ragtag.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+faidx_output
+   .collectFile(name:'faidx.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+Shhquis_dot_jl
+   .collectFile(name:'shhquis.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+ragtag_dot_py_hap1_output
+   .collectFile(name:'ragtag_hap1.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+ragtag_dot_py_hap2_output
+   .collectFile(name:'ragtag_hap2.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+busco_gfa_output
+   .collectFile(name:'busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_no_polish")
+
+busco_fasta_output
+   .collectFile(name:'busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
+
+jellyfish_output
+   .collectFile(name:'jellyfish.log.txt', newLine: true, storeDir:"${params.outdir}/genomescope" )
+
+genomescope2_output
+   .collectFile(name:'genomescope2.log.txt', newLine: true, storeDir:"${params.outdir}/genomescope" )
 
 hifiasm_version
    .collectFile(name:'hifiasm_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
