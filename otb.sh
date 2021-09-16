@@ -80,8 +80,8 @@ while [ $# -gt 0 ] ; do
     --sge) RUNNER="sge";;
     --slurm) RUNNER="slurm";;
     --slurm-usda) RUNNER="slurm_usda";;
-    --busco) BUSCO="--busco=\"true\"";;
-    --polish) POLISH="--polish=\"true\"";;
+    --busco) BUSCO="--busco ";;
+    --polish) POLISH="--polish ";;
     --auto-lineage) LINEAGE="auto-lineage";;
     --auto-lineage-prok) LINEAGE="auto-lineage-prok";;
     --auto-lineage-euk) LINEAGE="auto-lineage-euk";;
