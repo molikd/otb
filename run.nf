@@ -156,7 +156,7 @@ process gfa2fasta {
   input:
     file gfa from gfa_ch.flatten()
   output:
-    file '*.p_ctg.gfa.fasta' into gfa2fasta_fasta_res_ch
+    file '*.p_ctg.gfa.fasta' optional true into gfa2fasta_fasta_res_ch
     file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch
     file '*hap1.p_ctg.gfa.fasta' optional true into fasta_hap1_ch
     file '*hap2.p_ctg.gfa.fasta' optional true into fasta_hap2_ch
