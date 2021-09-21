@@ -440,6 +440,7 @@ process more_polishing_determiner {
 //process merfin version
 //process meryl version
 //process deep variant version
+//stats.sh for plain old ragtag polishing
 //ratag scaffold from merfin
 //  stats.sh
 //raftag scaffold from deep variant
