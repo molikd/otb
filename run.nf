@@ -7,10 +7,12 @@ params.readr = "$baseDir/data/*.R2.fastq.gz"
 params.outfasta = "genome.out.fasta"
 params.outdir = 'results'
 params.mode = 'heterozygous'
+params.ploidy = '2'
 params.threads = '20'
 params.linreage = 'insecta_odb10'
 params.busco = false
-params.ragtag = false
+params.polish = false
+params.polishtype = 'simple'
 
 bam_ch = Channel.fromPath(params.readbam)
 right_fastq_check = Channel.fromPath(params.readr)
@@ -217,7 +219,7 @@ process ragtag_dot_py {
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch, ragtag_fasta_genome_ch, fasta_fai_genome_ch, fasta_sshquis_genome_ch
     stdout ragtag_dot_py_output
   when:
-    params.ragtag
+    params.polish
   """
     touch ragtag.flag.txt 
     ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
@@ -236,7 +238,7 @@ process faidx {
     file '*.fai' into fai_ch
     stdout faidx_output
   when:`
-    params.ragtag
+    params.polish
   """
     touch faidx.flag.txt
     samtools faidx -o ${genome}.fai ${genome}
@@ -282,7 +284,7 @@ process hicstuff_polish {
     file 'hicstuff_out/plots/polish_frags_hist.pdf'
     stdout hicstuff_polish_output
   when:
-    params.ragtag
+    params.polish
   """
     touch hicstuff_for_polished.flag.txt 
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
@@ -304,61 +306,15 @@ process Shhquis_dot_jl {
     file genome from fasta_sshquis_genome_ch
     file fai from fai_ch
   output:
-    file "${params.outfasta}" into shhquis_fasta_res_ch, shhquis_genome_ch, shhquis_genome_hap1_ch, shhquis_genome_hap2_ch
+    file "${params.outfasta}" into shhquis_fasta_res_ch, shhquis_genome_ch, shhquis_genome_more_polishing_ch
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
   when:
-    params.ragtag
+    params.polish
   """
     touch shhquis.flag.txt
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
     echo "finished reorientation"
-    exit 0;
-  """
-}
-
-process ragtag_dot_py_hap1 {
-  publishDir "${params.outdir}/genome", mode: 'rellink'
-  container = 'dmolik/ragtag'
-  cpus = params.threads
-
-  input:
-    file fasta_hap1 from fasta_hap1_ch
-    file fasta_genome from shhquis_genome_hap1_ch
-  output:
-    file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta"
-    file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta" into hap1_res_ch
-    stdout ragtag_dot_py_hap1_output
-  when:
-    params.ragtag
-  """
-    touch ragtag.hap1.flag.txt
-    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap1}
-    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta
-    echo "finished patching"
-    exit 0;
-  """
-}
-
-process ragtag_dot_py_hap2 {
-  publishDir "${params.outdir}/genome", mode: 'rellink'
-  container = 'dmolik/ragtag'
-  cpus = params.threads
-
-  input:
-    file fasta_hap2 from fasta_hap2_ch
-    file fasta_genome from shhquis_genome_hap2_ch
-  output:
-    file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta"
-    file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta" into hap2_res_ch
-    stdout ragtag_dot_py_hap2_output
-  when:
-    params.ragtag
-  """
-    touch ragtag.hap2.flag.txt
-    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap2}
-    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta
-    echo "finished patching"
     exit 0;
   """
 }
@@ -428,12 +384,202 @@ process genomescope2 {
     file histo from jellyfish_histo_ch
   output:
     file "${params.assembly}/*"
+    file "kcov.txt" into kcov_ch
+    file "${params.assembly}/fitted_hist.png" into fitted_histo_ch
     file 'version.txt' into genomescope_ver_ch
     stdout genomescope2_output
   """
     touch genomescope.flag.txt
-    xvfb-run genomescope.R -i ${histo} -o ${params.assembly} -k 21
+    xvfb-run genomescope.R -i ${histo} -o ${params.assembly} -k 21 -p ${params.ploidy} --fitted_hist 
     genomescope.R --version > version.txt
+    awk '/kmercov [0-9]/ { print $2 }' ${params.assembly}/model.txt >> kcov.txt
+    echo "finished genomescope"
+    exit 0;
+  """
+}
+
+process more_polishing_determiner {
+  cpus 1
+
+  input:
+    file genome from shhquis_genome_more_polishing_ch
+  output:
+    file "polish_with_merfin_genome.fasta" optional true into polish_with_merfin_ch
+    file "polish_with_deep_variant.fasta" optional true into polish_with_deep_variant_ch
+    file "polish_with_ragtag_only.fasta" optional true into polish_with_ragtag_only_hap1_ch,polish_with_ragtag_only_hap2_ch
+  when:
+    params.polish
+  if( params.polishtype == 'merfin')
+  """
+    touch more_polishing_determiner.flag.txt
+    ln -s ${genome} polish_with_merfin_genome.fasta
+    echo "finished determining the next polishing steps"
+    exit 0;
+  """
+  else if( params.polishtype == 'deep')
+  """
+    touch more_polishing_determiner.flag.txt
+    ln -s ${genome} polish_with_deep_variant.fasta
+    echo "finished determining the next polishing steps"
+    exit 0;
+  """ 
+  else
+  """
+    touch more_polishing_determiner.flag.txt
+    ln -s ${genome} polish_with_ragtag_only.fasta
+    echo "determined no more polishing needed"
+    exit 0;
+  """
+}
+
+//TODO
+//process merfin
+//process deep_variant
+//process merfin stats
+//process deep_variant stats
+//process merfin version
+//process meryl version
+//process deep variant version
+//ratag scaffold from merfin
+//  stats.sh
+//raftag scaffold from deep variant
+//  stats.sh
+
+process ragtag_dot_py_hap1_simple {
+  publishDir "${params.outdir}/genome", mode: 'rellink'
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file fasta_hap1 from fasta_hap1_ch
+    file fasta_genome from polish_with_ragtag_only_hap1_ch
+  output:
+    file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta"
+    file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta" into hap1_res_ch
+    stdout ragtag_dot_py_hap1_output
+  when:
+    params.polish
+  """
+    touch ragtag.hap1.flag.txt
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap1}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta
+    echo "finished patching"
+    exit 0;
+  """
+}
+
+process ragtag_dot_py_hap2_simple {
+  publishDir "${params.outdir}/genome", mode: 'rellink'
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file fasta_hap2 from fasta_hap2_ch
+    file fasta_genome from polish_with_ragtag_only_hap2_ch
+  output:
+    file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta"
+    file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta" into hap2_res_ch
+    stdout ragtag_dot_py_hap2_output
+  when:
+    params.polish
+  """
+    touch ragtag.hap2.flag.txt
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap2}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta
+    echo "finished patching"
+    exit 0;
+  """
+}
+
+process ragtag_dot_py_hap1_merfin {
+  publishDir "${params.outdir}/genome", mode: 'rellink'
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file fasta_hap1 from fasta_hap1_ch
+    file fasta_genome from polish_with_merfin_genome_hap1_ch
+  output:
+    file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta"
+    file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta" into hap1_res_merfin_ch
+    stdout ragtag_dot_py_hap1_output
+  when:
+    params.polish
+  """
+    touch ragtag.hap1.flag.txt
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap1}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta
+    echo "finished patching"
+    exit 0;
+  """
+}
+
+process ragtag_dot_py_hap2_merfin {
+  publishDir "${params.outdir}/genome", mode: 'rellink'
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file fasta_hap2 from fasta_hap2_ch
+    file fasta_genome from polish_with_merfin_genome_hap2_ch
+  output:
+    file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta"
+    file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta" into hap2_res_merfin_ch
+    stdout ragtag_dot_py_hap2_output
+  when:
+    params.polish
+  """
+    touch ragtag.hap2.flag.txt
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap2}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta
+    echo "finished patching"
+    exit 0;
+  """
+}
+
+process ragtag_dot_py_hap1_deep_variant {
+  publishDir "${params.outdir}/genome", mode: 'rellink'
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file fasta_hap1 from fasta_hap1_ch
+    file fasta_genome from polish_with_deep_variant_hap1_ch
+  output:
+    file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta"
+    file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta" into hap1_res_deep_ch
+    stdout ragtag_dot_py_hap1_output
+  when:
+    params.polish
+  """
+    touch ragtag.hap1.flag.txt
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap1}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta
+    echo "finished patching"
+    exit 0;
+  """
+}
+
+process ragtag_dot_py_hap2_deep_variant {
+  publishDir "${params.outdir}/genome", mode: 'rellink'
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file fasta_hap2 from fasta_hap2_ch
+    file fasta_genome from polish_with_deep_variant_hap2_ch
+  output:
+    file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta"
+    file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta" into hap2_res_deep_ch
+    stdout ragtag_dot_py_hap2_output
+  when:
+    params.polish
+  """
+    touch ragtag.hap2.flag.txt
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap2}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta
+    echo "finished patching"
+    exit 0;
   """
 }
 
@@ -464,7 +610,7 @@ process ragtag_stats_dot_sh {
   output:
     file '*.stats'
   when:
-    params.ragtag
+    params.polish
   """
     touch ragtag_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -483,7 +629,7 @@ process sshquis_stats_do_sh {
   output:
     file '*.stats'
   when:
-    params.ragtag
+    params.polish
   """
     touch shhquis_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -502,7 +648,7 @@ process ragtag_stats_dot_sh_hap1 {
   output:
     file '*.stats'
   when:
-    params.ragtag
+    params.polish
   """
     touch ragtag_hap1_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -521,7 +667,7 @@ process ragtag_stats_dot_sh_hap2 {
   output:
     file '*.stats'
   when:
-    params.ragtag
+    params.polish
   """
     touch ragtag_hap2_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -673,7 +819,7 @@ process shhquis_Version {
   output:
     stdout shhquis_version
   when:
-    params.ragtag
+    params.polish
 
   """
    touch shhquis_version.flag.txt
