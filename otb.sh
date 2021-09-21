@@ -112,7 +112,7 @@ if [ -n "$RUNNER" ]; then
   case $RUNNER in
     "sge") state "$RUNNER being used";;
     "slurm") state "$RUNNER being used";;
-    "slurm-usda") state "$RUNNER being used";;
+    "slurm_usda") state "$RUNNER being used";;
     *) error "runner type ${RUNNER} not found";;
   esac
 fi
