@@ -34,5 +34,6 @@ fi
 [ ! -f koszullab-hicstuff.img ] && singularity pull koszullab-hicstuff.img docker://koszullab/hicstuff || state "   ...hicstuff container found"
 [ ! -f pvstodghill-any2fasta.img ] && singularity pull pvstodghill-any2fasta.img docker://pvstodghill/any2fasta || state "   ...any2fasta container found"
 [ ! -f dmolik-merfin.img ] && singularity pull dmolik-merfin.img docker://dmolik/merfin || state "   ...merfin container found"
+[ ! -f docker mgibio-bcftools-1.9.img ] && singularity pull  mgibio-bcftools-1.9.img docker://docker pull mgibio/bcftools:1.9 || state "   ...bcftools container found"
 
 cd $location
