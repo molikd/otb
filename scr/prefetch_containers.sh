@@ -22,16 +22,17 @@ else
  error "..not set, please set NXF_SINGULARITY_CACHEDIR or give me a location"
 fi
 
-[ ! -f bryce911-bbtools.img ] && singularity pull bryce911-bbtools.img docker://bryce911/bbtools
-[ ! -f dmolik-genomescope2.img ] && singularity pull dmolik-genomescope2.img docker://dmolik/genomescope2
-[ ! -f dmolik-hifiasm.img ] && singularity pull dmolik-hifiasm.img docker://dmolik/hifiasm
-[ ! -f dmolik-jellyfish.img ] && singularity pull dmolik-jellyfish.img docker://dmolik/jellyfish
-[ ! -f dmolik-pbadapterfilt.img ] && singularity pull dmolik-pbadapterfilt.img docker://dmolik/pbadapterfilt
-[ ! -f dmolik-ragtag.img ] && singularity pull dmolik-ragtag.img docker://dmolik/ragtag
-[ ! -f mgibio-samtools-1.9.img ] && singularity pull mgibio-samtools:1.9.img docker://mgibio/samtools:1.9
-[ ! -f dmolik-shhquis.img ] && singularity pull dmolik-shhquis.img docker://dmolik/shhquis
-[ ! -f ezlabgva-busco-v5.2.2_cv1.img ] && singularity pull ezlabgva-busco:v5.2.2_cv1.img docker://ezlabgva/busco:v5.2.2_cv1
-[ ! -f koszullab-hicstuff.img ] && singularity pull koszullab-hicstuff.img docker://koszullab/hicstuff
-[ ! -f pvstodghill-any2fasta.img ] && singularity pull pvstodghill-any2fasta.img docker://pvstodghill/any2fasta
+[ ! -f bryce911-bbtools.img ] && singularity pull bryce911-bbtools.img docker://bryce911/bbtools || state "bbtools container found"
+[ ! -f dmolik-genomescope2.img ] && singularity pull dmolik-genomescope2.img docker://dmolik/genomescope2 || state "genomescope2 container found"
+[ ! -f dmolik-hifiasm.img ] && singularity pull dmolik-hifiasm.img docker://dmolik/hifiasm || "hifiasm container found"
+[ ! -f dmolik-jellyfish.img ] && singularity pull dmolik-jellyfish.img docker://dmolik/jellyfish || "jellyfish container found"
+[ ! -f dmolik-pbadapterfilt.img ] && singularity pull dmolik-pbadapterfilt.img docker://dmolik/pbadapterfilt || "HiFi Filter container found"
+[ ! -f dmolik-ragtag.img ] && singularity pull dmolik-ragtag.img docker://dmolik/ragtag || "ragtag.py container found"
+[ ! -f mgibio-samtools-1.9.img ] && singularity pull mgibio-samtools:1.9.img docker://mgibio/samtools:1.9 || "samtools container found"
+[ ! -f dmolik-shhquis.img ] && singularity pull dmolik-shhquis.img docker://dmolik/shhquis || "shhquis container found"
+[ ! -f ezlabgva-busco-v5.2.2_cv1.img ] && singularity pull ezlabgva-busco:v5.2.2_cv1.img docker://ezlabgva/busco:v5.2.2_cv1 || "busco container found"
+[ ! -f koszullab-hicstuff.img ] && singularity pull koszullab-hicstuff.img docker://koszullab/hicstuff || "hicstuff container found"
+[ ! -f pvstodghill-any2fasta.img ] && singularity pull pvstodghill-any2fasta.img docker://pvstodghill/any2fasta || "any2fasta container found"
+[ ! -f dmolik-merfin.img ] && singularity pull dmolik-merfin.img docker://dmolik/merfin || "merfin container found"
 
 cd $location
