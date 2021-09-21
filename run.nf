@@ -87,7 +87,7 @@ process HiFiAdapterFilt {
   cpus = params.threads
 
   input:
-    file bam from bam_Hifi_ch
+    file bam from bam_Hifi_ch.flatten()
   output:
     file '*.fasta' into filt_fasta_ch
     stdout pbadapterfilt_output
@@ -104,7 +104,7 @@ process HiFiASM {
   cpus = params.threads
 
   input:
-    file fasta from filt_fasta_ch.toList()
+    file fasta from filt_fasta_ch.collect()
     file left from left_fastq_HiFiASM
     file right from right_fastq_HiFiASM
 
