@@ -738,6 +738,8 @@ process samtools_Version {
   """
 }
 
+
+
 process hicstuff_Version {
   container = 'koszullab/hicstuff'
   cpus 1
@@ -798,6 +800,20 @@ process genomescope_Version {
   """
 }
 
+process merfin_Version {
+  cpus 1
+
+  output:
+    stdout merfin_version
+  when:
+    params.polishtype == 'merfin'
+
+  """
+   touch merfin_version.flag.txt
+   echo "merfin  - - - - - - beta?"
+  """
+
+}
 
 process BUSCO_Version {
   cpus 1
@@ -918,6 +934,10 @@ jellyfish_version
 
 genomescope_version
    .collectFile(name:'genomescope_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+   .view{ it.text }
+
+merfin_version
+   .collectFile(name:'merfin_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 busco_version
