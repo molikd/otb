@@ -10,7 +10,8 @@ params.mode = 'heterozygous'
 params.threads = '20'
 params.linreage = 'insecta_odb10'
 params.busco = false
-params.polish = false
+params.ragtag = false
+params.vcf = false
 
 bam_ch = Channel.fromPath(params.readbam)
 right_fastq_check = Channel.fromPath(params.readr)
@@ -87,7 +88,7 @@ process HiFiAdapterFilt {
   cpus = params.threads
 
   input:
-    file bam from bam_Hifi_ch
+    file bam from bam_Hifi_ch.flatten()
   output:
     file '*.fasta' into filt_fasta_ch
     stdout pbadapterfilt_output
@@ -160,7 +161,6 @@ process gfa2fasta {
     file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch
     file '*hap1.p_ctg.gfa.fasta' optional true into fasta_hap1_ch
     file '*hap2.p_ctg.gfa.fasta' optional true into fasta_hap2_ch
-    file '*.p_ctg.gfa.fasta' optional true
     stdout gfa2fasta_output
   """
     touch any2fasta.flag.txt
@@ -212,13 +212,13 @@ process ragtag_dot_py {
   cpus = params.threads
 
   input:
-    file fasta from fasta_unoriented_ch
+    file fasta from ragtag_fasta_unoriented_ch
     file fasta_ec from fasta_ec_ch
   output:
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch, ragtag_fasta_genome_ch, fasta_fai_genome_ch, fasta_sshquis_genome_ch
     stdout ragtag_dot_py_output
   when:
-    params.polish
+    params.ragtag
   """
     touch ragtag.flag.txt 
     ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
@@ -236,8 +236,8 @@ process faidx {
   output:
     file '*.fai' into fai_ch
     stdout faidx_output
-  when:
-    params.polish
+  when:`
+    params.ragtag
   """
     touch faidx.flag.txt
     samtools faidx -o ${genome}.fai ${genome}
@@ -283,7 +283,7 @@ process hicstuff_polish {
     file 'hicstuff_out/plots/polish_frags_hist.pdf'
     stdout hicstuff_polish_output
   when:
-    params.polish
+    params.ragtag
   """
     touch hicstuff_for_polished.flag.txt 
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
@@ -309,7 +309,7 @@ process Shhquis_dot_jl {
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
   when:
-    params.polish
+    params.ragtag
   """
     touch shhquis.flag.txt
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
@@ -331,7 +331,7 @@ process ragtag_dot_py_hap1 {
     file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta" into hap1_res_ch
     stdout ragtag_dot_py_hap1_output
   when:
-    params.polish
+    params.ragtag
   """
     touch ragtag.hap1.flag.txt
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap1}
@@ -354,7 +354,7 @@ process ragtag_dot_py_hap2 {
     file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta" into hap2_res_ch
     stdout ragtag_dot_py_hap2_output
   when:
-    params.polish
+    params.ragtag
   """
     touch ragtag.hap2.flag.txt
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap2}
@@ -465,7 +465,7 @@ process ragtag_stats_dot_sh {
   output:
     file '*.stats'
   when:
-    params.polish
+    params.ragtag
   """
     touch ragtag_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -484,7 +484,7 @@ process sshquis_stats_do_sh {
   output:
     file '*.stats'
   when:
-    params.polish
+    params.ragtag
   """
     touch shhquis_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -503,7 +503,7 @@ process ragtag_stats_dot_sh_hap1 {
   output:
     file '*.stats'
   when:
-    params.polish
+    params.ragtag
   """
     touch ragtag_hap1_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -522,7 +522,7 @@ process ragtag_stats_dot_sh_hap2 {
   output:
     file '*.stats'
   when:
-    params.polish
+    params.ragtag
   """
     touch ragtag_hap2_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -674,7 +674,7 @@ process shhquis_Version {
   output:
     stdout shhquis_version
   when:
-    params.polish
+    params.ragtag
 
   """
    touch shhquis_version.flag.txt
