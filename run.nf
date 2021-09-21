@@ -11,7 +11,6 @@ params.threads = '20'
 params.linreage = 'insecta_odb10'
 params.busco = false
 params.ragtag = false
-params.vcf = false
 
 bam_ch = Channel.fromPath(params.readbam)
 right_fastq_check = Channel.fromPath(params.readr)
@@ -212,7 +211,7 @@ process ragtag_dot_py {
   cpus = params.threads
 
   input:
-    file fasta from ragtag_fasta_unoriented_ch
+    file fasta from fasta_unoriented_ch
     file fasta_ec from fasta_ec_ch
   output:
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch, ragtag_fasta_genome_ch, fasta_fai_genome_ch, fasta_sshquis_genome_ch
