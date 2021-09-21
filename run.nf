@@ -782,6 +782,23 @@ process bbtools_Version {
   """
 }
 
+process deepvariant_Version {
+   container = 'google/deepvariant'
+   cpus 1
+
+   output:
+     stdout deepvariant_version
+   when:
+     params.polishtype == 'dv'
+
+   """
+     touch deepvariant_version.flag.txt
+     echo "DeepVariant Version"
+     /opt/deepvariant/bin/run_deepvariant --version
+     exit 0;
+   """
+}
+
 process jellyfish_Version {
   cpus 1
 
@@ -946,6 +963,10 @@ hicstuff_version
 
 bbtools_version
    .collectFile(name:'bbtools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+   .view{ it.text }
+
+deepvariant_version
+   .collectFile(name:'deepvariant_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 jellyfish_version
