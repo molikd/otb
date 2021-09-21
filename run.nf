@@ -436,11 +436,10 @@ process more_polishing_determiner {
 //process merfin
 //process deep_variant
 //process merfin stats
+//process bcftools merfin
+//process bcftools deep_variant
 //process deep_variant stats
-//process merfin version
-//process meryl version
 //process deep variant version
-//stats.sh for plain old ragtag polishing
 //ratag scaffold from merfin
 //  stats.sh
 //raftag scaffold from deep variant
@@ -723,7 +722,6 @@ process ragtag_Version {
 }
 
 process samtools_Version {
-  echo "Samtools Version"
   container = 'mgibio/samtools:1.9'
   cpus 1
 
@@ -738,7 +736,21 @@ process samtools_Version {
   """
 }
 
+process bcftools_Version {
+  container = 'mgibio/bcftools:1.9'
+  cpus 1
 
+  output:
+    stdout bcftools_version
+  when:
+    params.polishtype == 'merfin' || params.polishtype == 'dv'
+
+  """
+    touch bcftools_version.flag.txt
+    echo "Bcftools Version:"
+    bcftools --version
+    exit 0;
+  """
 
 process hicstuff_Version {
   container = 'koszullab/hicstuff'
@@ -809,8 +821,9 @@ process merfin_Version {
     params.polishtype == 'merfin'
 
   """
-   touch merfin_version.flag.txt
-   echo "merfin  - - - - - - beta?"
+    touch merfin_version.flag.txt
+    echo "merfin  - - - - - - beta?"
+    exit 0;
   """
 
 }
@@ -824,8 +837,9 @@ process BUSCO_Version {
     params.busco
 
   """
-   touch busco_version.flag.txt
-   echo "BUSCO  - - - - - - - v5.2.2_cv1"
+    touch busco_version.flag.txt
+    echo "BUSCO  - - - - - - - v5.2.2_cv1"
+    exit 0;
   """   
 
 }
@@ -839,8 +853,9 @@ process shhquis_Version {
     params.polish
 
   """
-   touch shhquis_version.flag.txt
-   echo "Shhquis.jl - - - - - 0.1.0"
+    touch shhquis_version.flag.txt
+    echo "Shhquis.jl - - - - - 0.1.0"
+    exit 0;
   """
 }
 
@@ -851,8 +866,9 @@ process HiFiAdapterFilt_Version {
     stdout pbadapterfilt_version  
 
   """
-   touch hifiadapterfilt_version.flag.txt
-   echo "HiFiAdapterFilt  - - v1.0.0"
+    touch hifiadapterfilt_version.flag.txt
+    echo "HiFiAdapterFilt  - - v1.0.0"
+    exit 0;
   """
 }
 
@@ -918,6 +934,10 @@ ragtag_version
 
 samtools_version
    .collectFile(name:'samtools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+   .view{ it.text }
+
+bcftools_version
+   .collectFile(name:'bcftools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 hicstuff_version
