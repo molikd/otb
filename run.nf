@@ -439,7 +439,6 @@ process more_polishing_determiner {
 //process bcftools merfin
 //process bcftools deep_variant
 //process deep_variant stats
-//process deep variant version
 //ratag scaffold from merfin
 //  stats.sh
 //raftag scaffold from deep variant
