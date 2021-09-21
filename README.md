@@ -33,7 +33,7 @@ otb operates from a local directory, and must be operated as ./otb.sh since it s
 in order to use otb download this directory and use ./otb.sh, an example:
 
 ```bash
- ./otb.sh --sge --mode homozygous --threads 40 -f otb_test_file_R2.fastq -r otb_test_file_R1.fastq --polish --bam otb_test_bam.sh
+ ./otb.sh --sge --mode homozygous --threads 40 -f otb_test_file_R2.fastq -r otb_test_file_R1.fastq --polish-type simple --bam otb_test.bam
 ```
 
 otb is fully featured and utilzes the following softwares:

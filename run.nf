@@ -7,17 +7,18 @@ params.readr = "$baseDir/data/*.R2.fastq.gz"
 params.outfasta = "genome.out.fasta"
 params.outdir = 'results'
 params.mode = 'heterozygous'
+params.ploidy = '2'
 params.threads = '20'
 params.linreage = 'insecta_odb10'
 params.busco = false
-params.ragtag = false
-params.vcf = false
+params.polish = false
+params.polishtype = 'simple'
 
 bam_ch = Channel.fromPath(params.readbam)
 right_fastq_check = Channel.fromPath(params.readr)
 left_fastq_check = Channel.fromPath(params.readf)
 
-bam_ch.into{ bam_check_ch; bam_Hifi_ch}
+bam_ch.into{ bam_check_ch; bam_Hifi_ch; bam_dv_ch}
 
 process check_bam {
   container = 'mgibio/samtools:1.9'
@@ -111,7 +112,7 @@ process HiFiASM {
 
   output:
     file '*.gfa' into gfa_ch
-    file '*.ec.fa' into fasta_ec_ch
+    file '*.ec.fa' into fasta_ec_ch, meryl_ec_ch, bbmap_ec_ch
     stdout HiFiASM_output
   script:
 
@@ -159,8 +160,7 @@ process gfa2fasta {
   output:
     file '*.p_ctg.gfa.fasta' optional true into gfa2fasta_fasta_res_ch
     file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch
-    file '*hap1.p_ctg.gfa.fasta' optional true into fasta_hap1_ch
-    file '*hap2.p_ctg.gfa.fasta' optional true into fasta_hap2_ch
+    file '*hap[12].p_ctg.gfa.fasta' optional true into fasta_hap_ch
     stdout gfa2fasta_output
   """
     touch any2fasta.flag.txt
@@ -212,13 +212,13 @@ process ragtag_dot_py {
   cpus = params.threads
 
   input:
-    file fasta from ragtag_fasta_unoriented_ch
+    file fasta from fasta_unoriented_ch
     file fasta_ec from fasta_ec_ch
   output:
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch, ragtag_fasta_genome_ch, fasta_fai_genome_ch, fasta_sshquis_genome_ch
     stdout ragtag_dot_py_output
   when:
-    params.ragtag
+    params.polish
   """
     touch ragtag.flag.txt 
     ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
@@ -236,8 +236,8 @@ process faidx {
   output:
     file '*.fai' into fai_ch
     stdout faidx_output
-  when:`
-    params.ragtag
+  when:
+    params.polish
   """
     touch faidx.flag.txt
     samtools faidx -o ${genome}.fai ${genome}
@@ -283,7 +283,7 @@ process hicstuff_polish {
     file 'hicstuff_out/plots/polish_frags_hist.pdf'
     stdout hicstuff_polish_output
   when:
-    params.ragtag
+    params.polish
   """
     touch hicstuff_for_polished.flag.txt 
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
@@ -305,99 +305,16 @@ process Shhquis_dot_jl {
     file genome from fasta_sshquis_genome_ch
     file fai from fai_ch
   output:
-    file "${params.outfasta}" into shhquis_fasta_res_ch, shhquis_genome_ch, shhquis_genome_hap1_ch, shhquis_genome_hap2_ch
+    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_bbmap_ch, shhquis_mpileup_ch
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
   when:
-    params.ragtag
+    params.polish
   """
     touch shhquis.flag.txt
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
     echo "finished reorientation"
     exit 0;
-  """
-}
-
-process ragtag_dot_py_hap1 {
-  publishDir "${params.outdir}/genome", mode: 'rellink'
-  container = 'dmolik/ragtag'
-  cpus = params.threads
-
-  input:
-    file fasta_hap1 from fasta_hap1_ch
-    file fasta_genome from shhquis_genome_hap1_ch
-  output:
-    file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta"
-    file "${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta" into hap1_res_ch
-    stdout ragtag_dot_py_hap1_output
-  when:
-    params.ragtag
-  """
-    touch ragtag.hap1.flag.txt
-    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap1}
-    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap1.ragtag.scaffold.fasta
-    echo "finished patching"
-    exit 0;
-  """
-}
-
-process ragtag_dot_py_hap2 {
-  publishDir "${params.outdir}/genome", mode: 'rellink'
-  container = 'dmolik/ragtag'
-  cpus = params.threads
-
-  input:
-    file fasta_hap2 from fasta_hap2_ch
-    file fasta_genome from shhquis_genome_hap2_ch
-  output:
-    file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta"
-    file "${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta" into hap2_res_ch
-    stdout ragtag_dot_py_hap2_output
-  when:
-    params.ragtag
-  """
-    touch ragtag.hap2.flag.txt
-    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap2}
-    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/hap2.ragtag.scaffold.fasta
-    echo "finished patching"
-    exit 0;
-  """
-}
-
-process busco_fasta {
-  publishDir "${params.outdir}/busco_polish", mode: 'rellink'
-  container = 'ezlabgva/busco:v5.2.2_cv1'
-  cpus = params.threads
-
-  input:
-    file fasta from shhquis_genome_ch
-  output:
-    file '*'
-    stdout busco_fasta_output
-  when:
-    params.busco
-
-  script:
-
-  if( params.linreage == 'auto-lineage')
-  """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
-  """
-  else if( params.linreage == 'auto-lineage-prok')
-  """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
-  """
-  else if( params.linreage == 'auto-lineage-euk')
-  """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
-  """
-  else
-  """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
 }
 
@@ -429,12 +346,408 @@ process genomescope2 {
     file histo from jellyfish_histo_ch
   output:
     file "${params.assembly}/*"
+    file "kcov.txt" into kcov_ch
+    file "${params.assembly}/lookup_table.txt" into lookup_table_ch
     file 'version.txt' into genomescope_ver_ch
     stdout genomescope2_output
   """
     touch genomescope.flag.txt
-    xvfb-run genomescope.R -i ${histo} -o ${params.assembly} -k 21
+    xvfb-run genomescope.R -i ${histo} -o ${params.assembly} -k 21 -p ${params.ploidy} --fitted_hist 
     genomescope.R --version > version.txt
+    awk '/kmercov [0-9]/ { print \$2 }' ${params.assembly}/model.txt >> kcov.txt
+    echo "finished genomescope"
+    exit 0;
+  """
+}
+
+process simple_polish {
+  cpus = 1
+
+  input:
+    file genome from shhquis_simple_ch
+  output:
+    file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_busco_genome_ch
+  when:
+    params.polishtype == "simple"
+  """
+    touch simple_polish.flag.txt
+    ln -s ${genome} ${params.assembly}.polished.genome.fasta
+    echo "finished softlink"
+    exit 0;
+  """
+}
+
+process bbmap_dot_sh {
+  container = 'bryce911/bbtools'
+  cpus = params.threads
+
+  input:
+    file ec_reads from bbmap_ec_ch
+    file genome from shhquis_bbmap_ch  
+  output:
+    file "mapped.sam" into sam_for_merfin_ch
+    stdout bbmap_dot_sh_output
+  when:
+    params.polishtype == "merfin"
+  """
+    touch bbmap.sh.flag.sh
+    bbmap.sh t=${task.cpus} in=${ec_reads} out=mapped.sam ref=${genome}
+    echo "finished bbmap.sh"
+    exit 0;
+  """
+}
+
+process samtools_mpileup {
+  container = 'mgibio/samtools:1.9'
+  cpus = 1
+
+  input:
+    file sam_file from sam_for_merfin_ch
+    file genome from shhquis_mpileup_ch
+  output:
+    file 'out.mpileup' into bcf_for_merfin_ch  
+    stdout samtools_mpileup_output
+  when:
+    params.polishtype == "merfin"
+  """
+    touch samtools.mpileup.flag.txt
+    samtools view -S -b ${sam_file} > aln.bam
+    samtools mpileup -E -uf reference.fa file.bam > out.mpileup
+    echo "finished mpileup"
+    exit 0;
+  """
+}
+
+process bcftools_refmt {
+  container = 'mgibio/bcftools:1.9' 
+  cpus = params.threads
+
+  input:
+    file mpileup from bcf_for_merfin_ch
+  output:
+    file "final.reshaped.vcf.gz" into vcf_for_merfin_ch
+    stdout bcftools_refmt_output
+  when:
+    params.polishtype == "merfin" 
+  """
+    touch bcftools.qual.flag.txt
+    echo "##INFO=<ID=DP,Number=1,Type=Integer,Description=\"Approximate read depth; some reads may have been filtered\">" > merfin_header.vcf
+    echo "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">" >> merfin_header.vcf
+    echo "##FORMAT=<ID=DP,Number=1,Type=Integer,Description=\"Read Depth\">" >> merfin_header.vcf
+    cat ${mpileup} | bcftools call --threads ${task.cpus} -mv > var.raw.vcf
+    bcftools filter --threads ${task.cpus} -s LowQual -e '%QUAL<20 || DP>100' var.raw.vcf  > var.flt.vcf
+    grep -v "#" var.flt.vcf | sed 's/,/;/g' > var.temp.reshaped.vcf
+    bcftools view --threads ${task.cpus} -h var.flt.vcf > var.temp.reshaped.header.vcf
+    cat var.temp.reshaped.header.vcf var.temp.reshaped.vcf > var.temp.reshaped.combined.vcf
+    rm var.temp.reshaped.header.vcf var.temp.reshaped.vcf
+    bcftools annotate --threads ${task.cpus} -h merfin_header.vcf var.temp.reshaped.combined.vcf > var.temp.reshaped.vcf
+    bcftools view --threads ${task.cpus} -h var.temp.reshaped.vcf | sed 's/\tINFO/\tINFO\tFORMAT\tIND/g' > var.reshaped.vcf
+    rm var.temp.reshaped.vcf 
+    bcftools view --threads ${task.cpus} -H var.temp.reshaped.combined.vcf | awk -F"\t" -v OFS="\t" '{gsub(/DP=/,".\tGT:DP\t1/1:",\$8);print \$0}' >> var.reshaped.vcf
+    bcftools view --threads ${task.cpus} var.reshaped.vcf -Oz > final.reshaped.vcf.gz
+    rm var.reshaped.vcf 
+    rm var.temp.reshaped.combined.vcf
+    echo "finished bcftools reformat"
+    exit 0;
+  """
+}
+
+process merfin {
+  publishDir "${params.outdir}/merfin", mode: 'rellink'
+  container = 'dmolik/merfin'
+  cpus = params.threads
+
+  input:
+    file genome from shhquis_merfin_ch
+    file kcov_file from kcov_ch
+    file lookup_table from lookup_table_ch
+    file ec_reads from meryl_ec_ch
+    file vcf_file from vcf_for_merfin_ch 
+  output:
+    file 'merfin.polish.vcf' into merfin_vcf_ch
+    stdout merfin_output
+  when:
+    params.polishtype == "merfin"
+
+  script:
+    kcov="""
+      cat ${kcov_file}
+    """.stripIndent()
+    """
+      echo "warning merfin is experimental"
+      touch merfin.flag.txt
+      meryl count k=21 ${ec_reads} output reads.meryl
+      meryl greater-than 1 reads.meryl output reads.gt1.meryl
+      merfin -polish -threads ${task.cpus} -sequence ${genome} -peak ${kcov} -prob ${lookup_table} -readmers reads.gt1.meryl -vcf ${vcf_file} -output merfin 
+      echo "finished merfin"
+      exit 0;
+    """
+}
+
+process samtools_merge_for_deep_variant {
+  container = 'mgibio/samtools:1.9'  
+  cpus = params.threads
+
+  input:
+    file bam_reads from bam_dv_ch
+  output:
+    file 'merged.bam' into bam_dv_merged_ch
+  """
+    touch samtools.merge.flag.txt
+    samtools merge --threads ${task.cpus} -X merged.bam ${bam_reads}
+    echo "finished merging"
+    exit 0;
+  """
+}
+
+process deep_variant {
+  publishDir "${params.outdir}/deepvariant", mode: 'rellink'
+  container = 'google/deepvariant'
+  cpus = params.threads 
+
+  input:
+    file genome from shhquis_dv_ch 
+    file bam_read from bam_dv_merged_ch 
+  output:
+    file 'google_dv.vcf' into dv_vcf_ch
+    file '*'
+    stdout deep_variant_output
+  when:
+    params.polishtype == "dv"
+  """
+    echo "warning deep variant is experimental"
+    touch deep_variant.flag.txt
+    /opt/deepvariant/bin/run_deepvariant --model_type=PACBIO --ref=${genome} --reads=${bam_read} --output_vcf=google_dv.vcf --output_gvcf=google_dv.gvcf --num_shards=${task.cpus}
+    echo "finished deep variant"
+    exit 0;
+  """
+}
+
+process dv_bcftools {
+  publishDir "${params.outdir}/genome", mode: 'rellink' 
+  container = 'mgibio/bcftools:1.9'
+  cpus = params.threads
+
+  input:
+    file genome from shhquis_bcftools_dv_ch
+    file vcf from dv_vcf_ch
+  output:
+    file "${params.assembly}.vcf_polished_assembly.fasta" into dv_vcf_polished_genome_ch, dv_vcf_res_ch, dv_vcf_polished_busco_genome_ch
+    file "${params.assembly}.vcf_polished_assembly.fasta"
+    stdout bcftools_output
+  when:
+    params.polishtype == "dv"
+  """
+    touch dv.bcftools.flag.txt
+    bcftools view --threads ${task.cpus} -Oz ${vcf} > ${vcf}.gz
+    bcftools index --threads ${task.cpus} ${vcf}.gz
+    bcftools consensus ${vcf}.gz -f ${genome} -H 1 > ${params.assembly}.vcf_polished_assembly.fasta
+    echo "finished bcftools from deep variant"
+    exit 0;
+  """
+}
+
+process merfin_bcftools {
+  publishDir "${params.outdir}/genome", mode: 'rellink'
+  container = 'mgibio/bcftools:1.9'
+  cpus = params.threads
+
+  input:
+    file genome from shhquis_bcftools_merfin_ch
+    file vcf from merfin_vcf_ch
+  output:
+    file "${params.assembly}.vcf_polished_assembly.fasta" into merfin_vcf_polished_genome_ch, merfin_vcf_res_ch, merfin_vcf_polished_busco_genome_ch
+    file "${params.assembly}.vcf_polished_assembly.fasta"
+    stdout bcftools_output
+  when:
+    params.polishtype == "merfin"
+  """
+    touch merfin.bcftools.flag.txt
+    bcftools view --threads ${task.cpus} -Oz ${vcf} > ${vcf}.gz
+    bcftools index --threads ${task.cpus} ${vcf}.gz
+    bcftools consensus ${vcf}.gz -f ${genome} -H 1 > ${params.assembly}.vcf_polished_assembly.fasta
+    echo "finished bcftools from merfin"
+    exit 0;
+  """
+}
+
+process ragtag_dot_py_hap_simple_polish {
+  publishDir "${params.outdir}/genome", mode: 'rellink'
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file fasta_hap from fasta_hap_polish_ch
+    file fasta_genome from simple_polished_genome_ch
+  output:
+    file "${params.assembly}_ragtag_scaffold/patched*"
+    file "${params.assembly}_ragtag_scaffold/patched" into simple_hap_patch_res_ch
+    stdout ragtag_dot_py_hap_output
+  when:
+    params.polishtype == "simple"
+  """
+    touch ragtag.hap.flag.txt
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
+    echo "finished patching"
+    exit 0;
+  """
+}
+
+process ragtag_dot_py_hap_merfin_polish {
+  publishDir "${params.outdir}/genome", mode: 'rellink'
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file fasta_hap from fasta_hap_polish_ch
+    file fasta_genome from merfin_vcf_polished_genome_ch
+  output:
+    file "${params.assembly}_ragtag_scaffold/patched*"
+    file "${params.assembly}_ragtag_scaffold/patched" into merfin_hap_patch_res_ch
+    stdout ragtag_dot_py_hap_output
+  when:
+    params.polishtype == "simple"
+  """
+    touch ragtag.hap.flag.txt
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
+    echo "finished patching"
+    exit 0;
+  """
+}
+
+process ragtag_dot_py_hap_deep_variant_polish {
+  publishDir "${params.outdir}/genome", mode: 'rellink'
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file fasta_hap from fasta_hap_polish_ch
+    file fasta_genome from polished_genome_ch
+  output:
+    file "${params.assembly}_ragtag_scaffold/patched*"
+    file "${params.assembly}_ragtag_scaffold/patched" into dv_hap_patch_res_ch
+    stdout ragtag_dot_py_hap_output
+  when:
+    params.polishtype == "simple"
+  """
+    touch ragtag.hap.flag.txt
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
+    echo "finished patching"
+    exit 0;
+  """
+}
+
+process simple_busco_fasta {
+  publishDir "${params.outdir}/busco_polish", mode: 'rellink'
+  container = 'ezlabgva/busco:v5.2.2_cv1'
+  cpus = params.threads
+
+  input:
+    file fasta from simple_polished_genome_busco_ch
+  output:
+    file '*'
+    stdout simple_busco_fasta_output
+  when:
+    params.busco
+
+  script:
+
+  if( params.linreage == 'auto-lineage')
+  """
+    touch busco_for_polished.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+  """
+  else if( params.linreage == 'auto-lineage-prok')
+  """
+    touch busco_for_polished.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+  """
+  else if( params.linreage == 'auto-lineage-euk')
+  """
+    touch busco_for_polished.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+  """
+  else
+  """
+    touch busco_for_polished.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+  """
+}
+
+process merfin_busco_fasta {
+  publishDir "${params.outdir}/busco_polish", mode: 'rellink'
+  container = 'ezlabgva/busco:v5.2.2_cv1'
+  cpus = params.threads
+
+  input:
+    file fasta from merfin_vcf_polished_busco_genome_ch
+  output:
+    file '*'
+    stdout merfin_busco_fasta_output
+  when:
+    params.busco
+
+  script:
+
+  if( params.linreage == 'auto-lineage')
+  """
+    touch busco_for_polished.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+  """
+  else if( params.linreage == 'auto-lineage-prok')
+  """
+    touch busco_for_polished.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+  """
+  else if( params.linreage == 'auto-lineage-euk')
+  """
+    touch busco_for_polished.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+  """
+  else
+  """
+    touch busco_for_polished.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+  """
+}
+
+process dv_busco_fasta {
+  publishDir "${params.outdir}/busco_polish", mode: 'rellink'
+  container = 'ezlabgva/busco:v5.2.2_cv1'
+  cpus = params.threads
+
+  input:
+    file fasta from dv_vcf_polished_busco_genome_ch
+  output:
+    file '*'
+    stdout dv_busco_fasta_output
+  when:
+    params.busco
+
+  script:
+
+  if( params.linreage == 'auto-lineage')
+  """
+    touch busco_for_polished.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+  """
+  else if( params.linreage == 'auto-lineage-prok')
+  """
+    touch busco_for_polished.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+  """
+  else if( params.linreage == 'auto-lineage-euk')
+  """
+    touch busco_for_polished.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+  """
+  else
+  """
+    touch busco_for_polished.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
 }
 
@@ -444,7 +757,7 @@ process gfa2fasta_stats_dot_sh {
   cpus 1
 
   input:
-    file fasta from gfa2fasta_fasta_res_ch.flatten()
+    file fasta from  gfa2fasta_fasta_res_ch.flatten()
   output:
     file '*.stats'
   """
@@ -464,8 +777,6 @@ process ragtag_stats_dot_sh {
     file fasta from ragtag_fasta_res_ch.flatten()
   output:
     file '*.stats'
-  when:
-    params.ragtag
   """
     touch ragtag_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -474,7 +785,7 @@ process ragtag_stats_dot_sh {
   """
 }
 
-process sshquis_stats_do_sh {
+process shhquis_stats_dot_sh {
   publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
@@ -483,8 +794,6 @@ process sshquis_stats_do_sh {
     file fasta from shhquis_fasta_res_ch.flatten()
   output:
     file '*.stats'
-  when:
-    params.ragtag
   """
     touch shhquis_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
@@ -493,38 +802,87 @@ process sshquis_stats_do_sh {
   """
 }
 
-process ragtag_stats_dot_sh_hap1 {
+process merfin_vcf_stats_dot_sh {
   publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
 
   input:
-    file fasta from hap1_res_ch.flatten()
+    file fasta from merfin_vcf_res_ch.flatten()
   output:
     file '*.stats'
-  when:
-    params.ragtag
   """
-    touch ragtag_hap1_stats.flag.txt
+    touch vcf_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
 }
 
-process ragtag_stats_dot_sh_hap2 {
+process dv_vcf_stats_dot_sh {
   publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
 
   input:
-    file fasta from hap2_res_ch.flatten()
+    file fasta from dv_vcf_res_ch.flatten()
   output:
     file '*.stats'
-  when:
-    params.ragtag
   """
-    touch ragtag_hap2_stats.flag.txt
+    touch vcf_stats.flag.txt
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
+  """
+}
+
+
+process simple_hap_patch_stats_dot_sh {
+  publishDir "${params.outdir}/genome", mode: 'copy'
+  container = 'bryce911/bbtools'
+  cpus 1
+
+  input:
+    file fasta from simple_hap_patch_res_ch.flatten()
+  output:
+    file '*.stats'
+  """
+    touch hap_patch_stats.flag.txt
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
+  """
+}
+
+
+process merfin_hap_patch_stats_dot_sh {
+  publishDir "${params.outdir}/genome", mode: 'copy'
+  container = 'bryce911/bbtools'
+  cpus 1
+
+  input:
+    file fasta from merfin_hap_patch_res_ch.flatten()
+  output:
+    file '*.stats'
+  """
+    touch hap_patch_stats.flag.txt
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
+  """
+}
+
+process dv_hap_patch_stats_dot_sh {
+  publishDir "${params.outdir}/genome", mode: 'copy'
+  container = 'bryce911/bbtools'
+  cpus 1
+
+  input:
+    file fasta from dv_hap_patch_res_ch.flatten()
+  output:
+    file '*.stats'
+  """
+    touch hap_patch_stats.flag.txt
     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
@@ -577,7 +935,6 @@ process ragtag_Version {
 }
 
 process samtools_Version {
-  echo "Samtools Version"
   container = 'mgibio/samtools:1.9'
   cpus 1
 
@@ -588,6 +945,23 @@ process samtools_Version {
     touch samtools_version.flag.txt
     echo "Samtools Version:"
     samtools --version
+    exit 0;
+  """
+}
+
+process bcftools_Version {
+  container = 'mgibio/bcftools:1.9'
+  cpus 1
+
+  output:
+    stdout bcftools_version
+  when:
+    params.polish
+
+  """
+    touch bcftools_version.flag.txt
+    echo "Bcftools Version:"
+    bcftools --version
     exit 0;
   """
 }
@@ -622,6 +996,23 @@ process bbtools_Version {
   """
 }
 
+process deepvariant_Version {
+   container = 'google/deepvariant'
+   cpus 1
+
+   output:
+     stdout deepvariant_version
+   when:
+     params.polishtype == 'dv'
+
+   """
+     touch deepvariant_version.flag.txt
+     echo "DeepVariant Version"
+     /opt/deepvariant/bin/run_deepvariant --version
+     exit 0;
+   """
+}
+
 process jellyfish_Version {
   cpus 1
 
@@ -652,6 +1043,21 @@ process genomescope_Version {
   """
 }
 
+process merfin_Version {
+  cpus 1
+
+  output:
+    stdout merfin_version
+  when:
+    params.polishtype == 'merfin'
+
+  """
+    touch merfin_version.flag.txt
+    echo "merfin  - - - - - - beta?"
+    exit 0;
+  """
+
+}
 
 process BUSCO_Version {
   cpus 1
@@ -662,8 +1068,9 @@ process BUSCO_Version {
     params.busco
 
   """
-   touch busco_version.flag.txt
-   echo "BUSCO  - - - - - - - v5.2.2_cv1"
+    touch busco_version.flag.txt
+    echo "BUSCO  - - - - - - - v5.2.2_cv1"
+    exit 0;
   """   
 
 }
@@ -674,11 +1081,12 @@ process shhquis_Version {
   output:
     stdout shhquis_version
   when:
-    params.ragtag
+    params.polish
 
   """
-   touch shhquis_version.flag.txt
-   echo "Shhquis.jl - - - - - 0.1.0"
+    touch shhquis_version.flag.txt
+    echo "Shhquis.jl - - - - - 0.1.0"
+    exit 0;
   """
 }
 
@@ -689,8 +1097,9 @@ process HiFiAdapterFilt_Version {
     stdout pbadapterfilt_version  
 
   """
-   touch hifiadapterfilt_version.flag.txt
-   echo "HiFiAdapterFilt  - - v1.0.0"
+    touch hifiadapterfilt_version.flag.txt
+    echo "HiFiAdapterFilt  - - v1.0.0"
+    exit 0;
   """
 }
 
@@ -724,23 +1133,44 @@ faidx_output
 Shhquis_dot_jl_output
    .collectFile(name:'shhquis.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
-ragtag_dot_py_hap1_output
-   .collectFile(name:'ragtag_hap1.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
-
-ragtag_dot_py_hap2_output
-   .collectFile(name:'ragtag_hap2.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+ragtag_dot_py_hap_output
+   .collectFile(name:'ragtag_hap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
 busco_gfa_output
    .collectFile(name:'busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_no_polish")
 
-busco_fasta_output
-   .collectFile(name:'busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
+simple_busco_fasta_output
+   .collectFile(name:'simple.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
+
+merfin_busco_fasta_output
+   .collectFile(name:'merfin.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
+
+dv_busco_fasta_output
+   .collectFile(name:'dv.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
 
 jellyfish_output
    .collectFile(name:'jellyfish.log.txt', newLine: true, storeDir:"${params.outdir}/genomescope" )
 
 genomescope2_output
    .collectFile(name:'genomescope2.log.txt', newLine: true, storeDir:"${params.outdir}/genomescope" )
+
+bbmap_dot_sh_output
+   .collectFile(name:'bbmap_dot_sh.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log" )
+
+samtools_mpileup_output
+   .collectFile(name:'mpileup.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log" )
+
+bcftools_refmt_output
+   .collectFile(name:'bcftools_refmt.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log" )
+
+merfin_output
+   .collectFile(name:'merfin.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+deep_variant_output
+   .collectFile(name:'deepvariant.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+bcftools_output
+   .collectFile(name:'bcftools.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
 hifiasm_version
    .collectFile(name:'hifiasm_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
@@ -758,6 +1188,10 @@ samtools_version
    .collectFile(name:'samtools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
+bcftools_version
+   .collectFile(name:'bcftools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+   .view{ it.text }
+
 hicstuff_version
    .collectFile(name:'hicstuff_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
@@ -766,12 +1200,20 @@ bbtools_version
    .collectFile(name:'bbtools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
+deepvariant_version
+   .collectFile(name:'deepvariant_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+   .view{ it.text }
+
 jellyfish_version
    .collectFile(name:'jellyfish_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 genomescope_version
    .collectFile(name:'genomescope_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+   .view{ it.text }
+
+merfin_version
+   .collectFile(name:'merfin_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 busco_version

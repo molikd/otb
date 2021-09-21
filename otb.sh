@@ -47,9 +47,12 @@ help(){
     --slurm
     --slurm-usda
 
-    --polish
-       turn on polishing, effectivly ragtag patching and shhquis rearangement
- 
+    --polish-type
+       turn on polishing one of:
+          \"simple\": ragtag patching and shhquis rearangement
+          \"merfin\": merfin variant calls ontop of ragtag, bcftools consensus
+          \"dv\": deep variant calls ontop of ragtag, bcftools consensus
+
     busco:
        busco options, requires a lineage option
     --busco
@@ -81,7 +84,7 @@ while [ $# -gt 0 ] ; do
     --slurm) RUNNER="slurm";;
     --slurm-usda) RUNNER="slurm_usda";;
     --busco) BUSCO="--busco ";;
-    --polish) POLISH="--polish ";;
+    --polish-type) POLISHTYPE="$2";;
     --auto-lineage) LINEAGE="auto-lineage";;
     --auto-lineage-prok) LINEAGE="auto-lineage-prok";;
     --auto-lineage-euk) LINEAGE="auto-lineage-euk";;
@@ -104,6 +107,26 @@ state "using $(which singularity) for singularity"
 state "output user environment"
 bash scr/check_env.sh 
 
+state "checking runner"
+if [ -n "$RUNNER" ]; then
+  case $RUNNER in
+    "sge") state "$RUNNER being used";;
+    "slurm") state "$RUNNER being used";;
+    "slurm_usda") state "$RUNNER being used";;
+    *) error "runner type ${RUNNER} not found";;
+  esac
+fi
+
+state "checking polishing"
+if [ -n "$POLISHTYPE" ]; then
+  case $POLISHTYPE in
+    "merfin") state "merfin polishing";;
+    "simple") state "simple/ragtag polishing";;
+    "dv") state "deep variant polishing";;
+    *) error "polishing type ${POLISHTYPE} not found, exiting";;
+  esac
+fi
+
 RUN="nextflow run run.nf "
 [ -n "$RUNNER" ] && RUN+="-c config/${RUNNER}.cfg " || warn "no grid computing environment set, using local. this is not recomended."
 if [ -n "$MODE" ]; then
@@ -123,7 +146,7 @@ fi
 [ -f "$R1" ] && RUN+="--readf=\"$R1\" " || error "read pair file one not found, exiting"
 [ -f "$R2" ] && RUN+="--readr=\"$R2\" " || error "read pair file two not found, exiting"
 [ -n "$BUSCO" ] && RUN+="$BUSCO " || state "not running busco"
-[ -n "$POLISH" ] && RUN+="$POLISH " || warn "not polishing, it is recomended that you polish"
+[ -n "$POLISHTYPE" ] && RUN+="--polish --polishtype=\"$POLISHTYPE\" " || warn "not polishing, it is recomended that you polish"
 [ -n "$BUSCO" ] && [ -z "$LINEAGE" ] && error "you want to run BUSCO, but busco lineage not set, exiting"
 [ -n "$LINEAGE" ] && RUN+="--linreage=\"$LINEAGE\" "
 [ -n "$BAM" ] && RUN+="--readbam=\"$BAM\" " || error "bam file(s) not given, exiting"
