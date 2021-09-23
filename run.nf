@@ -160,11 +160,7 @@ process gfa2fasta {
   output:
     file '*.p_ctg.gfa.fasta' optional true into gfa2fasta_fasta_res_ch
     file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch
-<<<<<<< HEAD
     file '*hap[12].p_ctg.gfa.fasta' optional true into fasta_hap_ch, simple_fasta_hap_polish_ch, merfin_fasta_hap_polish_ch, dv_fasta_hap_polish_ch
-=======
-    file '*hap[12].p_ctg.gfa.fasta' optional true into fasta_hap_ch
->>>>>>> 39826ba28fa9f608340d076f5576e193b373eb4d
     stdout gfa2fasta_output
   """
     touch any2fasta.flag.txt
@@ -370,11 +366,7 @@ process simple_polish {
   input:
     file genome from shhquis_simple_ch
   output:
-<<<<<<< HEAD
     file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_genome_busco_ch
-=======
-    file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_busco_genome_ch
->>>>>>> 39826ba28fa9f608340d076f5576e193b373eb4d
   when:
     params.polishtype == "simple"
   """
