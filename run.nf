@@ -160,7 +160,11 @@ process gfa2fasta {
   output:
     file '*.p_ctg.gfa.fasta' optional true into gfa2fasta_fasta_res_ch
     file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch
+<<<<<<< HEAD
     file '*hap[12].p_ctg.gfa.fasta' optional true into fasta_hap_ch, simple_fasta_hap_polish_ch, merfin_fasta_hap_polish_ch, dv_fasta_hap_polish_ch
+=======
+    file '*hap[12].p_ctg.gfa.fasta' optional true into fasta_hap_ch
+>>>>>>> 39826ba28fa9f608340d076f5576e193b373eb4d
     stdout gfa2fasta_output
   """
     touch any2fasta.flag.txt
@@ -366,7 +370,11 @@ process simple_polish {
   input:
     file genome from shhquis_simple_ch
   output:
+<<<<<<< HEAD
     file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_genome_busco_ch
+=======
+    file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_busco_genome_ch
+>>>>>>> 39826ba28fa9f608340d076f5576e193b373eb4d
   when:
     params.polishtype == "simple"
   """
@@ -610,8 +618,6 @@ process ragtag_dot_py_hap_merfin_polish {
     stdout merfin_ragtag_dot_py_hap_output
   when:
     params.polishtype == "merfin"
-  """
-    touch ragtag.hap.flag.txt
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
@@ -1135,6 +1141,7 @@ faidx_output
 Shhquis_dot_jl_output
    .collectFile(name:'shhquis.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
+<<<<<<< HEAD
 simple_ragtag_dot_py_hap_output
    .collectFile(name:'ragtag_hap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
@@ -1142,6 +1149,9 @@ merfin_ragtag_dot_py_hap_output
    .collectFile(name:'ragtag_hap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
 dv_ragtag_dot_py_hap_output
+=======
+ragtag_dot_py_hap_output
+>>>>>>> 39826ba28fa9f608340d076f5576e193b373eb4d
    .collectFile(name:'ragtag_hap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
 busco_gfa_output
