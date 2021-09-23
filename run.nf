@@ -496,7 +496,7 @@ process samtools_merge_for_deep_variant {
     params.polishtype == "dv"
   """
     touch samtools.merge.flag.txt
-    samtools merge --threads ${task.cpus} -X merged.bam ${bam_reads}
+    samtools merge --threads ${task.cpus} -o merged.bam ${bam_reads}
     echo "finished merging"
     exit 0;
   """
