@@ -18,7 +18,7 @@ bam_ch = Channel.fromPath(params.readbam)
 right_fastq_check = Channel.fromPath(params.readr)
 left_fastq_check = Channel.fromPath(params.readf)
 
-bam_ch.into{ bam_check_ch; bam_Hifi_ch, bam_dv_ch}
+bam_ch.into{ bam_check_ch; bam_Hifi_ch; bam_dv_ch}
 
 process check_bam {
   container = 'mgibio/samtools:1.9'
@@ -236,7 +236,7 @@ process faidx {
   output:
     file '*.fai' into fai_ch
     stdout faidx_output
-  when:`
+  when:
     params.polish
   """
     touch faidx.flag.txt
@@ -354,7 +354,7 @@ process genomescope2 {
     touch genomescope.flag.txt
     xvfb-run genomescope.R -i ${histo} -o ${params.assembly} -k 21 -p ${params.ploidy} --fitted_hist 
     genomescope.R --version > version.txt
-    awk '/kmercov [0-9]/ { print $2 }' ${params.assembly}/model.txt >> kcov.txt
+    awk '/kmercov [0-9]/ { print \$2 }' ${params.assembly}/model.txt >> kcov.txt
     echo "finished genomescope"
     exit 0;
   """
@@ -443,7 +443,7 @@ process bcftools_refmt {
     bcftools annotate --threads ${task.cpus} -h merfin_header.vcf var.temp.reshaped.combined.vcf > var.temp.reshaped.vcf
     bcftools view --threads ${task.cpus} -h var.temp.reshaped.vcf | sed 's/\tINFO/\tINFO\tFORMAT\tIND/g' > var.reshaped.vcf
     rm var.temp.reshaped.vcf 
-    bcftools view --threads ${task.cpus} -H var.temp.reshaped.combined.vcf | awk -F"\t" -v OFS="\t" '{gsub(/DP=/,".\tGT:DP\t1/1:",$8);print $0}' >> var.reshaped.vcf
+    bcftools view --threads ${task.cpus} -H var.temp.reshaped.combined.vcf | awk -F"\t" -v OFS="\t" '{gsub(/DP=/,".\tGT:DP\t1/1:",\$8);print \$0}' >> var.reshaped.vcf
     bcftools view --threads ${task.cpus} var.reshaped.vcf -Oz > final.reshaped.vcf.gz
     rm var.reshaped.vcf 
     rm var.temp.reshaped.combined.vcf
@@ -523,7 +523,9 @@ process deep_variant {
   """
 }
 
-polish_vcf_ch = Channel.concat(merfin_vcf_ch, dv_vcf_ch)
+//polish_vcf_ch = Channel.create()
+//polish_vcf_ch.concat(merfin_vcf_ch, dv_vcf_ch)
+//polish_vcf_ch.into{ bcftools_polish_vcf_ch }
 
 process bcftools {
   publishDir "${params.outdir}/genome", mode: 'rellink' 
@@ -532,7 +534,7 @@ process bcftools {
 
   input:
     file genome from shhquis_bcftools_ch
-    file vcf from polish_vcf_ch
+    file vcf from concat(merfin_vcf_ch, dv_vcf_ch)
   output:
     file "${params.assembly}.vcf_polished_assembly.fasta" into vcf_polished_genome_ch, vcf_res_ch, vcf_polished_busco_genome_ch
     file "${params.assembly}.vcf_polished_assembly.fasta"
@@ -547,7 +549,8 @@ process bcftools {
   """
 }
 
-polished_genome_ch = Channel.concat(simple_polished_genome_ch, vcf_polished_genome_ch)
+polished_genome_ch = Channel.create()
+polished_genome_ch.concat(simple_polished_genome_ch, vcf_polished_genome_ch)
 
 process ragtag_dot_py_hap_polish {
   publishDir "${params.outdir}/genome", mode: 'rellink'
@@ -572,7 +575,8 @@ process ragtag_dot_py_hap_polish {
   """
 }
 
-polished_genome_busco_ch = Channel.concat(simple_polished_busco_genome_ch, vcf_polished_busco_genome_ch)
+polished_genome_busco_ch = Channel.create()
+polished_genome_busco_ch.concat(simple_polished_busco_genome_ch, vcf_polished_busco_genome_ch)
 
 process busco_fasta {
   publishDir "${params.outdir}/busco_polish", mode: 'rellink'
@@ -611,7 +615,8 @@ process busco_fasta {
   """
 }
 
-stats_processing_ch = Channel.concat(gfa2fasta_fasta_res_ch, ragtag_fasta_res_ch, shhquis_fasta_res_ch, hap_patch_res_ch, vcf_res_ch) 
+stats_processing_ch = Channel.create()
+stats_processing_ch.concat(gfa2fasta_fasta_res_ch, ragtag_fasta_res_ch, shhquis_fasta_res_ch, hap_patch_res_ch, vcf_res_ch) 
 
 process stats_dot_sh {
   publishDir "${params.outdir}/genome", mode: 'copy'
@@ -697,7 +702,7 @@ process bcftools_Version {
   output:
     stdout bcftools_version
   when:
-    params.polishtype == 'merfin' || params.polishtype == 'dv'
+    params.polish
 
   """
     touch bcftools_version.flag.txt
@@ -705,6 +710,7 @@ process bcftools_Version {
     bcftools --version
     exit 0;
   """
+}
 
 process hicstuff_Version {
   container = 'koszullab/hicstuff'
