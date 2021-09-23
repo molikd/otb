@@ -610,6 +610,7 @@ process ragtag_dot_py_hap_merfin_polish {
     stdout merfin_ragtag_dot_py_hap_output
   when:
     params.polishtype == "merfin"
+  """
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
@@ -1133,7 +1134,6 @@ faidx_output
 Shhquis_dot_jl_output
    .collectFile(name:'shhquis.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
-<<<<<<< HEAD
 simple_ragtag_dot_py_hap_output
    .collectFile(name:'ragtag_hap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
@@ -1141,9 +1141,6 @@ merfin_ragtag_dot_py_hap_output
    .collectFile(name:'ragtag_hap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
 dv_ragtag_dot_py_hap_output
-=======
-ragtag_dot_py_hap_output
->>>>>>> 39826ba28fa9f608340d076f5576e193b373eb4d
    .collectFile(name:'ragtag_hap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
 busco_gfa_output
