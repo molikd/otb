@@ -160,7 +160,7 @@ process gfa2fasta {
   output:
     file '*.p_ctg.gfa.fasta' optional true into gfa2fasta_fasta_res_ch
     file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch
-    file '*hap[12].p_ctg.gfa.fasta' optional true into fasta_hap_ch
+    file '*hap[12].p_ctg.gfa.fasta' optional true into fasta_hap_ch, simple_fasta_hap_polish_ch, merfin_fasta_hap_polish_ch, dv_fasta_hap_polish_ch
     stdout gfa2fasta_output
   """
     touch any2fasta.flag.txt
@@ -366,7 +366,7 @@ process simple_polish {
   input:
     file genome from shhquis_simple_ch
   output:
-    file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_busco_genome_ch
+    file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_genome_busco_ch
   when:
     params.polishtype == "simple"
   """
@@ -489,9 +489,11 @@ process samtools_merge_for_deep_variant {
   cpus = params.threads
 
   input:
-    file bam_reads from bam_dv_ch
+    file bam_reads from bam_dv_ch.collect()
   output:
     file 'merged.bam' into bam_dv_merged_ch
+  when:
+    params.polishtype == "dv"
   """
     touch samtools.merge.flag.txt
     samtools merge --threads ${task.cpus} -X merged.bam ${bam_reads}
@@ -534,7 +536,7 @@ process dv_bcftools {
   output:
     file "${params.assembly}.vcf_polished_assembly.fasta" into dv_vcf_polished_genome_ch, dv_vcf_res_ch, dv_vcf_polished_busco_genome_ch
     file "${params.assembly}.vcf_polished_assembly.fasta"
-    stdout bcftools_output
+    stdout dv_bcftools_output
   when:
     params.polishtype == "dv"
   """
@@ -558,7 +560,7 @@ process merfin_bcftools {
   output:
     file "${params.assembly}.vcf_polished_assembly.fasta" into merfin_vcf_polished_genome_ch, merfin_vcf_res_ch, merfin_vcf_polished_busco_genome_ch
     file "${params.assembly}.vcf_polished_assembly.fasta"
-    stdout bcftools_output
+    stdout merfin_bcftools_output
   when:
     params.polishtype == "merfin"
   """
@@ -577,12 +579,12 @@ process ragtag_dot_py_hap_simple_polish {
   cpus = params.threads
 
   input:
-    file fasta_hap from fasta_hap_polish_ch
+    file fasta_hap from simple_fasta_hap_polish_ch
     file fasta_genome from simple_polished_genome_ch
   output:
     file "${params.assembly}_ragtag_scaffold/patched*"
     file "${params.assembly}_ragtag_scaffold/patched" into simple_hap_patch_res_ch
-    stdout ragtag_dot_py_hap_output
+    stdout simple_ragtag_dot_py_hap_output
   when:
     params.polishtype == "simple"
   """
@@ -600,14 +602,14 @@ process ragtag_dot_py_hap_merfin_polish {
   cpus = params.threads
 
   input:
-    file fasta_hap from fasta_hap_polish_ch
+    file fasta_hap from merfin_fasta_hap_polish_ch
     file fasta_genome from merfin_vcf_polished_genome_ch
   output:
     file "${params.assembly}_ragtag_scaffold/patched*"
     file "${params.assembly}_ragtag_scaffold/patched" into merfin_hap_patch_res_ch
-    stdout ragtag_dot_py_hap_output
+    stdout merfin_ragtag_dot_py_hap_output
   when:
-    params.polishtype == "simple"
+    params.polishtype == "merfin"
   """
     touch ragtag.hap.flag.txt
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
@@ -623,14 +625,14 @@ process ragtag_dot_py_hap_deep_variant_polish {
   cpus = params.threads
 
   input:
-    file fasta_hap from fasta_hap_polish_ch
-    file fasta_genome from polished_genome_ch
+    file fasta_hap from dv_fasta_hap_polish_ch
+    file fasta_genome from dv_vcf_polished_genome_ch
   output:
     file "${params.assembly}_ragtag_scaffold/patched*"
     file "${params.assembly}_ragtag_scaffold/patched" into dv_hap_patch_res_ch
-    stdout ragtag_dot_py_hap_output
+    stdout dv_ragtag_dot_py_hap_output
   when:
-    params.polishtype == "simple"
+    params.polishtype == "dv"
   """
     touch ragtag.hap.flag.txt
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
@@ -1133,7 +1135,13 @@ faidx_output
 Shhquis_dot_jl_output
    .collectFile(name:'shhquis.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
-ragtag_dot_py_hap_output
+simple_ragtag_dot_py_hap_output
+   .collectFile(name:'ragtag_hap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+merfin_ragtag_dot_py_hap_output
+   .collectFile(name:'ragtag_hap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+dv_ragtag_dot_py_hap_output
    .collectFile(name:'ragtag_hap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
 busco_gfa_output
@@ -1169,7 +1177,10 @@ merfin_output
 deep_variant_output
    .collectFile(name:'deepvariant.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
-bcftools_output
+merfin_bcftools_output
+   .collectFile(name:'bcftools.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+dv_bcftools_output
    .collectFile(name:'bcftools.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
 hifiasm_version
