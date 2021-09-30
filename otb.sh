@@ -21,9 +21,6 @@ help(){
 
     -c or --check
        perform checks to insure smoother operation
- 
-    -b or --background
-       send nextflow run to the background, ensures that nextflow will continue to run if disconnected
 
   required:
     -f or --forward
@@ -80,7 +77,6 @@ while [ $# -gt 0 ] ; do
     -v | --version) version ;;
     -s | --supress) SUPRESS="true";;
     -c | --check) TEST="true";;
-    -b | --background) BG="-bg";;
     -f | --forward) R1="$2" ;;
     -r | --reverse) R2="$2" ;;
     -b | --bam) BAM="$2" ;;
@@ -160,7 +156,7 @@ fi
 [ -n "$BAM" ] && RUN+="--readbam=\"$BAM\" " || error "bam file(s) not given, exiting"
 [ -z "$NAME" ] && NAME="$(date +%s)" && state "name not given, setting name to: $NAME"
 RUN+="--assembly=\"$NAME\" "
-[ -n "$BG" ] && RUN+="-bg"
+RUN+="-bg"
 
 pizzaz "$RUN"
 [ -z "$SUPRESS" ] && stop_check "check that the command is expected, continue"
@@ -208,8 +204,9 @@ if [ -n "$TEST" ]; then
       singularity exec "$container_location/mgibio-bcftools-1.9.img" echo "   ...hello from bcftools container" || error "bcftools container broken, exiting"
       singularity exec "$container_location/google-deepvariant.img" echo "   ...hello from deepvariant container" || error "deepvariant container broken, exiting"
     ;;
+  esac
   state "all required containers checked with an intial pass"
 fi 
 
 [ -z "$SUPRESS" ] && stop_check "proceed with run"
-eval $RUN &> "nextflow-${NAME}.log.txt"
+eval $RUN &> "nextflow-${NAME}.log.txt" &

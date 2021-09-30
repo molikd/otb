@@ -43,8 +43,9 @@ process check_fastq {
     file right_fastq from right_fastq_check
     file left_fastq from left_fastq_check 
   output:
-    file 'right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish, right_fastq_jellyfish
-    file 'left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_fastq_jellyfish
+    file 'out/right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish, right_fastq_jellyfish
+    file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_fastq_jellyfish
+    file 'out/*.fastq.gz' into fasta_in_ch
     stdout check_fastq_output
   shell:
   '''
@@ -75,8 +76,9 @@ process check_fastq {
    [[ $(( $second % 4 )) -eq 0 ]] || error "number of lines in !{left_fastq} not divisable by four"
 
    state "make softlinks for both files"
-   [[ !{right_fastq}  =~ ".gz" ]] && ln -s !{right_fastq} right.fastq.gz || (zcat !{right_fastq} > right.fastq.gz)
-   [[ !{left_fastq}  =~ ".gz" ]] && ln -s !{left_fastq} left.fastq.gz || (zcat !{left_fastq} > left.fastq.gz)
+   mkdir out
+   [[ !{right_fastq}  =~ ".gz" ]] && ln -s out/!{right_fastq} right.fastq.gz || (gzip -c !{right_fastq} > out/right.fastq.gz)
+   [[ !{left_fastq}  =~ ".gz" ]] && ln -s out/!{left_fastq} left.fastq.gz || (gzip -c !{left_fastq} > out/left.fastq.gz)
 
    state "successful completion"
 
@@ -95,7 +97,7 @@ process HiFiAdapterFilt {
     stdout pbadapterfilt_output
   """
     touch pbadapterfilt.flag.txt
-    pbadapterfilt.sh ${bam} -t ${task.cpus} 2>&1
+    pbadapterfilt.sh ${bam} -t ${task.cpus}
     echo "finished adapter filtering"
     exit 0;
   """
@@ -188,22 +190,22 @@ process busco_gfa {
   if( params.linreage == 'auto-lineage')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok')
   """
     touch busco.flag.txt 
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk')
   """
     touch busco.flag.txt 
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else
   """
     touch busco.flag.txt 
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
 }
 
@@ -221,7 +223,7 @@ process ragtag_dot_py {
     params.polish
   """
     touch ragtag.flag.txt 
-    ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec} 2>&1
+    ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
     echo "finished patching"
     exit 0;
   """
@@ -240,7 +242,7 @@ process faidx {
     params.polish
   """
     touch faidx.flag.txt
-    samtools faidx -o ${genome}.fai ${genome} 2>&1
+    samtools faidx -o ${genome}.fai ${genome}
     echo "finished indexing"
     exit 0;
   """
@@ -261,7 +263,7 @@ process hicstuff {
     stdout hicstuff_output
   """
     touch hicstuff.flag.txt
-    hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right} 2>&1
+    hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
     echo "finished fragment calculations"
     exit 0;
   """
@@ -286,7 +288,7 @@ process hicstuff_polish {
     params.polish
   """
     touch hicstuff_for_polished.flag.txt 
-    hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right} 2>&1
+    hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
     mv hicstuff_out/fragments_list.txt hicstuff_out/polish_fragments_list.txt
     mv hicstuff_out/plots/frags_hist.pdf hicstuff_out/plots/polish_frags_hist.pdf
     echo "finished fragment calculations"
@@ -312,7 +314,7 @@ process Shhquis_dot_jl {
     params.polish
   """
     touch shhquis.flag.txt
-    shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average" 2>&1
+    shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
     echo "finished reorientation"
     exit 0;
   """
@@ -331,7 +333,7 @@ process jellyfish {
     stdout jellyfish_output
   """
     touch jellyfish.flag.txt
-    jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf <(zcat ${fastqr}) <(zcat ${fastqf}) 2>&1 
+    jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf <(zcat ${fastqr}) <(zcat ${fastqf})
     jellyfish histo -t ${task.cpus} reads.jf > ${params.assembly}.histo 2>&1
     jellyfish cite > version.txt
   """
@@ -476,9 +478,9 @@ process merfin {
     """
       echo "warning merfin is experimental"
       touch merfin.flag.txt
-      meryl count k=21 ${ec_reads} output reads.meryl 2>&1
-      meryl greater-than 1 reads.meryl output reads.gt1.meryl 2>&1
-      merfin -polish -threads ${task.cpus} -sequence ${genome} -peak ${kcov} -prob ${lookup_table} -readmers reads.gt1.meryl -vcf ${vcf_file} -output merfin 2>&1 
+      meryl count k=21 ${ec_reads} output reads.meryl
+      meryl greater-than 1 reads.meryl output reads.gt1.meryl
+      merfin -polish -threads ${task.cpus} -sequence ${genome} -peak ${kcov} -prob ${lookup_table} -readmers reads.gt1.meryl -vcf ${vcf_file} -output merfin
       echo "finished merfin"
       exit 0;
     """
@@ -496,7 +498,7 @@ process samtools_merge_for_deep_variant {
     params.polishtype == "dv"
   """
     touch samtools.merge.flag.txt
-    samtools merge --threads ${task.cpus} merged.bam ${bam_reads} 2>&1
+    samtools merge --threads ${task.cpus} merged.bam ${bam_reads}
     echo "finished merging"
     exit 0;
   """
@@ -519,7 +521,7 @@ process deep_variant {
   """
     echo "warning deep variant is experimental"
     touch deep_variant.flag.txt
-    /opt/deepvariant/bin/run_deepvariant --model_type=PACBIO --ref=${genome} --reads=${bam_read} --output_vcf=google_dv.vcf --output_gvcf=google_dv.gvcf --num_shards=${task.cpus} 2>&1
+    /opt/deepvariant/bin/run_deepvariant --model_type=PACBIO --ref=${genome} --reads=${bam_read} --output_vcf=google_dv.vcf --output_gvcf=google_dv.gvcf --num_shards=${task.cpus}
     echo "finished deep variant"
     exit 0;
   """
@@ -541,9 +543,9 @@ process dv_bcftools {
     params.polishtype == "dv"
   """
     touch dv.bcftools.flag.txt
-    bcftools view --threads ${task.cpus} -Oz ${vcf} > ${vcf}.gz 2>&1 
-    bcftools index --threads ${task.cpus} ${vcf}.gz 2>&1
-    bcftools consensus ${vcf}.gz -f ${genome} -H 1 > ${params.assembly}.vcf_polished_assembly.fasta 2>&1
+    bcftools view --threads ${task.cpus} -Oz ${vcf} > ${vcf}.gz
+    bcftools index --threads ${task.cpus} ${vcf}.gz
+    bcftools consensus ${vcf}.gz -f ${genome} -H 1 > ${params.assembly}.vcf_polished_assembly.fasta
     echo "finished bcftools from deep variant"
     exit 0;
   """
@@ -566,7 +568,7 @@ process merfin_bcftools {
   """
     touch merfin.bcftools.flag.txt
     bcftools view --threads ${task.cpus} -Oz ${vcf} > ${vcf}.gz
-    bcftools index --threads ${task.cpus} ${vcf}.gz 2>&1
+    bcftools index --threads ${task.cpus} ${vcf}.gz
     bcftools consensus ${vcf}.gz -f ${genome} -H 1 > ${params.assembly}.vcf_polished_assembly.fasta
     echo "finished bcftools from merfin"
     exit 0;
@@ -589,8 +591,8 @@ process ragtag_dot_py_hap_simple_polish {
     params.polishtype == "simple"
   """
     touch ragtag.hap.flag.txt
-    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap} 2>&1
-    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap} 2>&1
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
     exit 0;
   """
@@ -611,8 +613,8 @@ process ragtag_dot_py_hap_merfin_polish {
   when:
     params.polishtype == "merfin"
   """
-    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap} 2>&1
-    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap} 2>&1
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
     exit 0;
   """
@@ -634,8 +636,8 @@ process ragtag_dot_py_hap_deep_variant_polish {
     params.polishtype == "dv"
   """
     touch ragtag.hap.flag.txt
-    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap} 2>&1
-    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap} 2>&1
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
     exit 0;
   """
@@ -659,22 +661,22 @@ process simple_busco_fasta {
   if( params.linreage == 'auto-lineage')
   """
     touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok')
   """
     touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk')
   """
     touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else
   """
     touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
 }
 
@@ -696,22 +698,22 @@ process merfin_busco_fasta {
   if( params.linreage == 'auto-lineage')
   """
     touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok')
   """
     touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk')
   """
     touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else
   """
     touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
 }
 
@@ -733,22 +735,39 @@ process dv_busco_fasta {
   if( params.linreage == 'auto-lineage')
   """
     touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok')
   """
     touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk')
   """
     touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else
   """
     touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} 2>&1
+    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+  """
+}
+
+process fasta_in_dot_sh {
+  publishDir "${params.outdir}/genome", mode: 'copy'
+  container = 'bryce911/bbtools'
+  cpus 1
+
+  input:
+    file fasta from  fasta_in_ch.flatten()
+  output:
+    file '*.stats'
+  """
+    touch any2fasta_stats.flag.txt
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
   """
 }
 
