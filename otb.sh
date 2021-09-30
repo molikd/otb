@@ -59,7 +59,7 @@ help(){
        busco options, requires a lineage option
     --busco
        busco flag turns on busco
-    select one of the following:
+    select one of the following (all imply --busco):
        --auto-lineage
           try to use auto lineage finder from busco
        --auto-lineage-prok
@@ -67,7 +67,9 @@ help(){
        --auto-lineage-euk
           try to use auto linage finder from busco, but limit to eukaryotes
        -l or --lineage
-          use a specific lineage with busco (recomended)"
+          use a specific lineage with busco (recomended)
+       -p or --path
+          run busco in offline mode, with path to database, or with database name to try and download"
   exit 0;
 }
 
@@ -92,6 +94,7 @@ while [ $# -gt 0 ] ; do
     --auto-lineage-prok) LINEAGE="auto-lineage-prok";;
     --auto-lineage-euk) LINEAGE="auto-lineage-euk";;
     -l | --lineage) LINEAGE="$2";;
+    -p | --busco-path) BUSCOPATH="$2";;
   esac
   shift
 done
@@ -131,6 +134,44 @@ if [ -n "$POLISHTYPE" ]; then
   esac
 fi
 
+state "checking for running busco"
+if [ -n "$BUSCO" -o -n "$LINEAGE" -o -n "$BUSCOPATH" ]; then
+state "running busco, checking busco things"
+  [ -z "$LINEAGE" -a -z "$BUSCOPATH" ] && error "trying to setup busco, but no lineage/path/file given"
+  if [ -n "$LINEAGE" ]; then
+    state "   ...busco lineage described: ${LINEAGE}"
+    BUSCOSTRING="--busco --linreage=\"${LINEAGE} \""
+  elif [ -n "$BUSCOPATH" ]; then
+    state "   ...attempting offline busco run"
+    if [ -f "$BUSCOPATH" ]; then
+      state "you have handed busco a file"
+      BUSCODWNLOC=$( dirname $BUSCOPATH )
+      BUSCODBFILE=$( basename $BUSCOPATH )
+      BUSCOSTRING="--busco --linreage=\"${BUSCODBFILE}\" --buscooffline --buscodb=\"${BUSCODWNLOC}\" "
+    else
+      warn "trying to download busco dataset, this is not recomended"
+      mkdir -p work/busco
+      if [ -f "work/singularity/ezlabgva-busco-v5.2.2_cv1.img" ]; then
+        state "busco found at work/singularity/ezlabgva-busco-*"
+        singularity exec work/singularity/ezlabgva-busco-v5.2.2_cv1.img busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
+      elif [ -f "${SINGULARITY_LOCALCADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img" ]; then
+        state "busco found at ${SINGULARITY_LOCALCADHEDIR}/ezlabgva-busco-*"
+        singularity exec ${SINGULARITY_LOCALCADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
+      elif [ -f "${SINGULARITY_CADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img" ]; then
+        state "busco found at ${SINGULARITY_CADHEDIR}/ezlabgva-busco-*"
+        singularity exec ${SINGULARITY_CADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
+      elif [ $( command -v busco >/dev/null ) ]; then
+        state "busco command found"
+        warn "using non-otb version of busco, this may result in problems"
+        busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
+      else
+        error "no busco command found, I can not dowload any datasets, exiting"
+      fi
+      BUSCOSTRING="--busco --linreage=\"${BUSCOPATH}\" --buscoffline --buscodb=\"work/busco\" "
+    fi
+  fi
+fi
+
 RUN="nextflow run run.nf "
 [ -n "$RUNNER" ] && RUN+="-c config/${RUNNER}.cfg " || warn "no grid computing environment set, using local. this is not recomended."
 if [ -n "$MODE" ]; then
@@ -151,8 +192,7 @@ fi
 [ -f "$R2" ] && RUN+="--readr=\"$R2\" " || error "read pair file two not found, exiting"
 [ -n "$BUSCO" ] && RUN+="$BUSCO " || state "not running busco"
 [ -n "$POLISHTYPE" ] && RUN+="--polish --polishtype=\"$POLISHTYPE\" " || warn "not polishing, it is recomended that you polish"
-[ -n "$BUSCO" ] && [ -z "$LINEAGE" ] && error "you want to run BUSCO, but busco lineage not set, exiting"
-[ -n "$LINEAGE" ] && RUN+="--linreage=\"$LINEAGE\" "
+[ -n "$BUSCOSTRING" ] && RUN+="$BUSCOSTRING"
 [ -n "$BAM" ] && RUN+="--readbam=\"$BAM\" " || error "bam file(s) not given, exiting"
 [ -z "$NAME" ] && NAME="$(date +%s)" && state "name not given, setting name to: $NAME"
 RUN+="--assembly=\"$NAME\" "
