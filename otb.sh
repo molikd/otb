@@ -212,4 +212,4 @@ if [ -n "$TEST" ]; then
 fi 
 
 [ -z "$SUPRESS" ] && stop_check "proceed with run"
-eval $RUN
+eval $RUN &> "nextflow-${NAME}.log.txt"
