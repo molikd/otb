@@ -11,6 +11,8 @@ params.ploidy = '2'
 params.threads = '20'
 params.linreage = 'insecta_odb10'
 params.busco = false
+params.buscooffline = false
+params.buscodb = "/work/busco"
 params.polish = false
 params.polishtype = 'simple'
 
@@ -31,7 +33,7 @@ process check_bam {
   """
    touch check_bam.flag.txt
    stat ${bam}
-   samtools flagstat ${bam}
+   samtools flagstat ${bam} 2>&1
    exit 0;
   """
 }
@@ -43,8 +45,9 @@ process check_fastq {
     file right_fastq from right_fastq_check
     file left_fastq from left_fastq_check 
   output:
-    file 'right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish, right_fastq_jellyfish
-    file 'left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_fastq_jellyfish
+    file 'out/right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish, right_fastq_jellyfish
+    file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_fastq_jellyfish
+    file 'out/*.fastq.gz' into fasta_in_ch
     stdout check_fastq_output
   shell:
   '''
@@ -75,8 +78,22 @@ process check_fastq {
    [[ $(( $second % 4 )) -eq 0 ]] || error "number of lines in !{left_fastq} not divisable by four"
 
    state "make softlinks for both files"
-   [[ !{right_fastq}  =~ ".gz" ]] && ln -s !{right_fastq} right.fastq.gz || (zcat !{right_fastq} > right.fastq.gz)
-   [[ !{left_fastq}  =~ ".gz" ]] && ln -s !{left_fastq} left.fastq.gz || (zcat !{left_fastq} > left.fastq.gz)
+   mkdir out
+
+   if [[ !{right_fastq}  =~ ".gz" ]]; then
+     cd out
+     ln -s ../!{right_fastq} right.fastq.gz
+     cd ..
+   else
+     gzip -c !{right_fastq} > out/right.fastq.gz
+   fi
+   if [[ !{left_fastq}  =~ ".gz" ]]; then
+     cd out
+     ln -s ../!{left_fastq} left.fastq.gz
+     cd ..
+   else
+     gzip -c !{left_fastq} > out/left.fastq.gz)
+   fi
 
    state "successful completion"
 
@@ -119,21 +136,21 @@ process HiFiASM {
   if( params.mode == 'phasing' )
   """
     touch hifiasm.flag.txt
-    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${left} --h2 ${right} ${fasta}
+    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${left} --h2 ${right} ${fasta} 2>&1
     echo "finished alignment"
     exit 0;
   """
   else if( params.mode == 'homozygous' )
   """
     touch hifiasm.flag.txt
-    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -l0 ${fasta}
+    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -l0 ${fasta} 2>&1
     echo "finished alignment"
     exit 0;
   """
   else if( params.mode == 'heterozygous')
   """
     touch hifiasm.flag.txt
-    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta}
+    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
     echo "finished alignment"
     exit 0;
   """
@@ -142,7 +159,7 @@ process HiFiASM {
     touch hifiasm.flag.txt
     yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left}) <(zcat ${left})
     yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${right}) <(zcat ${right})
-    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta}
+    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta} 2>&1
     echo "finished alignment"
     exit 0;
   """
@@ -164,7 +181,7 @@ process gfa2fasta {
     stdout gfa2fasta_output
   """
     touch any2fasta.flag.txt
-    any2fasta ${gfa} > ${gfa}.fasta
+    any2fasta ${gfa} 1> ${gfa}.fasta 2>&1
     echo "finished gfa to fasta conversion"
     exit 0;
   """
@@ -185,25 +202,39 @@ process busco_gfa {
 
   script:
 
-  if( params.linreage == 'auto-lineage')
+  if( params.linreage == 'auto-lineage' && params.buscooffline == false)
   """
     touch busco.flag.txt
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
-  else if( params.linreage == 'auto-lineage-prok')
+  else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
     touch busco.flag.txt 
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
-  else if( params.linreage == 'auto-lineage-euk')
+  else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
     touch busco.flag.txt 
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
-  else
+  else if( params.buscooffline == false)
   """
     touch busco.flag.txt 
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+  """
+  else if( params.buscooffline == true && params.buscodb == 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+  """
+  else if( params.buscooffline == true && params.buscodb != 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+  """
+  else
+  """
+    touch busco.flag.txt
   """
 }
 
@@ -331,8 +362,8 @@ process jellyfish {
     stdout jellyfish_output
   """
     touch jellyfish.flag.txt
-    jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf <(zcat ${fastqr}) <(zcat ${fastqf}) 
-    jellyfish histo -t ${task.cpus} reads.jf > ${params.assembly}.histo
+    jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf <(zcat ${fastqr}) <(zcat ${fastqf})
+    jellyfish histo -t ${task.cpus} reads.jf > ${params.assembly}.histo 2>&1
     jellyfish cite > version.txt
   """
 }
@@ -478,7 +509,7 @@ process merfin {
       touch merfin.flag.txt
       meryl count k=21 ${ec_reads} output reads.meryl
       meryl greater-than 1 reads.meryl output reads.gt1.meryl
-      merfin -polish -threads ${task.cpus} -sequence ${genome} -peak ${kcov} -prob ${lookup_table} -readmers reads.gt1.meryl -vcf ${vcf_file} -output merfin 
+      merfin -polish -threads ${task.cpus} -sequence ${genome} -peak ${kcov} -prob ${lookup_table} -readmers reads.gt1.meryl -vcf ${vcf_file} -output merfin
       echo "finished merfin"
       exit 0;
     """
@@ -496,7 +527,7 @@ process samtools_merge_for_deep_variant {
     params.polishtype == "dv"
   """
     touch samtools.merge.flag.txt
-    samtools merge --threads ${task.cpus} -X merged.bam ${bam_reads}
+    samtools merge --threads ${task.cpus} merged.bam ${bam_reads}
     echo "finished merging"
     exit 0;
   """
@@ -656,25 +687,39 @@ process simple_busco_fasta {
 
   script:
 
-  if( params.linreage == 'auto-lineage')
+  if( params.linreage == 'auto-lineage' && params.buscooffline == false)
   """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
-  else if( params.linreage == 'auto-lineage-prok')
+  else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
-  else if( params.linreage == 'auto-lineage-euk')
+  else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+  """
+  else if( params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+  """
+  else if( params.buscooffline == true && params.buscodb == 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+  """
+  else if( params.buscooffline == true && params.buscodb != 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
   """
   else
   """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    touch busco.flag.txt
   """
 }
 
@@ -693,25 +738,39 @@ process merfin_busco_fasta {
 
   script:
 
-  if( params.linreage == 'auto-lineage')
+  if( params.linreage == 'auto-lineage' && params.buscooffline == false)
   """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
-  else if( params.linreage == 'auto-lineage-prok')
+  else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
-  else if( params.linreage == 'auto-lineage-euk')
+  else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+  """
+  else if( params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+  """
+  else if( params.buscooffline == true && params.buscodb == 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+  """
+  else if( params.buscooffline == true && params.buscodb != 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
   """
   else
   """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    touch busco.flag.txt
   """
 }
 
@@ -730,25 +789,56 @@ process dv_busco_fasta {
 
   script:
 
-  if( params.linreage == 'auto-lineage')
+  if( params.linreage == 'auto-lineage' && params.buscooffline == false)
   """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
-  else if( params.linreage == 'auto-lineage-prok')
+  else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
-  else if( params.linreage == 'auto-lineage-euk')
+  else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+  """
+  else if( params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+  """
+  else if( params.buscooffline == true && params.buscodb == 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+  """
+  else if( params.buscooffline == true && params.buscodb != 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
   """
   else
   """
-    touch busco_for_polished.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_polish_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    touch busco.flag.txt
+  """
+}
+
+process fasta_in_dot_sh {
+  publishDir "${params.outdir}/genome", mode: 'copy'
+  container = 'bryce911/bbtools'
+  cpus 1
+
+  input:
+    file fasta from  fasta_in_ch.flatten()
+  output:
+    file '*.stats'
+  """
+    touch any2fasta_stats.flag.txt
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
   """
 }
 

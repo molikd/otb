@@ -19,6 +19,8 @@ help(){
     -s or --supress
        supress stop and checks, and submit without sending to background
 
+    -c or --check
+       perform checks to insure smoother operation
 
   required:
     -f or --forward
@@ -57,7 +59,7 @@ help(){
        busco options, requires a lineage option
     --busco
        busco flag turns on busco
-    select one of the following:
+    select one of the following (all imply --busco):
        --auto-lineage
           try to use auto lineage finder from busco
        --auto-lineage-prok
@@ -65,7 +67,9 @@ help(){
        --auto-lineage-euk
           try to use auto linage finder from busco, but limit to eukaryotes
        -l or --lineage
-          use a specific lineage with busco (recomended)"
+          use a specific lineage with busco (recomended)
+       -p or --path
+          run busco in offline mode, with path to database, or with database name to try and download"
   exit 0;
 }
 
@@ -74,6 +78,7 @@ while [ $# -gt 0 ] ; do
     -h | --help) help ;;
     -v | --version) version ;;
     -s | --supress) SUPRESS="true";;
+    -c | --check) TEST="true";;
     -f | --forward) R1="$2" ;;
     -r | --reverse) R2="$2" ;;
     -b | --bam) BAM="$2" ;;
@@ -89,6 +94,7 @@ while [ $# -gt 0 ] ; do
     --auto-lineage-prok) LINEAGE="auto-lineage-prok";;
     --auto-lineage-euk) LINEAGE="auto-lineage-euk";;
     -l | --lineage) LINEAGE="$2";;
+    -p | --busco-path) BUSCOPATH="$2";;
   esac
   shift
 done
@@ -113,7 +119,8 @@ if [ -n "$RUNNER" ]; then
     "sge") state "$RUNNER being used";;
     "slurm") state "$RUNNER being used";;
     "slurm_usda") state "$RUNNER being used";;
-    *) error "runner type ${RUNNER} not found";;
+    *) 
+      [ -f "config/${RUNNER}" ] && state "using custom config: $RUNNER" || error "runner type ${RUNNER} not found";;
   esac
 fi
 
@@ -125,6 +132,44 @@ if [ -n "$POLISHTYPE" ]; then
     "dv") state "deep variant polishing";;
     *) error "polishing type ${POLISHTYPE} not found, exiting";;
   esac
+fi
+
+state "checking for running busco"
+if [ -n "$BUSCO" -o -n "$LINEAGE" -o -n "$BUSCOPATH" ]; then
+state "running busco, checking busco things"
+  [ -z "$LINEAGE" -a -z "$BUSCOPATH" ] && error "trying to setup busco, but no lineage/path/file given"
+  if [ -n "$LINEAGE" ]; then
+    state "   ...busco lineage described: ${LINEAGE}"
+    BUSCOSTRING="--busco --linreage=\"${LINEAGE} \""
+  elif [ -n "$BUSCOPATH" ]; then
+    state "   ...attempting offline busco run"
+    if [ -f "$BUSCOPATH" ]; then
+      state "you have handed busco a file"
+      BUSCODWNLOC=$( dirname $BUSCOPATH )
+      BUSCODBFILE=$( basename $BUSCOPATH )
+      BUSCOSTRING="--busco --linreage=\"${BUSCODBFILE}\" --buscooffline --buscodb=\"${BUSCODWNLOC}\" "
+    else
+      warn "trying to download busco dataset, this is not recomended"
+      mkdir -p work/busco
+      if [ -f "work/singularity/ezlabgva-busco-v5.2.2_cv1.img" ]; then
+        state "busco found at work/singularity/ezlabgva-busco-*"
+        singularity exec work/singularity/ezlabgva-busco-v5.2.2_cv1.img busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
+      elif [ -f "${SINGULARITY_LOCALCADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img" ]; then
+        state "busco found at ${SINGULARITY_LOCALCADHEDIR}/ezlabgva-busco-*"
+        singularity exec ${SINGULARITY_LOCALCADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
+      elif [ -f "${SINGULARITY_CADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img" ]; then
+        state "busco found at ${SINGULARITY_CADHEDIR}/ezlabgva-busco-*"
+        singularity exec ${SINGULARITY_CADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
+      elif [ $( command -v busco >/dev/null ) ]; then
+        state "busco command found"
+        warn "using non-otb version of busco, this may result in problems"
+        busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
+      else
+        error "no busco command found, I can not dowload any datasets, exiting"
+      fi
+      BUSCOSTRING="--busco --linreage=\"${BUSCOPATH}\" --buscoffline --buscodb=\"work/busco\" "
+    fi
+  fi
 fi
 
 RUN="nextflow run run.nf "
@@ -147,8 +192,7 @@ fi
 [ -f "$R2" ] && RUN+="--readr=\"$R2\" " || error "read pair file two not found, exiting"
 [ -n "$BUSCO" ] && RUN+="$BUSCO " || state "not running busco"
 [ -n "$POLISHTYPE" ] && RUN+="--polish --polishtype=\"$POLISHTYPE\" " || warn "not polishing, it is recomended that you polish"
-[ -n "$BUSCO" ] && [ -z "$LINEAGE" ] && error "you want to run BUSCO, but busco lineage not set, exiting"
-[ -n "$LINEAGE" ] && RUN+="--linreage=\"$LINEAGE\" "
+[ -n "$BUSCOSTRING" ] && RUN+="$BUSCOSTRING"
 [ -n "$BAM" ] && RUN+="--readbam=\"$BAM\" " || error "bam file(s) not given, exiting"
 [ -z "$NAME" ] && NAME="$(date +%s)" && state "name not given, setting name to: $NAME"
 RUN+="--assembly=\"$NAME\" "
@@ -161,7 +205,48 @@ state "Prefetching singularity containers"
 [ -n "$NXF_SINGULARITY_CACHEDIR" ] && "Nextflow Singularity cache directory set: $NXF_SINGULARITY_CACHEDIR, will use for singularity images" || warn "NXF_SINGULARITY_CACHEDIR not set, using ./work/singularity instead"
 [ -n "$NXF_SINGULARITY_CACHEDIR" ] && ./scr/prefetch_containers.sh || ( mkdir -p "./work/singularity"; ./scr/prefetch_containers.sh "./work/singularity" )
 
-#TODO, check that all the containers work
+if [ -n "$TEST" ]; then 
+  state "Testing that containers work"
+  if [ -n "$NXF_SINGULARITY_CACHEDIR" ]; then
+    container_location="$NXF_SINGULARITY_CACHEDIR"
+  else
+    container_location="work/singularity"
+  fi
+  singularity exec "$container_location/bryce911-bbtools.img" echo "   ...hello from bbtools container" || error "bbtools container broken, exiting"
+  singularity exec "$container_location/dmolik-genomescope2.img" echo "   ...hello from genomescope2 container" || error "genomescope2 container broken, exiting"
+  singularity exec "$container_location/dmolik-hifiasm.img"  echo "   ...hello from hifiasm container" || error "hifiasm container broken, exiting"
+  singularity exec "$container_location/dmolik-jellyfish.img" echo "   ...hello from jellyfish container" || error "jellyfish container broken, exiting"
+  singularity exec "$container_location/dmolik-pbadapterfilt.img" echo "   ...hello from pbadapterfilt container" || error "pbadapterfilt container broken, exiting"
+  singularity exec "$container_location/mgibio-samtools-1.9.img" echo "   ...hello from samtools container" || error "samtools container broken, exiting"
+  singularity exec "$container_location/koszullab-hicstuff.img" echo "   ...hello from hicstuff container" || error "hicstuff container broken, exiting"
+  singularity exec "$container_location/pvstodghill-any2fasta.img" echo "   ...hello from any2fasta container" || error "any2fasta container borken, exiting"
+  if [ -n "$BUSCO" ]; then 
+    state "busco container will be required for this run, testing busco"
+    singularity exec "$container_location/ezlabgva-busco-v5.2.2_cv1.img" echo "   ...hello from busco container" || error "busco container broken, exiting"
+  fi 
+  case $POLISHTYPE in
+    "simple")
+      state "this will be a simple polish, checking ragtag and shhquis"
+      singularity exec "$container_location/dmolik-ragtag.img" echo "   ...hello from ragtag container" || error "ragtag container broken, exiting"
+      singularity exec "$container_location/dmolik-shhquis.img" echo "    ...hello from shhquis container" || error "shhquis container broken, exiting"
+    ;;
+    "merfin") 
+      state "this will be a merfin polish, checking ragtag, shhquis, bcftools, and merfin"
+      singularity exec "$container_location/dmolik-ragtag.img" echo "   ...hello from ragtag container" || error "ragtag container broken, exiting"
+      singularity exec "$container_location/dmolik-shhquis.img" echo "    ...hello from shhquis container" || error "shhquis container broken, exiting"
+      singularity exec "$container_location/mgibio-bcftools-1.9.img" echo "   ...hello from bcftools container" || error "bcftools container broken, exiting"
+      singularity exec "$container_location/dmolik-merfin.img" echo "    ...hello from merfin container" || error "merfin container broken, exiting"
+    ;;
+    "dv")
+      state "this will be a deep variant polish, checking ragtag, shhquis, bcftools, and merfin"
+      singularity exec "$container_location/dmolik-ragtag.img" echo "   ...hello from ragtag container" || error "ragtag container broken, exiting"
+      singularity exec "$container_location/dmolik-shhquis.img" echo "    ...hello from shhquis container" || error "shhquis container broken, exiting"
+      singularity exec "$container_location/mgibio-bcftools-1.9.img" echo "   ...hello from bcftools container" || error "bcftools container broken, exiting"
+      singularity exec "$container_location/google-deepvariant.img" echo "   ...hello from deepvariant container" || error "deepvariant container broken, exiting"
+    ;;
+  esac
+  state "all required containers checked with an intial pass"
+fi 
 
 [ -z "$SUPRESS" ] && stop_check "proceed with run"
-eval $RUN
+eval $RUN &> "nextflow-${NAME}.log.txt" &
