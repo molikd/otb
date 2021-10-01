@@ -79,8 +79,21 @@ process check_fastq {
 
    state "make softlinks for both files"
    mkdir out
-   [[ !{right_fastq}  =~ ".gz" ]] && ln -s out/!{right_fastq} right.fastq.gz || (gzip -c !{right_fastq} > out/right.fastq.gz)
-   [[ !{left_fastq}  =~ ".gz" ]] && ln -s out/!{left_fastq} left.fastq.gz || (gzip -c !{left_fastq} > out/left.fastq.gz)
+
+   if [[ !{right_fastq}  =~ ".gz" ]]; then
+     cd out
+     ln -s ../!{right_fastq} right.fastq.gz
+     cd ..
+   else
+     gzip -c !{right_fastq} > out/right.fastq.gz
+   fi
+   if [[ !{left_fastq}  =~ ".gz" ]]; then
+     cd out
+     ln -s ../!{left_fastq} left.fastq.gz
+     cd ..
+   else
+     gzip -c !{left_fastq} > out/left.fastq.gz)
+   fi
 
    state "successful completion"
 
