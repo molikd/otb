@@ -87,12 +87,13 @@ process check_fastq {
    else
      gzip -c !{right_fastq} > out/right.fastq.gz
    fi
+
    if [[ !{left_fastq}  =~ ".gz" ]]; then
      cd out
      ln -s ../!{left_fastq} left.fastq.gz
      cd ..
    else
-     gzip -c !{left_fastq} > out/left.fastq.gz)
+     gzip -c !{left_fastq} > out/left.fastq.gz
    fi
 
    state "successful completion"
