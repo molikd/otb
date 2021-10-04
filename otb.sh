@@ -68,7 +68,7 @@ help(){
           try to use auto linage finder from busco, but limit to eukaryotes
        -l or --lineage
           use a specific lineage with busco (recomended)
-       -p or --path
+       -p or --busco-path
           run busco in offline mode, with path to database, or with database name to try and download"
   exit 0;
 }
