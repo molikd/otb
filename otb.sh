@@ -68,7 +68,7 @@ help(){
           try to use auto linage finder from busco, but limit to eukaryotes
        -l or --lineage
           use a specific lineage with busco (recomended)
-       -p or --path
+       -p or --busco-path
           run busco in offline mode, with path to database, or with database name to try and download"
   exit 0;
 }
@@ -132,44 +132,8 @@ if [ -n "$POLISHTYPE" ]; then
     "dv") state "deep variant polishing";;
     *) error "polishing type ${POLISHTYPE} not found, exiting";;
   esac
-fi
-
-state "checking for running busco"
-if [ -n "$BUSCO" -o -n "$LINEAGE" -o -n "$BUSCOPATH" ]; then
-state "running busco, checking busco things"
-  [ -z "$LINEAGE" -a -z "$BUSCOPATH" ] && error "trying to setup busco, but no lineage/path/file given"
-  if [ -n "$LINEAGE" ]; then
-    state "   ...busco lineage described: ${LINEAGE}"
-    BUSCOSTRING="--busco --linreage=\"${LINEAGE} \""
-  elif [ -n "$BUSCOPATH" ]; then
-    state "   ...attempting offline busco run"
-    if [ -f "$BUSCOPATH" ]; then
-      state "you have handed busco a file"
-      BUSCODWNLOC=$( dirname $BUSCOPATH )
-      BUSCODBFILE=$( basename $BUSCOPATH )
-      BUSCOSTRING="--busco --linreage=\"${BUSCODBFILE}\" --buscooffline --buscodb=\"${BUSCODWNLOC}\" "
-    else
-      warn "trying to download busco dataset, this is not recomended"
-      mkdir -p work/busco
-      if [ -f "work/singularity/ezlabgva-busco-v5.2.2_cv1.img" ]; then
-        state "busco found at work/singularity/ezlabgva-busco-*"
-        singularity exec work/singularity/ezlabgva-busco-v5.2.2_cv1.img busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
-      elif [ -f "${SINGULARITY_LOCALCADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img" ]; then
-        state "busco found at ${SINGULARITY_LOCALCADHEDIR}/ezlabgva-busco-*"
-        singularity exec ${SINGULARITY_LOCALCADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
-      elif [ -f "${SINGULARITY_CADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img" ]; then
-        state "busco found at ${SINGULARITY_CADHEDIR}/ezlabgva-busco-*"
-        singularity exec ${SINGULARITY_CADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
-      elif [ $( command -v busco >/dev/null ) ]; then
-        state "busco command found"
-        warn "using non-otb version of busco, this may result in problems"
-        busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
-      else
-        error "no busco command found, I can not dowload any datasets, exiting"
-      fi
-      BUSCOSTRING="--busco --linreage=\"${BUSCOPATH}\" --buscoffline --buscodb=\"work/busco\" "
-    fi
-  fi
+else
+  state "   ...not polishing"
 fi
 
 RUN="nextflow run run.nf "
@@ -196,7 +160,6 @@ fi
 [ -n "$BAM" ] && RUN+="--readbam=\"$BAM\" " || error "bam file(s) not given, exiting"
 [ -z "$NAME" ] && NAME="$(date +%s)" && state "name not given, setting name to: $NAME"
 RUN+="--assembly=\"$NAME\" "
-RUN+="-bg"
 
 pizzaz "$RUN"
 [ -z "$SUPRESS" ] && stop_check "check that the command is expected, continue"
@@ -247,6 +210,48 @@ if [ -n "$TEST" ]; then
   esac
   state "all required containers checked with an intial pass"
 fi 
+
+state "checking for running busco"
+if [ -n "$BUSCO" -o -n "$LINEAGE" -o -n "$BUSCOPATH" ]; then
+state "running busco, checking busco things"
+  [ -z "$LINEAGE" -a -z "$BUSCOPATH" ] && error "trying to setup busco, but no lineage/path/file given"
+  if [ -n "$LINEAGE" ]; then
+    state "   ...busco lineage described: ${LINEAGE}"
+    BUSCOSTRING="--busco --linreage=\"${LINEAGE} \""
+  elif [ -n "$BUSCOPATH" ]; then
+    state "   ...attempting offline busco run"
+    if [ -f "$BUSCOPATH" ]; then
+      state "you have handed busco a file"
+      BUSCODWNLOC=$( dirname $BUSCOPATH )
+      BUSCODBFILE=$( basename $BUSCOPATH )
+      BUSCOSTRING="--busco --linreage=\"${BUSCODBFILE}\" --buscooffline --buscodb=\"${BUSCODWNLOC}\" "
+    else
+      warn "trying to download busco dataset, this is not recomended"
+      mkdir -p work/busco
+      if [ -f "work/singularity/ezlabgva-busco-v5.2.2_cv1.img" ]; then
+        state "busco found at work/singularity/ezlabgva-busco-*"
+        singularity exec work/singularity/ezlabgva-busco-v5.2.2_cv1.img busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
+      elif [ -f "${SINGULARITY_LOCALCADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img" ]; then
+        state "busco found at ${SINGULARITY_LOCALCADHEDIR}/ezlabgva-busco-*"
+        singularity exec ${SINGULARITY_LOCALCADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
+      elif [ -f "${SINGULARITY_CADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img" ]; then
+        state "busco found at ${SINGULARITY_CADHEDIR}/ezlabgva-busco-*"
+        singularity exec ${SINGULARITY_CADHEDIR}/ezlabgva-busco-v5.2.2_cv1.img busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
+      elif [ $( command -v busco >/dev/null ) ]; then
+        state "busco command found"
+        warn "using non-otb version of busco, this may result in problems"
+        busco --download_path work/busco --download "${BUSCOPATH}" || error "unable to download busco dataset when asked too, exiting"
+      else
+        error "no busco command found, I can not dowload any datasets, exiting"
+      fi
+      BUSCOSTRING="--busco --linreage=\"${BUSCOPATH}\" --buscoffline --buscodb=\"work/busco\" "
+    fi
+  fi
+else
+  state "   ...not running busco"
+fi
+
+RUN+="-bg"
 
 [ -z "$SUPRESS" ] && stop_check "proceed with run"
 eval $RUN &> "nextflow-${NAME}.log.txt" &
