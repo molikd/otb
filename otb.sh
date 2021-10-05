@@ -132,6 +132,8 @@ if [ -n "$POLISHTYPE" ]; then
     "dv") state "deep variant polishing";;
     *) error "polishing type ${POLISHTYPE} not found, exiting";;
   esac
+else
+  state "   ...not polishing"
 fi
 
 RUN="nextflow run run.nf "
@@ -245,6 +247,8 @@ state "running busco, checking busco things"
       BUSCOSTRING="--busco --linreage=\"${BUSCOPATH}\" --buscoffline --buscodb=\"work/busco\" "
     fi
   fi
+else
+  state "   ...not running busco"
 fi
 
 RUN+="-bg"
