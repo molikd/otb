@@ -251,8 +251,8 @@ else
   state "   ...not running busco"
 fi
 
-RUN+="-bg"
+[ -z "$SUPRESS" ] && RUN+="-bg"
 
 [ -z "$SUPRESS" ] && stop_check "proceed with run"
 echo $RUN > "nextflow-${NAME}.log.txt"
-eval $RUN &> "nextflow-${NAME}.log.txt" &
+eval $RUN &> "nextflow-${NAME}.log.txt"
