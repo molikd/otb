@@ -33,7 +33,7 @@ process check_bam {
   """
    touch check_bam.flag.txt
    stat ${bam}
-   samtools flagstat ${bam} 2>&1
+   samtools flagstat ${bam}
    sleep 10;
    exit 0;
   """
@@ -188,7 +188,7 @@ process gfa2fasta {
     stdout gfa2fasta_output
   """
     touch any2fasta.flag.txt
-    any2fasta ${gfa} 1> ${gfa}.fasta 2>&1
+    any2fasta ${gfa} > ${gfa}.fasta
     echo "finished gfa to fasta conversion"
     sleep 10;
     exit 0;
@@ -382,7 +382,7 @@ process jellyfish {
   """
     touch jellyfish.flag.txt
     jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf <(zcat ${fastqr}) <(zcat ${fastqf})
-    jellyfish histo -t ${task.cpus} reads.jf > ${params.assembly}.histo 2>&1
+    jellyfish histo -t ${task.cpus} reads.jf > ${params.assembly}.histo
     jellyfish cite > version.txt
     sleep 10;
     exit 0;
