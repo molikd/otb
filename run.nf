@@ -571,7 +571,7 @@ process deep_variant {
   input:
     file genome from shhquis_dv_ch 
     file bam_read from bam_dv_merged_ch
-    fiel bai_read from bai_dv_merged_ch
+    file bai_read from bai_dv_merged_ch
   output:
     file 'google_dv.vcf' into dv_vcf_ch
     file '*'
