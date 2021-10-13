@@ -147,8 +147,8 @@ if [ -n "$MODE" ]; then
     *) error "mode set to $MODE, not an actual mode";;
   esac
 else
-  warn "mode not set, assuming homozygous run"
-  RUN+="--mode=\"homozygous\" "
+  warn "mode not set, assuming heterozygous run"
+  RUN+="--mode=\"heterozygous\" "
 fi
 [ -n "$THREADS" ] && RUN+="--threads=\"$THREADS\" " || warn "threads not set, setting to 20 maximum threads" 
 [ -z "$THREADS" ] && RUN+="--threads=\"20\" "
@@ -254,5 +254,6 @@ fi
 [ -z "$SUPRESS" ] && RUN+="-bg"
 
 [ -z "$SUPRESS" ] && stop_check "proceed with run"
+echo $RUN > "${NAME}.nextflow.command.txt"
 echo $RUN > "nextflow-${NAME}.log.txt"
 eval $RUN &> "nextflow-${NAME}.log.txt"
