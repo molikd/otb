@@ -467,7 +467,7 @@ process samtools_mpileup {
   """
     touch samtools.mpileup.flag.txt
     samtools view -S -b ${sam_file} > aln.bam
-    samtools mpileup -E -uf reference.fa file.bam > out.mpileup
+    samtools mpileup -E -uf ${genome} aln.bam > out.mpileup
     echo "finished mpileup"
     sleep 10;
     exit 0;
