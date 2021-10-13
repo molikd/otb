@@ -466,7 +466,7 @@ process samtools_mpileup {
     params.polishtype == "merfin"
   """
     touch samtools.mpileup.flag.txt
-    samtools view -S -b ${sam_file} > aln.bam
+    samtools sort -o aln.bam ${sam_file}
     samtools mpileup -E -uf ${genome} aln.bam > out.mpileup
     echo "finished mpileup"
     sleep 10;
