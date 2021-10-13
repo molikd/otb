@@ -354,7 +354,7 @@ process Shhquis_dot_jl {
     file genome from fasta_sshquis_genome_ch
     file fai from fai_ch
   output:
-    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_bbmap_ch, shhquis_mpileup_ch
+    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_fai_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_bbmap_ch, shhquis_mpileup_ch
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
   when:
@@ -548,15 +548,18 @@ process samtools_merge_for_deep_variant {
 
   input:
     file bam_reads from bam_dv_ch.collect()
+    file genome from shhquis_dv_fai_ch
   output:
     file 'merged.bam' into bam_dv_merged_ch
     file 'merged.bai' into bai_dv_merged_ch
+    file '*.fai' into fai_dv_merged_ch
   when:
     params.polishtype == "dv"
   """
     touch samtools.merge.flag.txt
     samtools merge --threads ${task.cpus} merged.bam ${bam_reads}
     samtools index merged.bam merged.bai
+    samtools faidx ${genome}
     echo "finished merging"
     sleep 10;
     exit 0;
@@ -570,6 +573,7 @@ process deep_variant {
 
   input:
     file genome from shhquis_dv_ch 
+    file genome_fai from fai_dv_merged_ch
     file bam_read from bam_dv_merged_ch
     file bai_read from bai_dv_merged_ch
   output:
