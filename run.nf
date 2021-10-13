@@ -644,8 +644,8 @@ process ragtag_dot_py_hap_simple_polish {
     file fasta_hap from simple_fasta_hap_polish_ch
     file fasta_genome from simple_polished_genome_ch
   output:
-    file "${params.assembly}_ragtag_scaffold/patched*"
-    file "${params.assembly}_ragtag_scaffold/patched" into simple_hap_patch_res_ch
+    file "${params.assembly}_ragtag_scaffold/polished*fasta"
+    file "${params.assembly}_ragtag_scaffold/polished*fasta" into simple_hap_patch_res_ch
     stdout simple_ragtag_dot_py_hap_output
   when:
     params.polishtype == "simple"
@@ -668,8 +668,8 @@ process ragtag_dot_py_hap_merfin_polish {
     file fasta_hap from merfin_fasta_hap_polish_ch
     file fasta_genome from merfin_vcf_polished_genome_ch
   output:
-    file "${params.assembly}_ragtag_scaffold/patched*"
-    file "${params.assembly}_ragtag_scaffold/patched" into merfin_hap_patch_res_ch
+    file "${params.assembly}_ragtag_scaffold/polished*fasta*"
+    file "${params.assembly}_ragtag_scaffold/polished*fasta" into merfin_hap_patch_res_ch
     stdout merfin_ragtag_dot_py_hap_output
   when:
     params.polishtype == "merfin"
@@ -691,8 +691,8 @@ process ragtag_dot_py_hap_deep_variant_polish {
     file fasta_hap from dv_fasta_hap_polish_ch
     file fasta_genome from dv_vcf_polished_genome_ch
   output:
-    file "${params.assembly}_ragtag_scaffold/patched*"
-    file "${params.assembly}_ragtag_scaffold/patched" into dv_hap_patch_res_ch
+    file "${params.assembly}_ragtag_scaffold/polished*fasta"
+    file "${params.assembly}_ragtag_scaffold/polished*fasta" into dv_hap_patch_res_ch
     stdout dv_ragtag_dot_py_hap_output
   when:
     params.polishtype == "dv"
