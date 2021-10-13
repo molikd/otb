@@ -550,11 +550,13 @@ process samtools_merge_for_deep_variant {
     file bam_reads from bam_dv_ch.collect()
   output:
     file 'merged.bam' into bam_dv_merged_ch
+    file 'merged.bai' into bai_dv_merged_ch
   when:
     params.polishtype == "dv"
   """
     touch samtools.merge.flag.txt
     samtools merge --threads ${task.cpus} merged.bam ${bam_reads}
+    samtools index merged.bam merged.bai
     echo "finished merging"
     sleep 10;
     exit 0;
@@ -568,7 +570,8 @@ process deep_variant {
 
   input:
     file genome from shhquis_dv_ch 
-    file bam_read from bam_dv_merged_ch 
+    file bam_read from bam_dv_merged_ch
+    fiel bai_read from bai_dv_merged_ch
   output:
     file 'google_dv.vcf' into dv_vcf_ch
     file '*'
