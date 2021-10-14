@@ -132,7 +132,7 @@ process HiFiASM {
 
   output:
     file '*.gfa' into gfa_ch
-    file '*.ec.fa' into fasta_ec_ch, meryl_ec_ch, bbmap_ec_ch
+    file '*.ec.fa' into fasta_ec_ch, meryl_ec_ch, bbmap_ec_ch, dv_ec_ch
     stdout HiFiASM_output
   script:
 
@@ -354,7 +354,7 @@ process Shhquis_dot_jl {
     file genome from fasta_sshquis_genome_ch
     file fai from fai_ch
   output:
-    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_fai_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_bbmap_ch, shhquis_mpileup_ch
+    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_fai_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_dv_bbmap_ch, shhquis_bbmap_ch, shhquis_mpileup_ch
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
   when:
@@ -437,7 +437,7 @@ process bbmap_dot_sh {
 
   input:
     file ec_reads from bbmap_ec_ch
-    file genome from shhquis_bbmap_ch  
+    file genome from shhquis_bbmap_ch
   output:
     file "mapped.sam" into sam_for_merfin_ch
     stdout bbmap_dot_sh_output
@@ -542,25 +542,48 @@ process merfin {
     """
 }
 
-process samtools_merge_for_deep_variant {
+process bbmap_dot_sh_for_deep_variant {
+  container = 'bryce911/bbtools'
+  cpus = params.threads
+
+  input:
+    file ec_reads from dv_ec_ch
+    file genome from shhquis_dv_bbmap_ch
+  output:
+    file "mapped.sam" into sam_for_dv_ch
+    stdout bbmap_dot_sh_dv_output
+  when:
+      params.polishtype == "dv"
+    """
+      touch bbmap.sh.dv.flag.sh
+      bbmap.sh t=${task.cpus} in=${ec_reads} out=mapped.sam ref=${genome}
+      echo "finished bbmap.sh"
+      sleep 10;
+      exit 0;
+   """
+}
+
+
+process samtools_index_for_deep_variant {
   container = 'mgibio/samtools:1.9'  
   cpus = params.threads
 
   input:
-    file bam_reads from bam_dv_ch.collect()
+    file sam from sam_for_dv_ch
     file genome from shhquis_dv_fai_ch
   output:
-    file 'merged.bam' into bam_dv_merged_ch
-    file 'merged.bai' into bai_dv_merged_ch
-    file '*.fai' into fai_dv_merged_ch
+    file 'mapped.sort.bam' into bam_dv_index_ch
+    file '*.bai' into bai_dv_index_ch
+    file '*.fai' into fai_dv_index_ch
   when:
     params.polishtype == "dv"
   """
-    touch samtools.merge.flag.txt
-    samtools merge --threads ${task.cpus} merged.bam ${bam_reads}
-    samtools index merged.bam merged.bai
+    touch samtools.index.flag.txt
+    samtools view -S -b ${sam} > mapped.bam
+    samtools sort mapped.bam -o mapped.sort.bam
+    samtools index --threads ${task.cpus} mapped.sort.bam
     samtools faidx ${genome}
-    echo "finished merging"
+    echo "finished indexing"
     sleep 10;
     exit 0;
   """
@@ -573,9 +596,9 @@ process deep_variant {
 
   input:
     file genome from shhquis_dv_ch 
-    file genome_fai from fai_dv_merged_ch
-    file bam_read from bam_dv_merged_ch
-    file bai_read from bai_dv_merged_ch
+    file genome_fai from fai_dv_index_ch
+    file bam_read from bam_dv_index_ch
+    file bai_read from bai_dv_index_ch
   output:
     file 'google_dv.vcf' into dv_vcf_ch
     file '*'
@@ -1303,6 +1326,9 @@ bcftools_refmt_output
 
 merfin_output
    .collectFile(name:'merfin.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
+
+bbmap_dot_sh_dv_output
+   .collectFile(name:'bbmap_dot_sh.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log" )
 
 deep_variant_output
    .collectFile(name:'deepvariant.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
