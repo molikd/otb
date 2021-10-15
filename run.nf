@@ -581,7 +581,7 @@ process samtools_index_for_deep_variant {
     touch samtools.index.flag.txt
     samtools view -S -b ${sam} > mapped.bam
     samtools sort mapped.bam -o mapped.sort.bam
-    samtools index --threads ${task.cpus} mapped.sort.bam
+    samtools index -@ ${task.cpus} mapped.sort.bam
     samtools faidx ${genome}
     echo "finished indexing"
     sleep 10;
