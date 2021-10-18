@@ -446,7 +446,7 @@ process bbmap_dot_sh {
     params.polishtype == "merfin"
   """
     touch bbmap.sh.flag.sh
-    bbmap.sh t=${task.cpus} in=${filt_reads} out=mapped.sam ref=${genome}
+    bbmap.sh t=${task.cpus} in=${filt_reads} out=mapped.sam ref=${genome} ignorebadquality
     echo "finished bbmap.sh"
     sleep 10;
     exit 0;
@@ -557,7 +557,7 @@ process bbmap_dot_sh_for_deep_variant {
       params.polishtype == "dv"
     """
       touch bbmap.sh.dv.flag.sh
-      bbmap.sh t=${task.cpus} in=${filt_reads} out=mapped.sam ref=${genome}
+      bbmap.sh t=${task.cpus} in=${filt_reads} out=mapped.sam ref=${genome} ignorebadquality
       echo "finished bbmap.sh"
       sleep 10;
       exit 0;
