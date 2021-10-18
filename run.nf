@@ -111,6 +111,7 @@ process HiFiAdapterFilt {
     file bam from bam_Hifi_ch.flatten()
   output:
     file '*.fasta' into filt_fasta_ch
+    file '*.filt.fastq' into filt_fastq_ch
     stdout pbadapterfilt_output
   """
     touch pbadapterfilt.flag.txt
@@ -132,7 +133,7 @@ process HiFiASM {
 
   output:
     file '*.gfa' into gfa_ch
-    file '*.ec.fa' into fasta_ec_ch, meryl_ec_ch, bbmap_ec_ch, dv_ec_ch
+    file '*.ec.fa' into fasta_ec_ch, meryl_ec_ch, bbmap_ec_ch
     stdout HiFiASM_output
   script:
 
@@ -547,7 +548,7 @@ process bbmap_dot_sh_for_deep_variant {
   cpus = params.threads
 
   input:
-    file ec_reads from dv_ec_ch
+    file filt_reads from filt_fastq_ch
     file genome from shhquis_dv_bbmap_ch
   output:
     file "mapped.sam" into sam_for_dv_ch
@@ -556,7 +557,7 @@ process bbmap_dot_sh_for_deep_variant {
       params.polishtype == "dv"
     """
       touch bbmap.sh.dv.flag.sh
-      bbmap.sh t=${task.cpus} in=${ec_reads} out=mapped.sam ref=${genome}
+      bbmap.sh t=${task.cpus} in=${filt_reads} out=mapped.sam ref=${genome}
       echo "finished bbmap.sh"
       sleep 10;
       exit 0;
