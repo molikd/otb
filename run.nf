@@ -111,7 +111,7 @@ process HiFiAdapterFilt {
     file bam from bam_Hifi_ch.flatten()
   output:
     file '*.fasta' into filt_fasta_ch
-    file '*.filt.fastq' into filt_fastq_ch
+    file '*.filt.fastq' into filt_fastq_ch, bbmap_filt_ch, meryl_filt_ch
     stdout pbadapterfilt_output
   """
     touch pbadapterfilt.flag.txt
@@ -133,7 +133,7 @@ process HiFiASM {
 
   output:
     file '*.gfa' into gfa_ch
-    file '*.ec.fa' into fasta_ec_ch, meryl_ec_ch, bbmap_ec_ch
+    file '*.ec.fa' into fasta_ec_ch
     stdout HiFiASM_output
   script:
 
@@ -437,7 +437,7 @@ process bbmap_dot_sh {
   cpus = params.threads
 
   input:
-    file ec_reads from bbmap_ec_ch
+    file filt_reads from bbmap_filt_ch
     file genome from shhquis_bbmap_ch
   output:
     file "mapped.sam" into sam_for_merfin_ch
@@ -446,7 +446,7 @@ process bbmap_dot_sh {
     params.polishtype == "merfin"
   """
     touch bbmap.sh.flag.sh
-    bbmap.sh t=${task.cpus} in=${ec_reads} out=mapped.sam ref=${genome}
+    bbmap.sh t=${task.cpus} in=${filt_reads} out=mapped.sam ref=${genome}
     echo "finished bbmap.sh"
     sleep 10;
     exit 0;
@@ -519,7 +519,7 @@ process merfin {
     file genome from shhquis_merfin_ch
     file kcov_file from kcov_ch
     file lookup_table from lookup_table_ch
-    file ec_reads from meryl_ec_ch
+    file filt_reads from meryl_filt_ch
     file vcf_file from vcf_for_merfin_ch 
   output:
     file 'merfin.polish.vcf' into merfin_vcf_ch
@@ -534,7 +534,7 @@ process merfin {
     """
       echo "warning merfin is experimental"
       touch merfin.flag.txt
-      meryl count k=21 ${ec_reads} output reads.meryl
+      meryl count k=21 ${filt_reads} output reads.meryl
       meryl greater-than 1 reads.meryl output reads.gt1.meryl
       merfin -polish -threads ${task.cpus} -sequence ${genome} -peak ${kcov} -prob ${lookup_table} -readmers reads.gt1.meryl -vcf ${vcf_file} -output merfin
       echo "finished merfin"
