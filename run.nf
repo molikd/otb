@@ -487,9 +487,9 @@ process bcftools_refmt {
     params.polishtype == "merfin" 
   """
     touch bcftools.qual.flag.txt
-    echo "##INFO=<ID=DP,Number=1,Type=Integer,Description=\"Approximate read depth\; some reads may have been filtered\">" > merfin_header.vcf
-    echo "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">" >> merfin_header.vcf
-    echo "##FORMAT=<ID=DP,Number=1,Type=Integer,Description=\"Read Depth\">" >> merfin_header.vcf
+    echo '##INFO=<ID=DP,Number=1,Type=Integer,Description="Approximate read depth; some reads may have been filtered">' > merfin_header.vcf
+    echo '##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">' >> merfin_header.vcf
+    echo '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Read Depth">' >> merfin_header.vcf
     cat ${mpileup} | bcftools call --threads ${task.cpus} -mv > var.raw.vcf
     bcftools filter --threads ${task.cpus} -s LowQual -e '%QUAL<20 || DP>100' var.raw.vcf  > var.flt.vcf
     grep -v "#" var.flt.vcf | sed 's/,/;/g' > var.temp.reshaped.vcf
