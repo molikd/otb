@@ -111,7 +111,7 @@ process HiFiAdapterFilt {
     file bam from bam_Hifi_ch.flatten()
   output:
     file '*.fasta' into filt_fasta_ch
-    file '*.filt.fastq' into filt_fastq_ch, bbmap_filt_ch, meryl_filt_ch
+    file '*.filt.fastq' into filt_fastq_ch, minimap_merfin_filt_ch, meryl_filt_ch
     stdout pbadapterfilt_output
   """
     touch pbadapterfilt.flag.txt
@@ -355,7 +355,7 @@ process Shhquis_dot_jl {
     file genome from fasta_sshquis_genome_ch
     file fai from fai_ch
   output:
-    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_fai_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_dv_bbmap_ch, shhquis_bbmap_ch, shhquis_mpileup_ch
+    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_fai_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_dv_minimap_ch, shquis_minimap_merfin_ch, shhquis_mpileup_ch
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
   when:
@@ -432,22 +432,22 @@ process simple_polish {
   """
 }
 
-process bbmap_dot_sh {
-  container = 'bryce911/bbtools'
+process minimap_for_merfin {
+  container = 'dmolik/ragtag'
   cpus = params.threads
 
   input:
-    file filt_reads from bbmap_filt_ch
-    file genome from shhquis_bbmap_ch
+    file filt_reads from minimap_merfin_filt_ch
+    file genome from shquis_minimap_merfin_ch
   output:
     file "mapped.sam" into sam_for_merfin_ch
-    stdout bbmap_dot_sh_output
+    stdout minimap_dot_sh_output
   when:
     params.polishtype == "merfin"
   """
-    touch bbmap.sh.flag.sh
-    bbmap.sh t=${task.cpus} in=${filt_reads} out=mapped.sam ref=${genome} ignorebadquality
-    echo "finished bbmap.sh"
+    touch minimap.flag.sh
+    minimap2 -a ${genome} ${filt_reads} > mapped.sam
+    echo "finished minimap"
     sleep 10;
     exit 0;
   """
@@ -543,22 +543,22 @@ process merfin {
     """
 }
 
-process bbmap_dot_sh_for_deep_variant {
-  container = 'bryce911/bbtools'
+process minimap_for_deep_variant {
+  container = 'dmolik/ragtag'
   cpus = params.threads
 
   input:
     file filt_reads from filt_fastq_ch
-    file genome from shhquis_dv_bbmap_ch
+    file genome from shhquis_dv_minimap_ch
   output:
     file "mapped.sam" into sam_for_dv_ch
-    stdout bbmap_dot_sh_dv_output
+    stdout minimap_dv_output
   when:
       params.polishtype == "dv"
     """
-      touch bbmap.sh.dv.flag.sh
-      bbmap.sh t=${task.cpus} in=${filt_reads} out=mapped.sam ref=${genome} ignorebadquality
-      echo "finished bbmap.sh"
+      touch minimap.dv.flag.sh
+      minimap2 -a ${genome} ${filt_reads} > mapped.sam
+      echo "finished minimap"
       sleep 10;
       exit 0;
    """
@@ -1316,8 +1316,8 @@ jellyfish_output
 genomescope2_output
    .collectFile(name:'genomescope2.log.txt', newLine: true, storeDir:"${params.outdir}/genomescope" )
 
-bbmap_dot_sh_output
-   .collectFile(name:'bbmap_dot_sh.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log" )
+minimap_dot_sh_output
+   .collectFile(name:'minimap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log" )
 
 samtools_mpileup_output
    .collectFile(name:'mpileup.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log" )
@@ -1328,7 +1328,7 @@ bcftools_refmt_output
 merfin_output
    .collectFile(name:'merfin.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
-bbmap_dot_sh_dv_output
+minimap_dv_output
    .collectFile(name:'bbmap_dot_sh.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log" )
 
 deep_variant_output
