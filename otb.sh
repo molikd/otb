@@ -88,6 +88,7 @@ while [ $# -gt 0 ] ; do
     --sge) RUNNER="sge";;
     --slurm) RUNNER="slurm";;
     --slurm-usda) RUNNER="slurm_usda";;
+    --slurm-atlas) RUNNER="slurm_atlas";;
     --busco) BUSCO="--busco ";;
     --polish-type) POLISHTYPE="$2";;
     --auto-lineage) LINEAGE="auto-lineage";;
@@ -119,6 +120,7 @@ if [ -n "$RUNNER" ]; then
     "sge") state "$RUNNER being used";;
     "slurm") state "$RUNNER being used";;
     "slurm_usda") state "$RUNNER being used";;
+    "slurm_altas") state "$RUNNER being used";;
     *) 
       [ -f "config/${RUNNER}" ] && state "using custom config: $RUNNER" || error "runner type ${RUNNER} not found";;
   esac
