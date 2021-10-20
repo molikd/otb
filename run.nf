@@ -34,7 +34,7 @@ process check_bam {
    touch check_bam.flag.txt
    stat ${bam}
    samtools flagstat ${bam}
-   sleep 10;
+   sleep 120;
    exit 0;
   """
 }
@@ -98,7 +98,7 @@ process check_fastq {
    fi
 
    state "successful completion"
-   sleep 10;
+   sleep 120;
    exit 0;
   '''
 }
@@ -117,7 +117,7 @@ process HiFiAdapterFilt {
     touch pbadapterfilt.flag.txt
     pbadapterfilt.sh ${bam} -t ${task.cpus}
     echo "finished adapter filtering"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -142,7 +142,7 @@ process HiFiASM {
     touch hifiasm.flag.txt
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${left} --h2 ${right} ${fasta} 2>&1
     echo "finished alignment"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
   else if( params.mode == 'homozygous' )
@@ -150,7 +150,7 @@ process HiFiASM {
     touch hifiasm.flag.txt
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -l0 ${fasta} 2>&1
     echo "finished alignment"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
   else if( params.mode == 'heterozygous')
@@ -158,7 +158,7 @@ process HiFiASM {
     touch hifiasm.flag.txt
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
     echo "finished alignment"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
   else if ( params.mode == 'trio')
@@ -168,7 +168,7 @@ process HiFiASM {
     yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${right}) <(zcat ${right})
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta} 2>&1
     echo "finished alignment"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
   else
@@ -191,7 +191,7 @@ process gfa2fasta {
     touch any2fasta.flag.txt
     any2fasta ${gfa} > ${gfa}.fasta
     echo "finished gfa to fasta conversion"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -269,7 +269,7 @@ process ragtag_dot_py {
     touch ragtag.flag.txt 
     ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
     echo "finished patching"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -289,7 +289,7 @@ process faidx {
     touch faidx.flag.txt
     samtools faidx -o ${genome}.fai ${genome}
     echo "finished indexing"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -311,7 +311,7 @@ process hicstuff {
     touch hicstuff.flag.txt
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
     echo "finished fragment calculations"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -339,7 +339,7 @@ process hicstuff_polish {
     mv hicstuff_out/fragments_list.txt hicstuff_out/polish_fragments_list.txt
     mv hicstuff_out/plots/frags_hist.pdf hicstuff_out/plots/polish_frags_hist.pdf
     echo "finished fragment calculations"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -364,7 +364,7 @@ process Shhquis_dot_jl {
     touch shhquis.flag.txt
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
     echo "finished reorientation"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -385,7 +385,7 @@ process jellyfish {
     jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf <(zcat ${fastqr}) <(zcat ${fastqf})
     jellyfish histo -t ${task.cpus} reads.jf > ${params.assembly}.histo
     jellyfish cite > version.txt
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -409,7 +409,7 @@ process genomescope2 {
     genomescope.R --version > version.txt
     awk '/kmercov [0-9]/ { print \$2 }' ${params.assembly}/model.txt >> kcov.txt
     echo "finished genomescope"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -427,7 +427,7 @@ process simple_polish {
     touch simple_polish.flag.txt
     ln -s ${genome} ${params.assembly}.polished.genome.fasta
     echo "finished softlink"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -448,7 +448,7 @@ process minimap_for_merfin {
     touch minimap.flag.sh
     minimap2 -a ${genome} ${filt_reads} > mapped.sam
     echo "finished minimap"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -470,7 +470,7 @@ process samtools_mpileup {
     samtools sort -o aln.bam ${sam_file}
     samtools mpileup -E -uf ${genome} aln.bam > out.mpileup
     echo "finished mpileup"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -505,7 +505,7 @@ process bcftools_refmt {
     rm var.reshaped.vcf 
     rm var.temp.reshaped.combined.vcf
     echo "finished bcftools reformat"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -538,7 +538,7 @@ process merfin {
       meryl greater-than 1 reads.meryl output reads.gt1.meryl
       merfin -polish -threads ${task.cpus} -sequence ${genome} -peak ${kcov} -prob ${lookup_table} -readmers reads.gt1.meryl -vcf ${vcf_file} -output merfin
       echo "finished merfin"
-      sleep 10;
+      sleep 120;
       exit 0;
     """
 }
@@ -559,7 +559,7 @@ process minimap_for_deep_variant {
       touch minimap.dv.flag.sh
       minimap2 -a ${genome} ${filt_reads} > mapped.sam
       echo "finished minimap"
-      sleep 10;
+      sleep 120;
       exit 0;
    """
 }
@@ -585,7 +585,7 @@ process samtools_index_for_deep_variant {
     samtools index -@ ${task.cpus} mapped.sort.bam
     samtools faidx ${genome}
     echo "finished indexing"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -611,7 +611,7 @@ process deep_variant {
     touch deep_variant.flag.txt
     /opt/deepvariant/bin/run_deepvariant --model_type=PACBIO --ref=${genome} --reads=${bam_read} --output_vcf=google_dv.vcf --output_gvcf=google_dv.gvcf --num_shards=${task.cpus}
     echo "finished deep variant"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -636,7 +636,7 @@ process dv_bcftools {
     bcftools index --threads ${task.cpus} ${vcf}.gz
     bcftools consensus ${vcf}.gz -f ${genome} -H 1 > ${params.assembly}.vcf_polished_assembly.fasta
     echo "finished bcftools from deep variant"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -661,7 +661,7 @@ process merfin_bcftools {
     bcftools index --threads ${task.cpus} ${vcf}.gz
     bcftools consensus ${vcf}.gz -f ${genome} -H 1 > ${params.assembly}.vcf_polished_assembly.fasta
     echo "finished bcftools from merfin"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -685,7 +685,7 @@ process ragtag_dot_py_hap_simple_polish {
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -708,7 +708,7 @@ process ragtag_dot_py_hap_merfin_polish {
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }
@@ -732,7 +732,7 @@ process ragtag_dot_py_hap_deep_variant_polish {
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
-    sleep 10;
+    sleep 120;
     exit 0;
   """
 }

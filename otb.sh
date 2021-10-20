@@ -88,7 +88,7 @@ while [ $# -gt 0 ] ; do
     --sge) RUNNER="sge";;
     --slurm) RUNNER="slurm";;
     --slurm-usda) RUNNER="slurm_usda";;
-    --slurm-atlas) RUNNER="slurm_atlas";;
+    --slurm-atlas) RUNNER="slurm_altas";;
     --busco) BUSCO="--busco ";;
     --polish-type) POLISHTYPE="$2";;
     --auto-lineage) LINEAGE="auto-lineage";;
