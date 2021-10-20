@@ -225,6 +225,7 @@ fi
 [ -z "$SUPRESS" ] && RUN+="-bg"
 
 [ -z "$SUPRESS" ] && stop_check "proceed with run"
+pizzaz "running only the best"
 echo $RUN > "${NAME}.nextflow.command.txt"
 echo $RUN > "nextflow-${NAME}.log.txt"
 eval $RUN &> "nextflow-${NAME}.log.txt"
