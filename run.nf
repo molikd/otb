@@ -455,7 +455,7 @@ process minimap_for_merfin {
 
 process samtools_mpileup {
   container = 'mgibio/samtools:1.9'
-  cpus = 1
+  cpus = params.threads
 
   input:
     file sam_file from sam_for_merfin_ch
@@ -467,8 +467,10 @@ process samtools_mpileup {
     params.polishtype == "merfin"
   """
     touch samtools.mpileup.flag.txt
-    samtools sort -o aln.bam ${sam_file}
-    samtools mpileup -E -uf ${genome} aln.bam > out.mpileup
+    samtools sort -@ ${task.cpus} -o aln.bam ${sam_file}
+    samtools view -H aln.bam | grep "\@SQ" | sed 's/^.*SN://g' | cut -f 1 | xargs -I {} -n 1 -P ${task.cpus} sh -c "samtools mpileup -BQ0 -d 100000 -uf ${genome} -r {} aln.bam > tmp.{}.mpileup"
+    #samtools mpileup -E -uf ${genome} aln.bam > out.mpileup
+    cat tmp.*.mpileup > out.mpileup
     echo "finished mpileup"
     sleep 10;
     exit 0;
