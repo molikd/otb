@@ -560,7 +560,7 @@ process minimap_for_deep_variant {
       params.polishtype == "dv"
     """
       touch minimap.dv.flag.sh
-      minimap2 -a ${genome} ${filt_reads} > mapped.sam
+      minimap2 -t ${task.cpus} -a ${genome} ${filt_reads} > mapped.sam
       echo "finished minimap"
       sleep 120;
       exit 0;
@@ -584,7 +584,7 @@ process samtools_index_for_deep_variant {
   """
     touch samtools.index.flag.txt
     samtools view -S -b ${sam} > mapped.bam
-    samtools sort mapped.bam -o mapped.sort.bam
+    samtools sort -@ ${task.cpus} mapped.bam -o mapped.sort.bam
     samtools index -@ ${task.cpus} mapped.sort.bam
     samtools faidx ${genome}
     echo "finished indexing"
