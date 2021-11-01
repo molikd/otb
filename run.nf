@@ -465,6 +465,7 @@ process samtools_mpileup {
     stdout samtools_mpileup_output
   when:
     params.polishtype == "merfin"
+  shell:
   '''
     touch samtools.mpileup.flag.txt
     samtools sort -@ !{task.cpus} -o aln.bam !{sam_file}
