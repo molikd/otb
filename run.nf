@@ -530,20 +530,17 @@ process merfin {
   when:
     params.polishtype == "merfin"
 
-  script:
-    kcov="""
-      cat ${kcov_file}
-    """.stripIndent()
-    """
+  shell:
+    '''
       echo "warning merfin is experimental"
       touch merfin.flag.txt
-      meryl count k=21 ${filt_reads} output reads.meryl
+      meryl count k=21 !{filt_reads} output reads.meryl
       meryl greater-than 1 reads.meryl output reads.gt1.meryl
-      merfin -polish -threads ${task.cpus} -sequence ${genome} -peak ${kcov} -prob ${lookup_table} -readmers reads.gt1.meryl -vcf ${vcf_file} -output merfin
+      merfin -polish -threads !{task.cpus} -sequence !{genome} -peak $( cat !{kcov_file} | sed 's/e.*//g' ) -prob !{lookup_table} -readmers reads.gt1.meryl -vcf !{vcf_file} -output merfin
       echo "finished merfin"
       sleep 120;
       exit 0;
-    """
+    '''
 }
 
 process minimap_for_deep_variant {
