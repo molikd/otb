@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 
 params.assembly = "an_assembly"
-params.readbam = "$baseDir/data/*.bam"
+params.readin = "$baseDir/data/*.bam"
 params.readf = "$baseDir/data/*.R1.fastq.gz"
 params.readr = "$baseDir/data/*.R2.fastq.gz"
 params.outfasta = "genome.out.fasta"
@@ -16,27 +16,54 @@ params.buscodb = "/work/busco"
 params.polish = false
 params.polishtype = 'simple'
 
-bam_ch = Channel.fromPath(params.readbam)
+bam_ch = Channel.fromPath(params.readin)
 right_fastq_check = Channel.fromPath(params.readr)
 left_fastq_check = Channel.fromPath(params.readf)
 
-bam_ch.into{ bam_check_ch; bam_Hifi_ch; bam_dv_ch}
+in_file_ch.into{ in_check_ch; in_Hifi_ch}
 
-process check_bam {
+process check_in_file {
   container = 'mgibio/samtools:1.9'
   cpus = 1
 
   input:
-    file bam from bam_check_ch.flatten()
+    file in_file from in_check_ch.flatten()
   output:
-    stdout check_bam_output
-  """
+    stdout check_in_file_output
+  shell:
+  '''
+   state () { printf "%b\n" "[$(date)]: $*" 2>&1; }                             
+   error () { printf "%b\n" "[$(date)]: $*" >&2; exit 1; } 
+
    touch check_bam.flag.txt
-   stat ${bam}
-   samtools flagstat ${bam}
+   state "checking file type"
+   file=!{in_file}
+   stat $file
+
+   if [[ $file == *.fq || $file == *.fastq ]]; then
+     gzip $file
+     file=${file}.gz
+   fi
+
+   if [[ $file == *.bam ]]; then
+     state "   ...file type is bam file type" 
+     samtools flagstat $file 
+   elif [[ $file == *.fastq.gz || $file == *.fq.gz ]]; then
+     state "   ...file type is fastq gz file type"
+     state "check if file can be opened, and it starts with @"
+     at_check=$(zcat $file | awk '{ print $1; exit }')
+     [[ $at_check =~ '@' ]] || error $file doesn't start with an @"; 
+     state "check if file can be divided by four"
+     modulo_four_check=$(zcat $file | wc -l)
+     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || error "number of lines in $file not divisable by four"
+   else
+     error "trying to run otb with somthing that does not end with the corret file type"
+   fi
+  
+   check "check file on $file passed"
    sleep 120;
    exit 0;
-  """
+  '''
 }
 
 process check_fastq {
@@ -108,14 +135,14 @@ process HiFiAdapterFilt {
   cpus = params.threads
 
   input:
-    file bam from bam_Hifi_ch.flatten()
+    file in_file from in_Hifi_ch.flatten()
   output:
     file '*.fasta' into filt_fasta_ch
     file '*.filt.fastq' into filt_fastq_ch, minimap_merfin_filt_ch, meryl_filt_ch
     stdout pbadapterfilt_output
   """
     touch pbadapterfilt.flag.txt
-    pbadapterfilt.sh ${bam} -t ${task.cpus}
+    pbadapterfilt.sh ${in_file} -t ${task.cpus}
     echo "finished adapter filtering"
     sleep 120;
     exit 0;
@@ -1265,7 +1292,7 @@ pbadapterfilt_output
 check_fastq_output
    .collectFile(name:'fastq_check.log.txt', newLine: true, storeDir:"${params.outdir}/filtering")
 
-check_bam_output
+check_in_file_output
    .collectFile(name:'bam_check.log.txt', newLine: true, storeDir:"${params.outdir}/filtering")
 
 HiFiASM_output
