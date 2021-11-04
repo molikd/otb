@@ -29,8 +29,8 @@ help(){
     -r or --reverse
        another fastq or fastq.gz file for the pipeline, order does not matter
 
-    -b or --bam
-       path to bam file, may include a wildcard for multiple ban files
+    -in or --reads
+       path to reads (generally from pacbio), may include a wildcard for multiple files, can be fastq or bam
 
 
   suggested:
@@ -81,7 +81,7 @@ while [ $# -gt 0 ] ; do
     -c | --check) TEST="true";;
     -f | --forward) R1="$2" ;;
     -r | --reverse) R2="$2" ;;
-    -b | --bam) BAM="$2" ;;
+    -in | --reads) READS="$2" ;;
     -m | --mode) MODE="$2";;
     -t | --threads) THREADS="$2";;
     -n | --name) NAME="$2";;
@@ -159,7 +159,7 @@ fi
 [ -n "$BUSCO" ] && RUN+="$BUSCO " || state "not running busco"
 [ -n "$POLISHTYPE" ] && RUN+="--polish --polishtype=\"$POLISHTYPE\" " || warn "not polishing, it is recomended that you polish"
 [ -n "$BUSCOSTRING" ] && RUN+="$BUSCOSTRING"
-[ -n "$BAM" ] && RUN+="--readbam=\"$BAM\" " || error "bam file(s) not given, exiting"
+[ -n "$READS" ] && RUN+="--readin=\"$READS\" " || error "reads file(s) not given, exiting"
 [ -z "$NAME" ] && NAME="$(date +%s)" && state "name not given, setting name to: $NAME"
 RUN+="--assembly=\"$NAME\" "
 
