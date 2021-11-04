@@ -659,7 +659,7 @@ process merfin_bcftools {
     touch merfin.bcftools.flag.txt
     bcftools view --threads ${task.cpus} -Oz ${vcf} > ${vcf}.gz
     bcftools index --threads ${task.cpus} ${vcf}.gz
-    bcftools consensus ${vcf}.gz -f ${genome} -H 1 > ${params.assembly}.vcf_polished_assembly.fasta
+    bcftools consensus ${vcf}.gz -f ${genome} > ${params.assembly}.vcf_polished_assembly.fasta
     echo "finished bcftools from merfin"
     sleep 120;
     exit 0;
