@@ -19,8 +19,9 @@
  ------------------------------------------------------------------------------------- 
                                                                          
 ```
-
 *o*nly *t*he *b*est (genome assemblies) is a Hi-C / HiFi pipeline specifically designed for phasing
+
+Checkout the [wiki](https://github.com/molikd/otb/wiki), and [tutorial](https://github.com/molikd/otb/wiki/Tutorial)
 
 In order to utilize this pipeline:
   - singularity \(https://sylabs.io/singularity/) must be installed 
