@@ -699,7 +699,7 @@ process ragtag_dot_py_hap_simple_polish {
   cpus = params.threads
 
   input:
-    file fasta_hap from simple_fasta_hap_polish_ch
+    file fasta_hap from simple_fasta_hap_polish_ch.flatten()
     file fasta_genome from simple_polished_genome_ch
   output:
     file "polished*fasta"
@@ -723,7 +723,7 @@ process ragtag_dot_py_hap_merfin_polish {
   cpus = params.threads
 
   input:
-    file fasta_hap from merfin_fasta_hap_polish_ch
+    file fasta_hap from merfin_fasta_hap_polish_ch.flatten()
     file fasta_genome from merfin_vcf_polished_genome_ch
   output:
     file "polished*fasta"
@@ -746,7 +746,7 @@ process ragtag_dot_py_hap_deep_variant_polish {
   cpus = params.threads
 
   input:
-    file fasta_hap from dv_fasta_hap_polish_ch
+    file fasta_hap from dv_fasta_hap_polish_ch.flatten()
     file fasta_genome from dv_vcf_polished_genome_ch
   output:
     file "${params.assembly}_ragtag_scaffold/polished*fasta"
