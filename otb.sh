@@ -152,6 +152,8 @@ else
   warn "mode not set, assuming heterozygous run"
   RUN+="--mode=\"heterozygous\" "
 fi
+
+RUN+="--outfasta=\"${NAME}.genome.out\" "
 [ -n "$THREADS" ] && RUN+="--threads=\"$THREADS\" " || warn "threads not set, setting to 20 maximum threads" 
 [ -z "$THREADS" ] && RUN+="--threads=\"20\" "
 [ -f "$R1" ] && RUN+="--readf=\"$R1\" " || error "read pair file one not found, exiting"
