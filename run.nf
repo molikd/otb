@@ -675,15 +675,15 @@ process ragtag_dot_py_hap_simple_polish {
     file fasta_hap from simple_fasta_hap_polish_ch
     file fasta_genome from simple_polished_genome_ch
   output:
-    file "${params.assembly}_ragtag_scaffold/polished*fasta"
-    file "${params.assembly}_ragtag_scaffold/polished*fasta" into simple_hap_patch_res_ch
+    file "polished*fasta"
+    file "polished*fasta" into simple_hap_patch_res_ch
     stdout simple_ragtag_dot_py_hap_output
   when:
     params.polishtype == "simple"
   """
     touch ragtag.hap.flag.txt
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
-    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta polished.${fasta_hap}
     echo "finished patching"
     sleep 120;
     exit 0;
@@ -699,14 +699,14 @@ process ragtag_dot_py_hap_merfin_polish {
     file fasta_hap from merfin_fasta_hap_polish_ch
     file fasta_genome from merfin_vcf_polished_genome_ch
   output:
-    file "${params.assembly}_ragtag_scaffold/polished*fasta*"
-    file "${params.assembly}_ragtag_scaffold/polished*fasta" into merfin_hap_patch_res_ch
+    file "polished*fasta"
+    file "polished*fasta" into merfin_hap_patch_res_ch
     stdout merfin_ragtag_dot_py_hap_output
   when:
     params.polishtype == "merfin"
   """
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
-    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta polished.${fasta_hap}
     echo "finished patching"
     sleep 120;
     exit 0;
