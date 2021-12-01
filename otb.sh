@@ -138,7 +138,7 @@ else
   state "   ...not polishing"
 fi
 
-RUN="nextflow run run.nf "
+RUN="nextflow run run.nf -with-report ./report/nextflow-report.html -with-trace ./report/nextflow-trace.txt -with-timeline ./report-timeline.html -with-dag nextflow-dag.png "
 [ -n "$RUNNER" ] && RUN+="-c config/${RUNNER}.cfg " || warn "no grid computing environment set, using local. this is not recomended."
 if [ -n "$MODE" ]; then
   case $MODE in
@@ -226,7 +226,9 @@ fi
 [ -z "$SUPRESS" ] && RUN+="-bg"
 
 [ -z "$SUPRESS" ] && stop_check "proceed with run"
+state "making /reports dir"
+mkdir -p reports
 pizzaz "running only the best"
-echo $RUN > "${NAME}.nextflow.command.txt"
-echo $RUN > "nextflow-${NAME}.log.txt"
-eval $RUN &> "nextflow-${NAME}.log.txt"
+echo $RUN > "./reports/${NAME}.nextflow.command.txt"
+echo $RUN > "./reports/nextflow-${NAME}.log.txt"
+eval $RUN &> "./reports/nextflow-${NAME}.log.txt"
