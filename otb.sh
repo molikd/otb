@@ -138,7 +138,7 @@ else
   state "   ...not polishing"
 fi
 
-RUN="nextflow run run.nf -with-report ./reports/nextflow-report.html -with-trace ./reports/nextflow-trace.txt -with-timeline ./reports/nextflow-timeline.html -with-dag ./reports/nextflow-dag.png "
+RUN="nextflow run run.nf -with-report ./reports/nextflow-${NAME}.report.html -with-trace ./reports/nextflow-${NAME}.trace.txt -with-timeline ./reports/nextflow-${NAME}.timeline.html -with-dag ./reports/nextflow-${NAME}.dag.png "
 [ -n "$RUNNER" ] && RUN+="-c config/${RUNNER}.cfg " || warn "no grid computing environment set, using local. this is not recomended."
 if [ -n "$MODE" ]; then
   case $MODE in
@@ -230,5 +230,5 @@ state "making /reports dir"
 mkdir -p reports
 pizzaz "running only the best"
 echo $RUN > "./reports/${NAME}.nextflow.command.txt"
-echo $RUN > "./reports/nextflow-${NAME}.log.txt"
-eval $RUN &> "./reports/nextflow-${NAME}.log.txt"
+echo $RUN > "./reports/nextflow-${NAME}.stdout.txt"
+eval $RUN &> "./reports/nextflow-${NAME}.stdout.txt"
