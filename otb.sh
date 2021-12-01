@@ -138,7 +138,7 @@ else
   state "   ...not polishing"
 fi
 
-RUN="nextflow run run.nf -with-report ./report/nextflow-report.html -with-trace ./report/nextflow-trace.txt -with-timeline ./report-timeline.html -with-dag nextflow-dag.png "
+RUN="nextflow run run.nf -with-report ./reports/nextflow-report.html -with-trace ./reports/nextflow-trace.txt -with-timeline ./reports/nextflow-timeline.html -with-dag ./reports/nextflow-dag.png "
 [ -n "$RUNNER" ] && RUN+="-c config/${RUNNER}.cfg " || warn "no grid computing environment set, using local. this is not recomended."
 if [ -n "$MODE" ]; then
   case $MODE in
