@@ -179,6 +179,7 @@ if [ -n "$TEST" ]; then
   check_container="./scr/check_containers.sh"
   [ -n "$BUSCO" ] && check_container+=" -b"
   [ -n "$POLISHTYPE" ] && check_container+=" -p $POLISHTYPE"
+  [ -n "$NXF_SINGULARITY_CACHEDIR" ] || check_container+=" -l ./work/singularity"
   eval $check_container
 fi
 
