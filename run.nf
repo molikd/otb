@@ -20,7 +20,7 @@ bam_ch = Channel.fromPath(params.readin)
 right_fastq_check = Channel.fromPath(params.readr)
 left_fastq_check = Channel.fromPath(params.readf)
 
-in_file_ch.into{ in_check_ch; in_Hifi_ch}
+bam_ch.into{ in_check_ch; in_Hifi_ch}
 
 process check_in_file {
   container = 'mgibio/samtools:1.9'
