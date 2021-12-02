@@ -55,7 +55,7 @@ process check_in_file {
      state "   ...file type is fastq gz file type"
      state "check if file can be opened, and it starts with @"
      at_check=$(zcat $file | awk '{ print $1; exit }')
-     [[ $at_check =~ '@' ]] || error $file doesn't start with an @"; 
+     [[ $at_check =~ '@' ]] || error "$file doesn't start with an @"; 
      state "check if file can be divided by four"
      modulo_four_check=$(zcat $file | wc -l)
      [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || error "number of lines in $file not divisable by four"
@@ -63,7 +63,7 @@ process check_in_file {
      error "trying to run otb with somthing that does not end with the corret file type"
    fi
   
-   check "check file on $file passed"
+   state "check file on $file passed"
    sleep 120;
    exit 0;
   '''
