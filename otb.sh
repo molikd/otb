@@ -139,7 +139,7 @@ else
 fi
 
 #RUN="nextflow run run.nf -with-report ./reports/nextflow-${NAME}.report.html -with-trace ./reports/nextflow-${NAME}.trace.txt -with-timeline ./reports/nextflow-${NAME}.timeline.html -with-dag ./reports/nextflow-${NAME}.dag.png "
-RUN="nextflow run run.nf"
+RUN="nextflow run run.nf "
 [ -n "$RUNNER" ] && RUN+="-c config/${RUNNER}.cfg " || warn "no grid computing environment set, using local. this is not recomended."
 if [ -n "$MODE" ]; then
   case $MODE in
