@@ -451,7 +451,7 @@ process simple_polish {
   input:
     file genome from shhquis_simple_ch
   output:
-    file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_genome_busco_ch, yahs_simple_genome_ch, yahs_simple_align_genome
+    file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_genome_busco_ch, yahs_simple_genome_ch, yahs_simple_align_genome_ch
   when:
     params.polishtype == "simple"
   """
