@@ -53,7 +53,10 @@ otb is fully featured and utilzes the following softwares:
 - hicstuff
 - any2fasta
 - blobtools
-
+- merfin
+- deep variant
+- yahs
+- bcftools
 ```
 otb is in the public domain in the United States per 17 U.S.C. § 105
 ```
