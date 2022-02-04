@@ -15,6 +15,7 @@ params.buscooffline = false
 params.buscodb = "/work/busco"
 params.polish = false
 params.polishtype = 'simple'
+params.yahs = false
 
 bam_ch = Channel.fromPath(params.readin)
 right_fastq_check = Channel.fromPath(params.readr)
@@ -141,7 +142,7 @@ process HiFiAdapterFilt {
     file in_file from in_Hifi_ch.flatten()
   output:
     file '*.fasta' into filt_fasta_ch
-    file '*.filt.fastq' into filt_fastq_ch, minimap_merfin_filt_ch, meryl_filt_ch
+    file '*.filt.fastq' into filt_fastq_ch, minimap_merfin_filt_ch, meryl_filt_ch, yahs_filt_reads, yahs_simple_filt_reads, yahs_merfin_filt_reads, yahs_dv_filt_reads
     stdout pbadapterfilt_output
   """
     touch pbadapterfilt.flag.txt
@@ -385,7 +386,7 @@ process Shhquis_dot_jl {
     file genome from fasta_sshquis_genome_ch
     file fai from fai_ch
   output:
-    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_fai_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_dv_minimap_ch, shquis_minimap_merfin_ch, shhquis_mpileup_ch
+    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_fai_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_dv_minimap_ch, shquis_minimap_merfin_ch, shhquis_mpileup_ch, shhquis_yahs_genome_ch, shhquis_yahs_align_genome_ch
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
   when:
@@ -450,7 +451,7 @@ process simple_polish {
   input:
     file genome from shhquis_simple_ch
   output:
-    file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_genome_busco_ch
+    file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_genome_busco_ch, yahs_simple_genome_ch, yahs_simple_align_genome
   when:
     params.polishtype == "simple"
   """
@@ -483,7 +484,7 @@ process minimap_for_merfin {
   """
 }
 
-process samtools_mpileup {
+process samtools_mpileup_merfin {
   container = 'mgibio/samtools:1.9'
   cpus = params.threads
 
@@ -655,7 +656,7 @@ process dv_bcftools {
     file genome from shhquis_bcftools_dv_ch
     file vcf from dv_vcf_ch
   output:
-    file "${params.assembly}.vcf_polished_assembly.fasta" into dv_vcf_polished_genome_ch, dv_vcf_res_ch, dv_vcf_polished_busco_genome_ch
+    file "${params.assembly}.vcf_polished_assembly.fasta" into dv_vcf_polished_genome_ch, dv_vcf_res_ch, dv_vcf_polished_busco_genome_ch, yahs_dv_genome_ch, yahs_dv_align_genome_ch
     file "${params.assembly}.vcf_polished_assembly.fasta"
     stdout dv_bcftools_output
   when:
@@ -680,7 +681,7 @@ process merfin_bcftools {
     file genome from shhquis_bcftools_merfin_ch
     file vcf from merfin_vcf_ch
   output:
-    file "${params.assembly}.vcf_polished_assembly.fasta" into merfin_vcf_polished_genome_ch, merfin_vcf_res_ch, merfin_vcf_polished_busco_genome_ch
+    file "${params.assembly}.vcf_polished_assembly.fasta" into merfin_vcf_polished_genome_ch, merfin_vcf_res_ch, merfin_vcf_polished_busco_genome_ch, yahs_merfin_genome_ch, yahs_merfin_align_genome_ch
     file "${params.assembly}.vcf_polished_assembly.fasta"
     stdout merfin_bcftools_output
   when:
@@ -695,6 +696,252 @@ process merfin_bcftools {
     exit 0;
   """
 }
+
+process minimap_for_yahs {
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file filt_reads from yahs_filt_reads
+    file genome from shhquis_yahs_align_genome_ch
+  output:
+    file "mapped.sam" into yahs_sam_ch
+    stdout minimap_for_yahs_output
+  when:
+      params.yahs
+    """
+      touch minimap.yahs.flag.sh
+      minimap2 -t ${task.cpus} -a ${genome} ${filt_reads} > mapped.sam
+      echo "finished minimap"
+      sleep 120;
+      exit 0;
+   """
+}
+
+process minimap_for_simple_yahs {
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file filt_reads from yahs_simple_filt_reads
+    file genome from yahs_simple_align_genome_ch
+  output:
+    file "mapped.sam" into yahs_simple_sam_ch
+    stdout minimap_for_yahs_simple_output
+  when:
+      params.yahs
+    """
+      touch minimap.yahs.simple.flag.sh
+      minimap2 -t ${task.cpus} -a ${genome} ${filt_reads} > mapped.sam
+      echo "finished minimap"
+      sleep 120;
+      exit 0;
+   """
+}
+
+process minimap_for_merfin_yahs {
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file filt_reads from yahs_merfin_filt_reads
+    file genome from yahs_merfin_align_genome_ch 
+  output:
+    file "mapped.sam" into yahs_merfin_sam_ch
+    stdout minimap_for_yahs_merfin_output
+  when:
+      params.yahs
+    """
+      touch minimap.yahs.merfin.flag.sh
+      minimap2 -t ${task.cpus} -a ${genome} ${filt_reads} > mapped.sam
+      echo "finished minimap"
+      sleep 120;
+      exit 0;
+   """
+}
+
+process minimap_for_dv_yahs {
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file filt_reads from yahs_dv_filt_reads
+    file genome from yahs_dv_align_genome_ch
+  output:
+    file "mapped.sam" into yahs_dv_sam_ch
+    stdout minimap_for_yahs_dv_output
+  when:
+      params.yahs
+    """
+      touch minimap.yahs.merfin.flag.sh
+      minimap2 -t ${task.cpus} -a ${genome} ${filt_reads} > mapped.sam
+      echo "finished minimap"
+      sleep 120;
+      exit 0;
+   """
+}
+
+process bam_sort_for_yahs {
+  container = 'mgibio/samtools:1.9'
+  cpus = params.threads
+
+  input:
+    file sam_file from yahs_sam_ch
+  output:
+    file 'aln.bam' into bam_for_yahs_ch
+    stdout bam_sort_for_yahs_output
+  when:
+     params.yahs
+  shell:
+  '''
+    touch bam.sort.yahs.flag.txt
+    samtools sort -@ !{task.cpus} -o aln.bam !{sam_file}
+    echo "finished sort"
+    sleep 120;
+    exit 0;
+  '''
+}
+
+process bam_sort_for_simple_yahs {
+  container = 'mgibio/samtools:1.9'
+  cpus = params.threads
+
+  input:
+    file sam_file from yahs_simple_sam_ch
+  output:
+    file 'aln.bam' into bam_for_simple_yahs_ch
+    stdout bam_sort_for_simple_yahs_output
+  when:
+     params.yahs
+  shell:
+  '''
+    touch bam.sort.simple.yahs.flag.txt
+    samtools sort -@ !{task.cpus} -o aln.bam !{sam_file}
+    echo "finished sort"
+    sleep 120;
+    exit 0;
+  '''
+}
+
+process bam_sort_for_merfin_yahs {
+  container = 'mgibio/samtools:1.9'
+  cpus = params.threads
+
+  input:
+    file sam_file from yahs_merfin_sam_ch
+  output:
+    file 'aln.bam' into bam_for_merfin_yahs_ch
+    stdout bam_sort_for_merfin_yahs_output
+  when:
+     params.yahs
+  shell:
+  '''
+    touch bam.sort.merfin.yahs.flag.txt
+    samtools sort -@ !{task.cpus} -o aln.bam !{sam_file}
+    echo "finished sort"
+    sleep 120;
+    exit 0;
+  '''
+}
+
+process bam_sort_for_dv_yahs {
+  container = 'mgibio/samtools:1.9'
+  cpus = params.threads
+
+  input:
+    file sam_file from yahs_dv_sam_ch
+  output:
+    file 'aln.bam' into bam_for_dv_yahs_ch
+    stdout bam_sort_for_dv_yahs_output
+  when:
+     params.yahs
+  shell:
+  '''
+    touch bam.sort.dv.yahs.flag.txt
+    samtools sort -@ !{task.cpus} -o aln.bam !{sam_file}
+    echo "finished sort"
+    sleep 120;
+    exit 0;
+  '''
+}
+
+
+process yahs {
+  publishDir "${params.outdir}/genome/yahs", mode: 'rellink' 
+  container = 'dmolik/yahs'
+
+  input:
+    file input_bam from bam_for_yahs_ch
+    file input_genome from shhquis_yahs_genome_ch
+  output:
+    file 'yahs.no_polish*'
+    stdout yahs_output
+  when:
+     params.yahs
+  """
+    yahs -o yahs.no_polish --no-contig-ec ${input_genome} ${input_bam}
+  """
+}
+
+process simple_yahs {
+  publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
+  container = 'dmolik/yahs'
+
+  input:
+    file input_bam from bam_for_simple_yahs_ch
+    file input_genome from yahs_simple_genome_ch
+  output:
+    file 'yahs.simple*'
+    stdout yahs_simple_output
+  when:
+     params.yahs
+  """
+    yahs -o yahs.simple --no-contig-ec ${input_genome} ${input_bam}
+  """
+}
+
+
+process merfin_yahs {
+  publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
+  container = 'dmolik/yahs'
+
+  input:
+    file input_bam from bam_for_merfin_yahs_ch
+    file input_genome from yahs_merfin_genome_ch 
+  output:
+    file 'yahs.merfin*'
+    stdout yahs_merfin_output
+  when:
+     params.yahs
+  """
+    yahs -o yahs.merfin --no-contig-ec ${input_genome} ${input_bam}
+  """
+}
+
+
+process dv_yahs {
+  publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
+  container = 'dmolik/yahs'
+
+  input:
+    file input_bam from bam_for_dv_yahs_ch
+    file input_genome from yahs_dv_genome_ch
+  output:
+    file 'yahs.dv*'
+    stdout yahs_merfin_output
+  when:
+     params.yahs
+  """
+    yahs -o yahs.dv --no-contig-ec ${input_genome} ${input_bam}
+  """
+}
+
+/* might want to add later
+process ragtag_dot_py_hap_yahs
+process ragtag_dot_py_hap_simple_polish_yahs
+process ragtag_dot_py_hap_merfin_polish_yahs
+process ragtag_dot_py_hap_dv_polish_yahs
+*/
 
 process ragtag_dot_py_hap_simple_polish {
   publishDir "${params.outdir}/genome", mode: 'rellink'
@@ -1135,6 +1382,22 @@ process samtools_Version {
   """
 }
 
+process YaHS_Version {
+  container = 'dmolik/yahs'
+  cpus 1
+
+  output:
+    stdout yahs_version
+  when:
+    params.yahs
+  """
+    touch yahs_version.flag.txt
+    echo "YaHS Version:"
+    yahs --version
+    exit 0;
+  """
+}
+
 process bcftools_Version {
   container = 'mgibio/bcftools:1.9'
   cpus 1
@@ -1332,13 +1595,13 @@ busco_gfa_output
    .collectFile(name:'busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_no_polish")
 
 simple_busco_fasta_output
-   .collectFile(name:'simple.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
+   .collectFile(name:'polished.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
 
 merfin_busco_fasta_output
-   .collectFile(name:'merfin.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
+   .collectFile(name:'polished.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
 
 dv_busco_fasta_output
-   .collectFile(name:'dv.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
+   .collectFile(name:'polished.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
 
 jellyfish_output
    .collectFile(name:'jellyfish.log.txt', newLine: true, storeDir:"${params.outdir}/genomescope" )
@@ -1370,6 +1633,42 @@ merfin_bcftools_output
 dv_bcftools_output
    .collectFile(name:'bcftools.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
+minimap_for_yahs_output
+   .collectFile(name:'minimap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+minimap_for_yahs_simple_output
+   .collectFile(name:'minimap.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+minimap_for_yahs_merfin_output
+   .collectFile(name:'minimap.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+minimap_for_yahs_dv_output
+   .collectFile(name:'minimap.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+bam_sort_for_yahs_output
+   .collectFile(name:'bam.sort.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+bam_sort_for_simple_yahs_output
+   .collectFile(name:'bam.sort.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+bam_sort_for_merfin_yahs_output
+   .collectFile(name:'bam.sort.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+bam_sort_for_dv_yahs_output
+   .collectFile(name:'bam.sort.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+yahs_output
+   .collectFile(name:'yahs.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+yahs_simple_output
+   .collectFile(name:'yahs.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+yahs_merfin_output
+   .collectFile(name:'yahs.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+yahs_dv_output
+   .collectFile(name:'yahs.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
 hifiasm_version
    .collectFile(name:'hifiasm_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
@@ -1385,6 +1684,10 @@ ragtag_version
 samtools_version
    .collectFile(name:'samtools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
+
+yahs_version
+   .collectFile(name:'yahs_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+   .view{ it.text } 
 
 bcftools_version
    .collectFile(name:'bcftools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")

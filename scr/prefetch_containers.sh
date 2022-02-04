@@ -16,6 +16,7 @@ while [ $# -gt 0 ] ; do
       -p | --polish) POLISHTYPE="$2" ;;
       -b | --busco) BUSCO="true";;
       -l | --location) LOCATION="$2" ;;
+      -y | --yahs) YAHS="true";;
   esac
   shift
 done
@@ -45,6 +46,11 @@ if [ -n "$BUSCO" ]; then
   state "need busco container for this run"
   [ ! -f ezlabgva-busco-v5.2.2_cv1.img ] && singularity pull ezlabgva-busco-v5.2.2_cv1.img docker://ezlabgva/busco:v5.2.2_cv1 || state "   ...busco container found, not downloading"
 fi 
+
+if [ -n "$YAHS" ]; then 
+  state "need yahs container for this run"
+  [ ! -f dmolik-yahs.img ] && singularity pull dmolik-yahs.img docker://dmolik/yahs || state "yahs container found, not downloading"
+fi
 
 case $POLISHTYPE in
   "simple")

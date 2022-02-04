@@ -43,6 +43,9 @@ help(){
     -n or --name
        a name for the assembly 
 
+    -y or --yahs
+       run yahs as well
+
     grid computing:
        select one of the following, defaults to local which is highly not-recomended
     --sge
@@ -85,6 +88,7 @@ while [ $# -gt 0 ] ; do
     -m | --mode) MODE="$2";;
     -t | --threads) THREADS="$2";;
     -n | --name) NAME="$2";;
+    -y | --yahs) YAHS="true";;
     --sge) RUNNER="sge";;
     --slurm) RUNNER="slurm";;
     --slurm-usda) RUNNER="slurm_usda";;
@@ -161,6 +165,7 @@ RUN+="--outfasta=\"${NAME}.genome.out\" "
 [ -z "$THREADS" ] && RUN+="--threads=\"20\" "
 [ -f "$R1" ] && RUN+="--readf=\"$R1\" " || error "read pair file one not found, exiting"
 [ -f "$R2" ] && RUN+="--readr=\"$R2\" " || error "read pair file two not found, exiting"
+[ -n "$YAHS" ] && RUN+="--yahs "
 [ -n "$BUSCO" ] && RUN+="$BUSCO " || state "not running busco"
 [ -n "$POLISHTYPE" ] && RUN+="--polish --polishtype=\"$POLISHTYPE\" " || warn "not polishing, it is recomended that you polish"
 [ -n "$BUSCOSTRING" ] && RUN+="$BUSCOSTRING"
@@ -175,6 +180,7 @@ state "Prefetching singularity containers"
 [ -n "$NXF_SINGULARITY_CACHEDIR" ] && "Nextflow Singularity cache directory set: $NXF_SINGULARITY_CACHEDIR, will use for singularity images" || warn "NXF_SINGULARITY_CACHEDIR not set, using ./work/singularity instead" 
 
 prefetch_container="./scr/prefetch_containers.sh"
+[ -n "$YAHS" ] && prefetch_container+=" -y"
 [ -n "$BUSCO" ] && prefetch_container+=" -b"
 [ -n "$POLISHTYPE" ] && prefetch_container+=" -p $POLISHTYPE"
 [ -n "$NXF_SINGULARITY_CACHEDIR" ] || ( mkdir -p "./work/singularity"; prefetch_container+=" -l ./work/singularity" )
