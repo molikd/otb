@@ -928,7 +928,7 @@ process dv_yahs {
     file input_genome from yahs_dv_genome_ch
   output:
     file 'yahs.dv*'
-    stdout yahs_merfin_output
+    stdout yahs_dv_output
   when:
      params.yahs
   """
