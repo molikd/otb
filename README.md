@@ -28,9 +28,9 @@ In order to utilize this pipeline:
   - nextflow \(https://www.nextflow.io/) must be installed 
 Most HPC support groups will either already have these tools installed, or be willing to install them as [modules](http://modules.sourceforge.net/)
 
-otb operates from a local directory, and must be operated as ./otb.sh since it sources some shell scripts
+otb operates from a local directory, and must be ran as ./otb.sh since it sources some shell scripts in the scr directory. 
 
-in order to use otb download this directory and use ./otb.sh, an example:
+in order to use otb download this repository and use ./otb.sh, an example:
 
 ```bash
  ./otb.sh --sge --mode homozygous --threads 40 -f otb_test_file_R2.fastq -r otb_test_file_R1.fastq --polish-type simple --bam otb_test.bam
