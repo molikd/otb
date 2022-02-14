@@ -215,7 +215,7 @@ process gfa2fasta {
     file gfa from gfa_ch.flatten()
   output:
     file '*.p_ctg.gfa.fasta' optional true into gfa2fasta_fasta_res_ch
-    file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch
+    file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch, fasta_fai_yahs_genome_ch
     file '*hap[12].p_ctg.gfa.fasta' optional true into fasta_hap_ch, simple_fasta_hap_polish_ch, merfin_fasta_hap_polish_ch, dv_fasta_hap_polish_ch
     stdout gfa2fasta_output
   """
@@ -325,6 +325,26 @@ process faidx {
   """
 }
 
+process yahs_faidx {
+  container = 'mgibio/samtools:1.9'
+  cpus 1
+
+  input:
+    file genome from fasta_fai_yahs_genome_ch
+  output:
+    file '*.fai' into yahs_fai_ch
+    file '*.fasta' into yahs_genome_ch
+  when:
+    params.yahs
+  """
+    touch faidx.yahs.flag.txt
+    samtools faidx -o ${genome}.fai ${genome}
+    echo "finished indexing"
+    sleep 120;
+    exit 0;
+  """
+}
+
 process hicstuff {
   publishDir "${params.outdir}/hicstuff", mode: 'rellink'
   container = 'koszullab/hicstuff'
@@ -386,7 +406,7 @@ process Shhquis_dot_jl {
     file genome from fasta_sshquis_genome_ch
     file fai from fai_ch
   output:
-    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_fai_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_dv_minimap_ch, shquis_minimap_merfin_ch, shhquis_mpileup_ch, shhquis_yahs_genome_ch, shhquis_yahs_align_genome_ch
+    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_fai_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_dv_minimap_ch, shquis_minimap_merfin_ch, shhquis_mpileup_ch, shhquis_yahs_align_genome_ch
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
   when:
@@ -446,17 +466,20 @@ process genomescope2 {
 }
 
 process simple_polish {
+  container = 'mgibio/samtools:1.9'
   cpus = 1
 
   input:
     file genome from shhquis_simple_ch
   output:
     file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_genome_busco_ch, yahs_simple_genome_ch, yahs_simple_align_genome_ch
+    file "${params.assembly}.polished.genome.fasta.fai" into yahs_simple_fai_ch
   when:
     params.polishtype == "simple"
   """
     touch simple_polish.flag.txt
     ln -s ${genome} ${params.assembly}.polished.genome.fasta
+    samtools faidx -o ${params.assembly}.polished.genome.fasta.fai ${params.assembly}.polished.genome.fasta.fai
     echo "finished softlink"
     sleep 120;
     exit 0;
@@ -872,7 +895,8 @@ process yahs {
 
   input:
     file input_bam from bam_for_yahs_ch
-    file input_genome from shhquis_yahs_genome_ch
+    file input_genome from yahs_genome_ch
+    file input_fai from yahs_fai_ch
   output:
     file 'yahs.no_polish*'
     stdout yahs_output
@@ -890,6 +914,7 @@ process simple_yahs {
   input:
     file input_bam from bam_for_simple_yahs_ch
     file input_genome from yahs_simple_genome_ch
+    file input_fai from yahs_simple_fai_ch
   output:
     file 'yahs.simple*'
     stdout yahs_simple_output
@@ -900,6 +925,45 @@ process simple_yahs {
   """
 }
 
+process merfin_yahs_faidx {
+  container = 'mgibio/samtools:1.9'
+  cpus 1
+
+  input:
+    file genome from yahs_merfin_genome_ch
+  output:
+    file '*.fai' into yahs_merfin_fai_genome_fai_ch
+    file '*.fasta' into yahs_merfin_fai_genome_ch
+  when:
+    params.yahs
+  """
+    touch faidx.yahs.flag.txt
+    samtools faidx -o ${genome}.fai ${genome}
+    echo "finished indexing"
+    sleep 120;
+    exit 0;
+  """
+}
+
+process dv_yahs_faidx {
+  container = 'mgibio/samtools:1.9'
+  cpus 1
+
+  input:
+    file genome from yahs_dv_genome_ch
+  output:
+    file '*.fai' into yahs_dv_fai_genome_fai_ch
+    file '*.fasta' into yahs_dv_fai_genome_ch
+  when:
+    params.yahs
+  """
+    touch faidx.yahs.flag.txt
+    samtools faidx -o ${genome}.fai ${genome}
+    echo "finished indexing"
+    sleep 120;
+    exit 0;
+  """
+}
 
 process merfin_yahs {
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
@@ -907,7 +971,8 @@ process merfin_yahs {
 
   input:
     file input_bam from bam_for_merfin_yahs_ch
-    file input_genome from yahs_merfin_genome_ch 
+    file input_genome from yahs_merfin_fai_genome_ch
+    file input_fai from yahs_merfin_fai_genome_fai_ch
   output:
     file 'yahs.merfin*'
     stdout yahs_merfin_output
@@ -925,7 +990,8 @@ process dv_yahs {
 
   input:
     file input_bam from bam_for_dv_yahs_ch
-    file input_genome from yahs_dv_genome_ch
+    file input_genome from yahs_dv_fai_genome_ch
+    file input_fai from yahs_dv_fai_genome_fai_ch
   output:
     file 'yahs.dv*'
     stdout yahs_dv_output
