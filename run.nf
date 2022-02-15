@@ -479,7 +479,7 @@ process simple_polish {
   """
     touch simple_polish.flag.txt
     ln -s ${genome} ${params.assembly}.polished.genome.fasta
-    samtools faidx -o ${params.assembly}.polished.genome.fasta.fai ${params.assembly}.polished.genome.fasta.fai
+    samtools faidx -o ${params.assembly}.polished.genome.fasta.fai ${params.assembly}.polished.genome.fasta
     echo "finished softlink"
     sleep 120;
     exit 0;
