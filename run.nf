@@ -312,7 +312,7 @@ process faidx {
   input:
     file genome from fasta_fai_genome_ch
   output:
-    file '*.fai' into fai_ch
+    file '${genome}.fai' into fai_ch
     stdout faidx_output
   when:
     params.polish
@@ -332,8 +332,8 @@ process yahs_faidx {
   input:
     file genome from fasta_fai_yahs_genome_ch
   output:
-    file '*.fai' into yahs_fai_ch
-    file '*.fasta' into yahs_genome_ch
+    file '${genome}.fai' into yahs_fai_ch
+    file '${genome}' into yahs_genome_ch
   when:
     params.yahs
   """
@@ -932,8 +932,8 @@ process merfin_yahs_faidx {
   input:
     file genome from yahs_merfin_genome_ch
   output:
-    file '*.fai' into yahs_merfin_fai_genome_fai_ch
-    file '*.fasta' into yahs_merfin_fai_genome_ch
+    file '${genome}.fai' into yahs_merfin_fai_genome_fai_ch
+    file '${genome}' into yahs_merfin_fai_genome_ch
   when:
     params.yahs
   """
@@ -952,8 +952,8 @@ process dv_yahs_faidx {
   input:
     file genome from yahs_dv_genome_ch
   output:
-    file '*.fai' into yahs_dv_fai_genome_fai_ch
-    file '*.fasta' into yahs_dv_fai_genome_ch
+    file '${genome}.fai' into yahs_dv_fai_genome_fai_ch
+    file '${genome}' into yahs_dv_fai_genome_ch
   when:
     params.yahs
   """
