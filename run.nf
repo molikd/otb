@@ -312,7 +312,7 @@ process faidx {
   input:
     file genome from fasta_fai_genome_ch
   output:
-    file '${genome}.fai' into fai_ch
+    file "*.fai" into fai_ch
     stdout faidx_output
   when:
     params.polish
@@ -332,13 +332,14 @@ process yahs_faidx {
   input:
     file genome from fasta_fai_yahs_genome_ch
   output:
-    file '${genome}.fai' into yahs_fai_ch
-    file '${genome}' into yahs_genome_ch
+    file "${params.assembly}.yahs.fasta.fai" into yahs_fai_ch
+    file "${params.assembly}.yahs.fasta" into yahs_genome_ch
   when:
     params.yahs
   """
     touch faidx.yahs.flag.txt
-    samtools faidx -o ${genome}.fai ${genome}
+    ln -s ${genome} "${params.assembly}.yahs.fasta"
+    samtools faidx -o "${params.assembly}.yahs.fasta.fai" "${params.assembly}.yahs.fasta"
     echo "finished indexing"
     sleep 120;
     exit 0;
@@ -898,7 +899,7 @@ process yahs {
     file input_genome from yahs_genome_ch
     file input_fai from yahs_fai_ch
   output:
-    file 'yahs.no_polish*'
+    file "yahs.no_polish*"
     stdout yahs_output
   when:
      params.yahs
@@ -916,7 +917,7 @@ process simple_yahs {
     file input_genome from yahs_simple_genome_ch
     file input_fai from yahs_simple_fai_ch
   output:
-    file 'yahs.simple*'
+    file "yahs.simple*"
     stdout yahs_simple_output
   when:
      params.yahs
@@ -932,13 +933,14 @@ process merfin_yahs_faidx {
   input:
     file genome from yahs_merfin_genome_ch
   output:
-    file '${genome}.fai' into yahs_merfin_fai_genome_fai_ch
-    file '${genome}' into yahs_merfin_fai_genome_ch
+    file "${params.assembly}.yahs.fasta.fai" into yahs_merfin_fai_genome_fai_ch
+    file "${params.assembly}.yahs.fasta" into yahs_merfin_fai_genome_ch
   when:
     params.yahs
   """
     touch faidx.yahs.flag.txt
-    samtools faidx -o ${genome}.fai ${genome}
+    ln -s ${genome} "${params.assembly}.yahs.fasta"
+    samtools faidx -o "${params.assembly}.yahs.fasta.fai" "${params.assembly}.yahs.fasta"
     echo "finished indexing"
     sleep 120;
     exit 0;
@@ -952,13 +954,14 @@ process dv_yahs_faidx {
   input:
     file genome from yahs_dv_genome_ch
   output:
-    file '${genome}.fai' into yahs_dv_fai_genome_fai_ch
-    file '${genome}' into yahs_dv_fai_genome_ch
+    file "${params.assembly}.yahs.fasta.fai" into yahs_dv_fai_genome_fai_ch
+    file "${params.assembly}.yahs.fasta" into yahs_dv_fai_genome_ch
   when:
     params.yahs
   """
     touch faidx.yahs.flag.txt
-    samtools faidx -o ${genome}.fai ${genome}
+    ln -s ${genome} "${params.assembly}.yahs.fasta"
+    samtools faidx -o "${params.assembly}.yahs.fasta.fai" "${params.assembly}.yahs.fasta"
     echo "finished indexing"
     sleep 120;
     exit 0;
@@ -974,7 +977,7 @@ process merfin_yahs {
     file input_genome from yahs_merfin_fai_genome_ch
     file input_fai from yahs_merfin_fai_genome_fai_ch
   output:
-    file 'yahs.merfin*'
+    file "yahs.merfin*"
     stdout yahs_merfin_output
   when:
      params.yahs
@@ -993,7 +996,7 @@ process dv_yahs {
     file input_genome from yahs_dv_fai_genome_ch
     file input_fai from yahs_dv_fai_genome_fai_ch
   output:
-    file 'yahs.dv*'
+    file "yahs.dv*"
     stdout yahs_dv_output
   when:
      params.yahs
