@@ -152,4 +152,5 @@ tags
 *.bg2
 
 #slurm
-*.slurm
+otb.slurm
+
