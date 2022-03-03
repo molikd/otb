@@ -23,8 +23,8 @@ Reverse="RawDara/*_R2.fastq.gz"
 HiFi='RawHiFi/*.bam'
 
 #Comment/Uncommment for busco
-Busco="--busco" #Busco will be run
-#Busco="" #Busco will not be run
+#Busco="--busco" #Busco will be run
+Busco="" #Busco will not be run
 
 #Comment/Uncommment for Yahs
 Yahs="-y" #Yahs will be run
