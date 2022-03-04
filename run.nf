@@ -44,11 +44,6 @@ process check_in_file {
    file=!{in_file}
    stat $file
 
-   if [[ $file == *.fq || $file == *.fastq ]]; then
-     gzip $file
-     file=${file}.gz
-   fi
-
    if [[ $file == *.bam ]]; then
      state "   ...file type is bam file type" 
      samtools flagstat $file 
@@ -56,9 +51,17 @@ process check_in_file {
      state "   ...file type is fastq gz file type"
      state "check if file can be opened, and it starts with @"
      at_check=$(zcat $file | awk '{ print $1; exit }')
-     [[ $at_check =~ '@' ]] || error "$file doesn't start with an @"; 
+     [[ $at_check =~ '^@' ]] || error "$file doesn't start with an @"; 
      state "check if file can be divided by four"
      modulo_four_check=$(zcat $file | wc -l)
+     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || error "number of lines in $file not divisable by four"
+   elif [[ $file == *.fastq || *.fq ]]; then
+     state "   ...file type is fastq file type"
+     state "check if file can be opened, and it starts with @"
+     at_check=$( head -n 1 $file )
+     [[ $at_check =~ '^@' ]] || error "$file doesn't start with an @";
+     state "check if file can be divided by four"
+     modulo_four_check=$(cat $file | wc -l)                                    
      [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || error "number of lines in $file not divisable by four"
    else
      error "trying to run otb with somthing that does not end with the corret file type"
