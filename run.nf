@@ -51,7 +51,7 @@ process check_in_file {
      state "   ...file type is fastq gz file type"
      state "check if file can be opened, and it starts with @"
      at_check=$(zcat $file | awk '{ print $1; exit }')
-     [[ $at_check =~ '^@' ]] || error "$file doesn't start with an @"; 
+     [[ $at_check =~ '@' ]] || error "$file doesn't start with an @"; 
      state "check if file can be divided by four"
      modulo_four_check=$(zcat $file | wc -l)
      [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || error "number of lines in $file not divisable by four"
@@ -59,7 +59,7 @@ process check_in_file {
      state "   ...file type is fastq file type"
      state "check if file can be opened, and it starts with @"
      at_check=$( head -n 1 $file )
-     [[ $at_check =~ '^@' ]] || error "$file doesn't start with an @";
+     [[ $at_check =~ '@' ]] || error "$file doesn't start with an @";
      state "check if file can be divided by four"
      modulo_four_check=$(cat $file | wc -l)                                    
      [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || error "number of lines in $file not divisable by four"
