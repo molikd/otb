@@ -47,4 +47,8 @@ Threads="32"
 Busco_Location="-l /project/ag100pest/software/OTB_test/busco"
 Busco_DB="-p insecta_odb10"
 
-./otb.sh -n ${Assembly_Name} -f ${Forward} -r ${Reverse} -in ${CCS} -m ${HifiType} -t ${Threads} ${Yahs} ${Busco} --polish_type ${Polish_Type} --slurm-usda -c -s
+if [[ -z "$BUSCO" ]]; then
+  ./otb.sh -n ${Assembly_Name} -f ${Forward} -r ${Reverse} -in ${CCS} -m ${HifiType} -t ${Threads} ${Yahs} ${Busco} --polish_type ${Polish_Type} --slurm-usda -c -s
+else
+  ./otb.sh -n ${Assembly_Name} -f ${Forward} -r ${Reverse} -in ${CCS} -m ${HifiType} -t ${Threads} ${Yahs} ${Busco} ${Busco_Location} ${Busco_DB} --polish_type ${Polish_Type} --slurm-usda -c -s
+fi
