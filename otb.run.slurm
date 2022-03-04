@@ -19,8 +19,8 @@ Assembly_Name=$(basename "$( pwd )")
 
 # Foward and reverse reads
 Forward="RawData/*_R1.fastq.gz"
-Reverse="RawDara/*_R2.fastq.gz"
-HiFi='RawHiFi/*.bam'
+Reverse="RawData/*_R2.fastq.gz"
+CCS='RawData/*.fastq'
 
 #Comment/Uncommment for busco
 #Busco="--busco" #Busco will be run
@@ -47,4 +47,4 @@ Threads="32"
 Busco_Location="-l /project/ag100pest/software/OTB_test/busco"
 Busco_DB="-p insecta_odb10"
 
-./otb.sh -n ${Assembly_Name} -f ${Forward} -r ${Reverse} -in ${HiFi} -m ${HifiType} -t ${Threads} ${Yahs} ${Busco} --polish_type ${Polish_Type} --slurm-usda -c -s
+./otb.sh -n ${Assembly_Name} -f ${Forward} -r ${Reverse} -in ${CCS} -m ${HifiType} -t ${Threads} ${Yahs} ${Busco} --polish_type ${Polish_Type} --slurm-usda -c -s
