@@ -144,12 +144,12 @@ process HiFiAdapterFilt {
   input:
     file in_file from in_Hifi_ch.flatten()
   output:
-    file '*.fasta' into filt_fasta_ch
-    file '*.filt.fastq' into filt_fastq_ch, minimap_merfin_filt_ch, meryl_filt_ch, yahs_filt_reads, yahs_simple_filt_reads, yahs_merfin_filt_reads, yahs_dv_filt_reads
+    file '*.filt.fastq' into hifiasm_filt_fastq_ch, filt_fastq_ch, minimap_merfin_filt_ch, meryl_filt_ch, yahs_filt_reads, yahs_simple_filt_reads, yahs_merfin_filt_reads, yahs_dv_filt_reads
     stdout pbadapterfilt_output
   """
     touch pbadapterfilt.flag.txt
     pbadapterfilt.sh ${in_file} -t ${task.cpus}
+    gzip -d *.filt.fastq.gz
     echo "finished adapter filtering"
     sleep 120;
     exit 0;
@@ -161,7 +161,7 @@ process HiFiASM {
   cpus = params.threads
 
   input:
-    file fasta from filt_fasta_ch.collect()
+    file fasta from hifiasm_filt_fastq_ch.collect()
     file left from left_fastq_HiFiASM
     file right from right_fastq_HiFiASM
 
