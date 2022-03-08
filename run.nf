@@ -218,7 +218,7 @@ process gfa2fasta {
     file gfa from gfa_ch.flatten()
   output:
     file '*.p_ctg.gfa.fasta' optional true into gfa2fasta_fasta_res_ch
-    file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch, fasta_fai_yahs_genome_ch
+    file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch, no_polish_yahs_align_genome_ch, fasta_fai_yahs_genome_ch
     file '*hap[12].p_ctg.gfa.fasta' optional true into fasta_hap_ch, simple_fasta_hap_polish_ch, merfin_fasta_hap_polish_ch, dv_fasta_hap_polish_ch
     stdout gfa2fasta_output
   """
@@ -410,7 +410,7 @@ process Shhquis_dot_jl {
     file genome from fasta_sshquis_genome_ch
     file fai from fai_ch
   output:
-    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_fai_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_dv_minimap_ch, shquis_minimap_merfin_ch, shhquis_mpileup_ch, shhquis_yahs_align_genome_ch
+    file "${params.outfasta}" into shhquis_fasta_res_ch, polish_haps_genome_ch, shhquis_simple_ch, shhquis_merfin_ch, shhquis_dv_fai_ch, shhquis_dv_ch, shhquis_bcftools_dv_ch, shhquis_bcftools_merfin_ch, shhquis_dv_minimap_ch, shquis_minimap_merfin_ch, shhquis_mpileup_ch
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
   when:
@@ -730,7 +730,7 @@ process minimap_for_yahs {
 
   input:
     file filt_reads from yahs_filt_reads
-    file genome from shhquis_yahs_align_genome_ch
+    file genome from no_polish_yahs_align_genome_ch
   output:
     file "mapped.sam" into yahs_sam_ch
     stdout minimap_for_yahs_output
