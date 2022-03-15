@@ -892,7 +892,6 @@ process bam_sort_for_dv_yahs {
   '''
 }
 
-
 process yahs {
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink' 
   container = 'dmolik/yahs'
@@ -1093,7 +1092,7 @@ process ragtag_dot_py_yahs {
     file fasta_genome from yahs_no_polish_haps_genome_ch
   output:
     file "${params.assembly}_ragtag_scaffold/polished*fasta"
-    file "${params.assembly}_ragtag_scaffold/polished*fasta" into dv_hap_patch_res_ch
+    file "${params.assembly}_ragtag_scaffold/polished*fasta" into yahs_hap_patch_res_ch
     stdout yahs_ragtag_dot_py_hap_output
   when:
     params.polishtype == "yahs"
@@ -1106,6 +1105,10 @@ process ragtag_dot_py_yahs {
     exit 0;
   """
 }
+/* TODO                                 *
+ * ragtag_dot_py_hap_yahs_simple_polish *
+ * ragtag_dot_py_hap_yahs_dv_polish     *
+ * ragtag_dot_py_hap_yahs_merfin_polish */
 
 process simple_busco_fasta {
   publishDir "${params.outdir}/busco_polish", mode: 'rellink'
@@ -1259,6 +1262,13 @@ process dv_busco_fasta {
     touch busco.flag.txt
   """
 }
+
+/* TODO                    *
+ * yahs_busco_fasta        *
+ * yahs_simple_busco_fasta *
+ * yahs_merfin_busco_fasta *
+ * yahs_dv_busco_fasta     */
+
 
 process fasta_in_dot_sh {
   publishDir "${params.outdir}/genome", mode: 'copy'
@@ -1481,7 +1491,29 @@ process yahs_dv_polish_stats_dot_sh {
     echo "finished stats"
     exit 0;
   """
-} 
+}
+
+yahs_hap_patch_stats_dot_sh {
+   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'                    
+   container = 'bryce911/bbtools'                                                
+   cpus 1                                                                        
+                                                                                 
+   input:                                                                        
+     file fasta from yahs_hap_patch_res_ch                                  
+   output:                                                                       
+     file '*.stats'                                                              
+   """                                                                           
+     touch yahs_hap_no_polish_stats.flag.txt                                         
+     stats.sh -Xmx4g ${fasta} > ${fasta}.stats                                   
+     echo "finished stats"                                                       
+     exit 0;                                                                     
+   """                                                                           
+}  
+
+/* TODO                                      *
+ * yahs_hap_patch_simple_polish_stats_dot_sh *
+ * yahs_hap_patch_merfin_polish_stats_dot_sh *
+ * yahs_hap_patch_dv_polish_stats_dot_sh     */
 
 process HiFiASM_Version {
   container = 'dmolik/hifiasm'
