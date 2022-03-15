@@ -902,7 +902,7 @@ process yahs {
     file input_fai from yahs_fai_ch
   output:
     file "yahs.no_polish*"
-    file "yahs.no_polish_scaffolds_final.fa" into yahs_no_polish_stats_ch, yahs_no_polish_haps_genome_ch
+    file "yahs.no_polish_scaffolds_final.fa" into yahs_no_polish_stats_ch, yahs_no_polish_haps_genome_ch, yahs_no_polish_busco_ch
     stdout yahs_output
   when:
      params.yahs
@@ -921,7 +921,7 @@ process simple_yahs {
     file input_fai from yahs_simple_fai_ch
   output:
     file "yahs.simple*"
-    file "yahs.simple_scaffolds_final.fa" into yahs_simple_polish_stats_ch, yahs_simple_polish_haps_genome_ch
+    file "yahs.simple_scaffolds_final.fa" into yahs_simple_polish_stats_ch, yahs_simple_polish_haps_genome_ch, yahs_simple_polish_busco_ch
     stdout yahs_simple_output
   when:
      params.yahs
@@ -982,7 +982,7 @@ process merfin_yahs {
     file input_fai from yahs_merfin_fai_genome_fai_ch
   output:
     file "yahs.merfin*"
-    file "yahs.merfin_scaffolds_final.fa" into yahs_merfin_polish_stats_ch, yahs_merfin_polish_haps_genome_ch
+    file "yahs.merfin_scaffolds_final.fa" into yahs_merfin_polish_stats_ch, yahs_merfin_polish_haps_genome_ch, yahs_merfin_polish_busco_ch
     stdout yahs_merfin_output
   when:
      params.yahs
@@ -1002,7 +1002,7 @@ process dv_yahs {
     file input_fai from yahs_dv_fai_genome_fai_ch
   output:
     file "yahs.dv*"
-    file "yahs.dv_scaffolds_final.fa" into yahs_dv_polish_stats_ch, yahs_dv_polish_haps_genome_ch
+    file "yahs.dv_scaffolds_final.fa" into yahs_dv_polish_stats_ch, yahs_dv_polish_haps_genome_ch, yahs_dv_polish_busco_ch
     stdout yahs_dv_output
   when:
      params.yahs
@@ -1331,12 +1331,197 @@ process dv_busco_fasta {
   """
 }
 
-/* TODO                    *
- * yahs_busco_fasta        *
- * yahs_simple_busco_fasta *
- * yahs_merfin_busco_fasta *
- * yahs_dv_busco_fasta     */
+process yahs_busco_fasta {
+  publishDir "${params.outdir}/busco_no_polish/yahs", mode: 'rellink'
+  input:
+    file fasta from yahs_no_polish_busco_ch
+  output:
+    file '*'
+    stdout yahs_busco_fasta_output
+  when:
+    params.busco
 
+  script:
+
+  if( params.linreage == 'auto-lineage' && params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+  """
+  else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+  """
+  else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+  """
+  else if( params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+  """
+  else if( params.buscooffline == true && params.buscodb == 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+  """
+  else if( params.buscooffline == true && params.buscodb != 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+  """
+  else
+  """
+    touch busco.flag.txt
+  """
+}
+
+process yahs_simple_busco_fasta {
+  publishDir "${params.outdir}/busco_polish/yahs", mode: 'rellink'
+  input:
+    file fasta from yahs_simple_polish_busco_ch        
+  output:
+    file '*'
+    stdout yahs_simple_busco_fasta_output
+  when:
+    params.busco
+
+  script:
+
+  if( params.linreage == 'auto-lineage' && params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+  """
+  else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+  """
+  else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+  """
+  else if( params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+  """
+  else if( params.buscooffline == true && params.buscodb == 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+  """
+  else if( params.buscooffline == true && params.buscodb != 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+  """
+  else
+  """
+    touch busco.flag.txt
+  """
+}
+
+process yahs_merfin_busco_fasta {
+  publishDir "${params.outdir}/busco_polish/yahs", mode: 'rellink'
+  input:
+    file fasta from yahs_merfin_polish_busco_ch  
+  output:
+    file '*'
+    stdout yahs_merfin_busco_fasta_output
+  when:
+    params.busco
+
+  script:
+
+  if( params.linreage == 'auto-lineage' && params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+  """
+  else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+  """
+  else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+  """
+  else if( params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+  """
+  else if( params.buscooffline == true && params.buscodb == 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+  """
+  else if( params.buscooffline == true && params.buscodb != 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+  """
+  else
+  """
+    touch busco.flag.txt
+  """
+}
+
+process yahs_merfin_dv_fasta {
+  publishDir "${params.outdir}/busco_polish/yahs", mode: 'rellink'
+  input:
+    file fasta from yahs_dv_polish_busco_ch
+  output:
+    file '*'
+    stdout yahs_dv_busco_fasta_output
+  when:
+    params.busco
+
+  script:
+
+  if( params.linreage == 'auto-lineage' && params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+  """
+  else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+  """
+  else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+  """
+  else if( params.buscooffline == false)
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+  """
+  else if( params.buscooffline == true && params.buscodb == 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+  """
+  else if( params.buscooffline == true && params.buscodb != 'work/busco')
+  """
+    touch busco.flag.txt
+    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+  """
+  else
+  """
+    touch busco.flag.txt
+  """
+}
 
 process fasta_in_dot_sh {
   publishDir "${params.outdir}/genome", mode: 'copy'
@@ -1561,7 +1746,7 @@ process yahs_dv_polish_stats_dot_sh {
   """
 }
 
-yahs_hap_patch_stats_dot_sh {
+process yahs_hap_patch_stats_dot_sh {
    publishDir "${params.outdir}/genome/yahs", mode: 'rellink'                    
    container = 'bryce911/bbtools'                                                
    cpus 1                                                                        
@@ -1578,7 +1763,7 @@ yahs_hap_patch_stats_dot_sh {
    """                                                                           
 }  
 
-yahs_hap_patch_simple_polish_stats_dot_sh {
+process yahs_hap_patch_simple_polish_stats_dot_sh {
    publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
    container = 'bryce911/bbtools'
    cpus 1
@@ -1595,7 +1780,7 @@ yahs_hap_patch_simple_polish_stats_dot_sh {
    """
 }  
 
-yahs_hap_patch_merfin_polish_stats_dot_sh {
+process yahs_hap_patch_merfin_polish_stats_dot_sh {
    publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
    container = 'bryce911/bbtools'
    cpus 1
@@ -1612,7 +1797,7 @@ yahs_hap_patch_merfin_polish_stats_dot_sh {
    """
 }
 
-yahs_hap_patch_dv_polish_stats_dot_sh {
+process yahs_hap_patch_dv_polish_stats_dot_sh {
    publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
    container = 'bryce911/bbtools'
    cpus 1
@@ -1987,6 +2172,18 @@ yahs_merfin_ragtag_dot_py_hap_output
 
 yahs_dv_ragtag_dot_py_hap_output
    .collectFile(name:'yahs.dv.ragtag.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+yahs_busco_fasta_output
+   .collectFile(name:'yahs.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_no_polish")
+
+yahs_simple_busco_fasta_output
+   .collectFile(name:'yahs.polished.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
+
+yahs_merfin_busco_fasta_output
+   .collectFile(name:'yahs.polished.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
+
+yahs_dv_busco_fasta_output
+   .collectFile(name:'yahs.polished.busco.log.txt', newLine: true, storeDir:"${params.outdir}/busco_polish" )
 
 hifiasm_version
    .collectFile(name:'hifiasm_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
