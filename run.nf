@@ -219,7 +219,7 @@ process gfa2fasta {
   output:
     file '*.p_ctg.gfa.fasta' optional true into gfa2fasta_fasta_res_ch
     file '*.bp.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch, no_polish_yahs_align_genome_ch, fasta_fai_yahs_genome_ch
-    file '*hap[12].p_ctg.gfa.fasta' optional true into fasta_hap_ch, simple_fasta_hap_polish_ch, merfin_fasta_hap_polish_ch, dv_fasta_hap_polish_ch
+    file '*hap[12].p_ctg.gfa.fasta' optional true into fasta_hap_ch, simple_fasta_hap_polish_ch, merfin_fasta_hap_polish_ch, dv_fasta_hap_polish_ch, yahs_fasta_hap_polish_ch
     stdout gfa2fasta_output
   """
     touch any2fasta.flag.txt
@@ -903,6 +903,7 @@ process yahs {
     file input_fai from yahs_fai_ch
   output:
     file "yahs.no_polish*"
+    file "yahs.no_polish_scaffolds_final.fa" into yahs_no_polish_stats_ch, yahs_no_polish_haps_genome_ch
     stdout yahs_output
   when:
      params.yahs
@@ -921,6 +922,7 @@ process simple_yahs {
     file input_fai from yahs_simple_fai_ch
   output:
     file "yahs.simple*"
+    file "yahs.simple_scaffolds_final.fa" into yahs_simple_polish_stats_ch, yahs_simple_polish_haps_genome_ch
     stdout yahs_simple_output
   when:
      params.yahs
@@ -981,6 +983,7 @@ process merfin_yahs {
     file input_fai from yahs_merfin_fai_genome_fai_ch
   output:
     file "yahs.merfin*"
+    file "yahs.merfin_scaffolds_final.fa" into yahs_merfin_polish_stats_ch, yahs_merfin_polish_haps_genome_ch
     stdout yahs_merfin_output
   when:
      params.yahs
@@ -1000,6 +1003,7 @@ process dv_yahs {
     file input_fai from yahs_dv_fai_genome_fai_ch
   output:
     file "yahs.dv*"
+    file "yahs.dv_scaffolds_final.fa" into yahs_dv_polish_stats_ch, yahs_dv_polish_haps_genome_ch
     stdout yahs_dv_output
   when:
      params.yahs
@@ -1007,13 +1011,6 @@ process dv_yahs {
     yahs -o yahs.dv --no-contig-ec ${input_genome} ${input_bam}
   """
 }
-
-/* might want to add later
-process ragtag_dot_py_hap_yahs
-process ragtag_dot_py_hap_simple_polish_yahs
-process ragtag_dot_py_hap_merfin_polish_yahs
-process ragtag_dot_py_hap_dv_polish_yahs
-*/
 
 process ragtag_dot_py_hap_simple_polish {
   publishDir "${params.outdir}/genome", mode: 'rellink'
@@ -1078,6 +1075,30 @@ process ragtag_dot_py_hap_deep_variant_polish {
     params.polishtype == "dv"
   """
     touch ragtag.hap.flag.txt
+    ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
+    echo "finished patching"
+    sleep 120;
+    exit 0;
+  """
+}
+
+process ragtag_dot_py_yahs {
+  publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
+  container = 'dmolik/ragtag'
+  cpus = params.threads
+
+  input:
+    file fasta_hap from yahs_fasta_hap_polish_ch.flatten()
+    file fasta_genome from yahs_no_polish_haps_genome_ch
+  output:
+    file "${params.assembly}_ragtag_scaffold/polished*fasta"
+    file "${params.assembly}_ragtag_scaffold/polished*fasta" into dv_hap_patch_res_ch
+    stdout yahs_ragtag_dot_py_hap_output
+  when:
+    params.polishtype == "yahs"
+  """
+    touch ragtag.hap.yahs.flag.txt
     ragtag.py scaffold --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
@@ -1393,6 +1414,74 @@ process dv_hap_patch_stats_dot_sh {
     exit 0;
   """
 }
+
+process yahs_no_polish_stats_dot_sh {  
+  publishDir "${params.outdir}/genome/yahs", mode: 'rellink'  
+  container = 'bryce911/bbtools'
+  cpus 1
+
+  input:
+    file fasta from yahs_no_polish_stats_ch
+  output:
+    file '*.stats'
+  """
+    touch yahs_no_polish_stats.flag.txt
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
+  """
+}
+
+process yahs_simple_polish_stats_dot_sh {
+  publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
+  container = 'bryce911/bbtools'
+  cpus 1
+
+  input:
+    file fasta from yahs_simple_polish_stats_ch      
+  output:
+    file '*.stats'
+  """
+    touch yahs_simple_polish_stats.flag.txt
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
+  """
+} 
+
+process yahs_merfin_polish_stats_dot_sh {
+  publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
+  container = 'bryce911/bbtools'
+  cpus 1
+
+  input:
+    file fasta from yahs_merfin_polish_stats_ch                  
+  output:
+    file '*.stats'
+  """
+    touch yahs_merfin_polish_stats.flag.txt
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
+  """
+} 
+
+process yahs_dv_polish_stats_dot_sh {
+  publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
+  container = 'bryce911/bbtools'
+  cpus 1
+
+  input:
+    file fasta from yahs_dv_polish_stats_ch                  
+  output:
+    file '*.stats'
+  """
+    touch yahs_dv_polish_stats.flag.txt
+    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    echo "finished stats"
+    exit 0;
+  """
+} 
 
 process HiFiASM_Version {
   container = 'dmolik/hifiasm'
@@ -1740,6 +1829,9 @@ yahs_merfin_output
 
 yahs_dv_output
    .collectFile(name:'yahs.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+
+yahs_ragtag_dot_py_hap_output
+   .collectFile(name:'yahs.ragtag.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
 
 hifiasm_version
    .collectFile(name:'hifiasm_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
