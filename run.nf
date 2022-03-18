@@ -1112,7 +1112,7 @@ process ragtag_dot_py_simple_yahs {
   cpus = params.threads
 
   input:
-    file fasta_hap from yahs_simple_polish_haps_genome_ch.flatten()
+    file fasta_hap from yahs_simple_fasta_hap_polish_ch.flatten()
     file fasta_genome from yahs_simple_polish_haps_genome_ch
   output:
     file "${params.assembly}_ragtag_scaffold/polished*fasta"
