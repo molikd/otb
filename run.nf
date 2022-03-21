@@ -1136,7 +1136,7 @@ process ragtag_dot_py_merfin_yahs {
   cpus = params.threads
 
   input:
-    file fasta_hap from yahs_merfin_polish_haps_genome_ch.flatten()
+    file fasta_hap from yahs_merfin_fasta_hap_polish_ch.flatten()
     file fasta_genome from yahs_merfin_polish_haps_genome_ch
   output:
     file "${params.assembly}_ragtag_scaffold/polished*fasta"
@@ -1160,7 +1160,7 @@ process ragtag_dot_py_dv_yahs {
   cpus = params.threads
 
   input:
-    file fasta_hap from yahs_dv_polish_haps_genome_ch.flatten()
+    file fasta_hap from yahs_dv_fasta_hap_polish_ch.flatten()
     file fasta_genome from yahs_dv_polish_haps_genome_ch
   output:
     file "${params.assembly}_ragtag_scaffold/polished*fasta"
