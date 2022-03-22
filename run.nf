@@ -21,7 +21,7 @@ bam_ch = Channel.fromPath(params.readin)
 right_fastq_check = Channel.fromPath(params.readr)
 left_fastq_check = Channel.fromPath(params.readf)
 
-bam_ch.into { 
+bam_ch.into {
   in_check_ch
   in_Hifi_ch
 }
@@ -36,8 +36,8 @@ process check_in_file {
     stdout check_in_file_output
   shell:
   '''
-   state () { printf "%b\n" "[$(date)]: $*" 2>&1; }                             
-   error () { printf "%b\n" "[$(date)]: $*" >&2; exit 1; } 
+   state () { printf "%b\n" "[$(date)]: $*" 2>&1; }
+   error () { printf "%b\n" "[$(date)]: $*" >&2; exit 1; }
 
    touch check_bam.flag.txt
    state "checking file type"
@@ -45,13 +45,13 @@ process check_in_file {
    stat $file
 
    if [[ $file == *.bam ]]; then
-     state "   ...file type is bam file type" 
-     samtools flagstat $file 
+     state "   ...file type is bam file type"
+     samtools flagstat $file
    elif [[ $file == *.fastq.gz || $file == *.fq.gz ]]; then
      state "   ...file type is fastq gz file type"
      state "check if file can be opened, and it starts with @"
      at_check=$(zcat $file | awk '{ print $1; exit }')
-     [[ $at_check =~ '@' ]] || error "$file doesn't start with an @"; 
+     [[ $at_check =~ '@' ]] || error "$file doesn't start with an @";
      state "check if file can be divided by four"
      modulo_four_check=$(zcat $file | wc -l)
      [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || error "number of lines in $file not divisable by four"
@@ -61,12 +61,12 @@ process check_in_file {
      at_check=$( head -n 1 $file )
      [[ $at_check =~ '@' ]] || error "$file doesn't start with an @";
      state "check if file can be divided by four"
-     modulo_four_check=$(cat $file | wc -l)                                    
+     modulo_four_check=$(cat $file | wc -l)
      [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || error "number of lines in $file not divisable by four"
    else
      error "trying to run otb with somthing that does not end with the corret file type"
    fi
-  
+
    state "check file on $file passed"
    sleep 120;
    exit 0;
@@ -78,7 +78,7 @@ process check_fastq {
 
   input:
     file right_fastq from right_fastq_check
-    file left_fastq from left_fastq_check 
+    file left_fastq from left_fastq_check
   output:
     file 'out/right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish, right_fastq_jellyfish
     file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_fastq_jellyfish
@@ -253,19 +253,19 @@ process busco_gfa {
   """
   else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
-    touch busco.flag.txt 
+    touch busco.flag.txt
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
     exit 0;
   """
   else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
-    touch busco.flag.txt 
+    touch busco.flag.txt
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
     exit 0;
   """
   else if( params.buscooffline == false)
   """
-    touch busco.flag.txt 
+    touch busco.flag.txt
     busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
     exit 0;
   """
@@ -300,7 +300,7 @@ process ragtag_dot_py {
   when:
     params.polish
   """
-    touch ragtag.flag.txt 
+    touch ragtag.flag.txt
     ragtag.py patch --aligner unimap -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
     echo "finished patching"
     sleep 120;
@@ -389,7 +389,7 @@ process hicstuff_polish {
   when:
     params.polish
   """
-    touch hicstuff_for_polished.flag.txt 
+    touch hicstuff_for_polished.flag.txt
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
     mv hicstuff_out/fragments_list.txt hicstuff_out/polish_fragments_list.txt
     mv hicstuff_out/plots/frags_hist.pdf hicstuff_out/plots/polish_frags_hist.pdf
@@ -460,7 +460,7 @@ process genomescope2 {
     stdout genomescope2_output
   """
     touch genomescope.flag.txt
-    xvfb-run genomescope.R -i ${histo} -o ${params.assembly} -k 21 -p ${params.ploidy} --fitted_hist 
+    xvfb-run genomescope.R -i ${histo} -o ${params.assembly} -k 21 -p ${params.ploidy} --fitted_hist
     genomescope.R --version > version.txt
     awk '/kmercov [0-9]/ { print \$2 }' ${params.assembly}/model.txt >> kcov.txt
     echo "finished genomescope"
@@ -519,7 +519,7 @@ process samtools_mpileup_merfin {
     file sam_file from sam_for_merfin_ch
     file genome from shhquis_mpileup_ch
   output:
-    file 'out.mpileup' into bcf_for_merfin_ch  
+    file 'out.mpileup' into bcf_for_merfin_ch
     stdout samtools_mpileup_output
   when:
     params.polishtype == "merfin"
@@ -537,7 +537,7 @@ process samtools_mpileup_merfin {
 }
 
 process bcftools_refmt {
-  container = 'mgibio/bcftools:1.9' 
+  container = 'mgibio/bcftools:1.9'
   cpus = params.threads
 
   input:
@@ -546,7 +546,7 @@ process bcftools_refmt {
     file "final.reshaped.vcf.gz" into vcf_for_merfin_ch
     stdout bcftools_refmt_output
   when:
-    params.polishtype == "merfin" 
+    params.polishtype == "merfin"
   """
     touch bcftools.qual.flag.txt
     echo '##INFO=<ID=DP,Number=1,Type=Integer,Description="Approximate read depth; some reads may have been filtered">' > merfin_header.vcf
@@ -560,10 +560,10 @@ process bcftools_refmt {
     rm var.temp.reshaped.header.vcf var.temp.reshaped.vcf
     bcftools annotate --threads ${task.cpus} -h merfin_header.vcf var.temp.reshaped.combined.vcf > var.temp.reshaped.vcf
     bcftools view --threads ${task.cpus} -h var.temp.reshaped.vcf | sed 's/\tINFO/\tINFO\tFORMAT\tIND/g' > var.reshaped.vcf
-    rm var.temp.reshaped.vcf 
+    rm var.temp.reshaped.vcf
     bcftools view --threads ${task.cpus} -H var.temp.reshaped.combined.vcf | awk -F"\t" -v OFS="\t" '{gsub(/DP=/,".\tGT:DP\t1/1:",\$8);print \$0}' >> var.reshaped.vcf
     bcftools view --threads ${task.cpus} var.reshaped.vcf -Oz > final.reshaped.vcf.gz
-    rm var.reshaped.vcf 
+    rm var.reshaped.vcf
     rm var.temp.reshaped.combined.vcf
     echo "finished bcftools reformat"
     sleep 120;
@@ -581,7 +581,7 @@ process merfin {
     file kcov_file from kcov_ch
     file lookup_table from lookup_table_ch
     file filt_reads from meryl_filt_ch
-    file vcf_file from vcf_for_merfin_ch 
+    file vcf_file from vcf_for_merfin_ch
   output:
     file 'merfin.polish.vcf' into merfin_vcf_ch
     stdout merfin_output
@@ -624,7 +624,7 @@ process minimap_for_deep_variant {
 
 
 process samtools_index_for_deep_variant {
-  container = 'mgibio/samtools:1.9'  
+  container = 'mgibio/samtools:1.9'
   cpus = params.threads
 
   input:
@@ -651,10 +651,10 @@ process samtools_index_for_deep_variant {
 process deep_variant {
   publishDir "${params.outdir}/deepvariant", mode: 'rellink'
   container = 'google/deepvariant'
-  cpus = params.threads 
+  cpus = params.threads
 
   input:
-    file genome from shhquis_dv_ch 
+    file genome from shhquis_dv_ch
     file genome_fai from fai_dv_index_ch
     file bam_read from bam_dv_index_ch
     file bai_read from bai_dv_index_ch
@@ -675,7 +675,7 @@ process deep_variant {
 }
 
 process dv_bcftools {
-  publishDir "${params.outdir}/genome", mode: 'rellink' 
+  publishDir "${params.outdir}/genome", mode: 'rellink'
   container = 'mgibio/bcftools:1.9'
   cpus = params.threads
 
@@ -772,7 +772,7 @@ process minimap_for_merfin_yahs {
 
   input:
     file filt_reads from yahs_merfin_filt_reads
-    file genome from yahs_merfin_align_genome_ch 
+    file genome from yahs_merfin_align_genome_ch
   output:
     file "mapped.sam" into yahs_merfin_sam_ch
     stdout minimap_for_yahs_merfin_output
@@ -893,7 +893,7 @@ process bam_sort_for_dv_yahs {
 }
 
 process yahs {
-  publishDir "${params.outdir}/genome/yahs", mode: 'rellink' 
+  publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'dmolik/yahs'
 
   input:
@@ -1382,7 +1382,7 @@ process yahs_busco_fasta {
 process yahs_simple_busco_fasta {
   publishDir "${params.outdir}/busco_polish/yahs", mode: 'rellink'
   input:
-    file fasta from yahs_simple_polish_busco_ch        
+    file fasta from yahs_simple_polish_busco_ch
   output:
     file '*'
     stdout yahs_simple_busco_fasta_output
@@ -1430,7 +1430,7 @@ process yahs_simple_busco_fasta {
 process yahs_merfin_busco_fasta {
   publishDir "${params.outdir}/busco_polish/yahs", mode: 'rellink'
   input:
-    file fasta from yahs_merfin_polish_busco_ch  
+    file fasta from yahs_merfin_polish_busco_ch
   output:
     file '*'
     stdout yahs_merfin_busco_fasta_output
@@ -1678,8 +1678,8 @@ process dv_hap_patch_stats_dot_sh {
   """
 }
 
-process yahs_no_polish_stats_dot_sh {  
-  publishDir "${params.outdir}/genome/yahs", mode: 'rellink'  
+process yahs_no_polish_stats_dot_sh {
+  publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'bryce911/bbtools'
   cpus 1
 
@@ -1701,7 +1701,7 @@ process yahs_simple_polish_stats_dot_sh {
   cpus 1
 
   input:
-    file fasta from yahs_simple_polish_stats_ch      
+    file fasta from yahs_simple_polish_stats_ch
   output:
     file '*.stats'
   """
@@ -1710,7 +1710,7 @@ process yahs_simple_polish_stats_dot_sh {
     echo "finished stats"
     exit 0;
   """
-} 
+}
 
 process yahs_merfin_polish_stats_dot_sh {
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
@@ -1718,7 +1718,7 @@ process yahs_merfin_polish_stats_dot_sh {
   cpus 1
 
   input:
-    file fasta from yahs_merfin_polish_stats_ch                  
+    file fasta from yahs_merfin_polish_stats_ch
   output:
     file '*.stats'
   """
@@ -1727,7 +1727,7 @@ process yahs_merfin_polish_stats_dot_sh {
     echo "finished stats"
     exit 0;
   """
-} 
+}
 
 process yahs_dv_polish_stats_dot_sh {
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
@@ -1735,7 +1735,7 @@ process yahs_dv_polish_stats_dot_sh {
   cpus 1
 
   input:
-    file fasta from yahs_dv_polish_stats_ch                  
+    file fasta from yahs_dv_polish_stats_ch
   output:
     file '*.stats'
   """
@@ -1747,21 +1747,21 @@ process yahs_dv_polish_stats_dot_sh {
 }
 
 process yahs_hap_patch_stats_dot_sh {
-   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'                    
-   container = 'bryce911/bbtools'                                                
-   cpus 1                                                                        
-                                                                                 
-   input:                                                                        
-     file fasta from yahs_hap_patch_res_ch                                  
-   output:                                                                       
-     file '*.stats'                                                              
-   """                                                                           
-     touch yahs_hap_no_polish_stats.flag.txt                                         
-     stats.sh -Xmx4g ${fasta} > ${fasta}.stats                                   
-     echo "finished stats"                                                       
-     exit 0;                                                                     
-   """                                                                           
-}  
+   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
+   container = 'bryce911/bbtools'
+   cpus 1
+
+   input:
+     file fasta from yahs_hap_patch_res_ch
+   output:
+     file '*.stats'
+   """
+     touch yahs_hap_no_polish_stats.flag.txt
+     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+     echo "finished stats"
+     exit 0;
+   """
+}
 
 process yahs_hap_patch_simple_polish_stats_dot_sh {
    publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
@@ -1778,7 +1778,7 @@ process yahs_hap_patch_simple_polish_stats_dot_sh {
      echo "finished stats"
      exit 0;
    """
-}  
+}
 
 process yahs_hap_patch_merfin_polish_stats_dot_sh {
    publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
@@ -2004,7 +2004,7 @@ process BUSCO_Version {
   cpus 1
 
   output:
-    stdout busco_version 
+    stdout busco_version
   when:
     params.busco
 
@@ -2012,7 +2012,7 @@ process BUSCO_Version {
     touch busco_version.flag.txt
     echo "BUSCO  - - - - - - - v5.2.2_cv1"
     exit 0;
-  """   
+  """
 
 }
 
@@ -2035,7 +2035,7 @@ process HiFiAdapterFilt_Version {
   cpus 1
 
   output:
-    stdout pbadapterfilt_version  
+    stdout pbadapterfilt_version
 
   """
     touch hifiadapterfilt_version.flag.txt
@@ -2203,7 +2203,7 @@ samtools_version
 
 yahs_version
    .collectFile(name:'yahs_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
-   .view{ it.text } 
+   .view{ it.text }
 
 bcftools_version
    .collectFile(name:'bcftools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
