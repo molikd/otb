@@ -1,34 +1,34 @@
 ```
- ------------------------------------------------------------------------------------- 
-                                              ,,                                       
-                                       mm    *MM                                       
-                                       MM     MM                                       
-                            ,pW"Wq.  mmMMmm   MM,dMMb.                                 
-                           6W'   `Wb   MM     MM    `Mb                                
-                           8M     M8   MM     MM     M8                                
-                           YA.   ,A9   MM     MM.   ,M9                                
-                            `Ybmd9'    `Mbmo  P^YbmdP'                                 
-                                                                                       
- ------------------------------------------------------------------------------------- 
-               _   ._   |        _|_  |_    _     |_    _    _  _|_  |                 
-              (_)  | |  |  \/     |_  | |  (/_    |_)  (/_  _>   |_  o                 
-                           /                                                           
-  /   _    _   ._    _   ._ _    _      _.   _   _   _   ._ _   |_   |  o   _    _  \  
- |   (_|  (/_  | |  (_)  | | |  (/_    (_|  _>  _>  (/_  | | |  |_)  |  |  (/_  _>   | 
-  \   _|                                                                            /  
- ------------------------------------------------------------------------------------- 
-                                                                         
+ +-------------------------------------------------------------------------------------+
+ |                                             ,,                                      |
+ |                                      mm    *MM                                      |
+ |                                      MM     MM                                      |
+ |                           ,pW"Wq.  mmMMmm   MM,dMMb.                                |
+ |                          6W'   `Wb   MM     MM    `Mb                               |
+ |                          8M     M8   MM     MM     M8                               |
+ |                          YA.   ,A9   MM     MM.   ,M9                               |
+ |                           `Ybmd9'    `Mbmo  P^YbmdP'                                |
+ |                                                                                     |
+ |-------------------------------------------------------------------------------------|
+ |              _   ._   |        _|_  |_    _     |_    _    _  _|_  |                |
+ |             (_)  | |  |  \/     |_  | |  (/_    |_)  (/_  _>   |_  o                |
+ |                          /                                                          |
+ | /   _    _   ._    _   ._ _    _      _.   _   _   _   ._ _   |_   |  o   _    _  \ |
+ ||   (_|  (/_  | |  (_)  | | |  (/_    (_|  _>  _>  (/_  | | |  |_)  |  |  (/_  _>   ||
+ | \   _|                                                                            / |
+ +-------------------------------------------------------------------------------------+
+
 ```
 *o*nly *t*he *b*est (genome assemblies) is a Hi-C / HiFi pipeline specifically designed for phasing
 
 Checkout the [wiki](https://github.com/molikd/otb/wiki), and [tutorial](https://github.com/molikd/otb/wiki/Tutorial)
 
 In order to utilize this pipeline:
-  - singularity \(https://sylabs.io/singularity/) must be installed 
-  - nextflow \(https://www.nextflow.io/) must be installed 
+  - singularity \(https://sylabs.io/singularity/) must be installed
+  - nextflow \(https://www.nextflow.io/) must be installed
 Most HPC support groups will either already have these tools installed, or be willing to install them as [modules](http://modules.sourceforge.net/)
 
-otb operates from a local directory, and must be ran as ./otb.sh since it sources some shell scripts in the scr directory. 
+otb operates from a local directory, and must be ran as ./otb.sh since it sources some shell scripts in the scr directory.
 
 in order to use otb download this repository and use ./otb.sh, an example:
 

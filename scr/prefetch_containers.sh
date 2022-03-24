@@ -42,12 +42,12 @@ fi
 [ ! -f koszullab-hicstuff.img ] && singularity pull koszullab-hicstuff.img docker://koszullab/hicstuff || state "   ...hicstuff container found, not downloading"
 [ ! -f pvstodghill-any2fasta.img ] && singularity pull pvstodghill-any2fasta.img docker://pvstodghill/any2fasta || state "   ...any2fasta container found, not downloading"
 
-if [ -n "$BUSCO" ]; then 
+if [ -n "$BUSCO" ]; then
   state "need busco container for this run"
   [ ! -f ezlabgva-busco-v5.2.2_cv1.img ] && singularity pull ezlabgva-busco-v5.2.2_cv1.img docker://ezlabgva/busco:v5.2.2_cv1 || state "   ...busco container found, not downloading"
-fi 
+fi
 
-if [ -n "$YAHS" ]; then 
+if [ -n "$YAHS" ]; then
   state "need yahs container for this run"
   [ ! -f dmolik-yahs.img ] && singularity pull dmolik-yahs.img docker://dmolik/yahs || state "yahs container found, not downloading"
 fi
@@ -58,7 +58,7 @@ case $POLISHTYPE in
     [ ! -f dmolik-ragtag.img ] && singularity pull dmolik-ragtag.img docker://dmolik/ragtag || state "   ...ragtag.py container found, not downloading"
     [ ! -f dmolik-shhquis.img ] && singularity pull dmolik-shhquis.img docker://dmolik/shhquis || state "   ...shhquis container found, not downloading"
   ;;
-  "merfin") 
+  "merfin")
     state "need merfin containers for this run"
     [ ! -f dmolik-ragtag.img ] && singularity pull dmolik-ragtag.img docker://dmolik/ragtag || state "   ...ragtag.py container found, not downloading"
     [ ! -f dmolik-shhquis.img ] && singularity pull dmolik-shhquis.img docker://dmolik/shhquis || state "   ...shhquis container found, not downloading"

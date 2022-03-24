@@ -2,15 +2,15 @@
 
 if [ command -v io.sh &> /dev/null ] || [ -f "io.sh" ]; then
   source io.sh
-elif [ -f "scr/io.sh" ]; then 
+elif [ -f "scr/io.sh" ]; then
   source scr/io.sh
 else
-  echo >&2 "[$(date)] I require io.sh to run, but io.sh has not been found, aborting"; exit 1; 
+  echo >&2 "[$(date)] I require io.sh to run, but io.sh has not been found, aborting"; exit 1;
 fi
 
 state "checking computing environment"
 
-describe "$( 
+describe "$(
 # thanks to linux mafia for this script http://linuxmafia.com/faq/Admin/release-files.html
 OS=`uname -s`
 REV=`uname -r`
@@ -23,7 +23,7 @@ GetVersionFromFile()
 
 if [ "${OS}" = "SunOS" ] ; then
     OS=Solaris
-    ARCH=`uname -p` 
+    ARCH=`uname -p`
     OSSTR="${OS} ${REV}(${ARCH} `uname -v`)"
 elif [ "${OS}" = "AIX" ] ; then
     OSSTR="${OS} `oslevel` (`oslevel -r`)"
@@ -70,7 +70,7 @@ state "Singularity Things"
 printf "%b\n" "\e[96m[which singularity]\e[0m Which Singularity?" 2>&1;
 pizzaz "$( which singularity )"
 printf "%b\n" "\e[96m[singularity version]\e[0m Singularity versioning:" 2>&1;
-pizzaz "$( singularity version )" 
+pizzaz "$( singularity version )"
 describe ""
 state "Nextflow Things"
 printf "%b\n" "\e[96m[which nextflow]\e[0m Which Nextflow?" 2>&1;

@@ -3,7 +3,7 @@
 error () { printf "%b\n" "[$(date)]: \e[91m$*\e[0m" >&2; exit 1; }
 warn () { printf "%b\n" "[$(date)]: \e[93m$*\e[0m" >&2; }
 state () { printf "%b\n" "[$(date)]: $*" 2>&1; }
-describe () { printf "%b\n" "$*" 2>&1; } 
+describe () { printf "%b\n" "$*" 2>&1; }
 pizzaz () { printf "%b\n" "\e[92m$*\e[0m" 2>&1; }
 collect () { printf "%b\n" "\e[96m$*\e[0m" 2>&1; read var; return $var; }
 version() { describe "otb: Only The Best (Genome Assemblies): v0.2.0"; exit 0;}
@@ -22,7 +22,7 @@ stop_check() {
         warn "sure, I mean, whatever..."
         stop_check
       ;;
-      *) 
+      *)
         warn "Invalid input You entered: $cont";
 	      stop_check
       ;;

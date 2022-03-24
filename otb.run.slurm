@@ -5,7 +5,7 @@
 #SBATCH -o "otb.stdout.%j.%N" 		# standard out %j adds job number to outputfile name and %N adds the node
 #SBATCH -e "otb.stderr.%j.%N" 		#optional but it prints our standard error
 #SBATCH --mail-user=<username>
-#SBATCH --mail-type=START,END,FAIL               #will receive an email when job ends or fails 
+#SBATCH --mail-type=START,END,FAIL               #will receive an email when job ends or fails
 
 module load nextflow/20.07.1
 

@@ -41,10 +41,10 @@ singularity exec "mgibio-samtools-1.9.img" echo "   ...hello from samtools conta
 singularity exec "koszullab-hicstuff.img" echo "   ...hello from hicstuff container" || error "hicstuff container broken, exiting"
 singularity exec "pvstodghill-any2fasta.img" echo "   ...hello from any2fasta container" || error "any2fasta container borken, exiting"
 
-if [ -n "$BUSCO" ]; then 
+if [ -n "$BUSCO" ]; then
   state "busco container will be required for this run, testing busco"
   singularity exec "ezlabgva-busco-v5.2.2_cv1.img" echo "   ...hello from busco container" || error "busco container broken, exiting"
-fi 
+fi
 
 case $POLISHTYPE in
   "simple")
@@ -52,7 +52,7 @@ case $POLISHTYPE in
     singularity exec "dmolik-ragtag.img" echo "   ...hello from ragtag container" || error "ragtag container broken, exiting"
     singularity exec "dmolik-shhquis.img" echo "    ...hello from shhquis container" || error "shhquis container broken, exiting"
   ;;
-  "merfin") 
+  "merfin")
     state "this will be a merfin polish, checking ragtag, shhquis, bcftools, and merfin"
     singularity exec "dmolik-ragtag.img" echo "   ...hello from ragtag container" || error "ragtag container broken, exiting"
     singularity exec "dmolik-shhquis.img" echo "    ...hello from shhquis container" || error "shhquis container broken, exiting"
@@ -69,4 +69,4 @@ case $POLISHTYPE in
 esac
 
 state "all required containers checked with an intial pass"
- 
+

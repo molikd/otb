@@ -7,9 +7,9 @@ help(){
   [NOTE] otb must be run from the directory it is in, only ./otb.sh will work
   [NOTE] run.nf must be in the same directory as otb.sh
   [NOTE] ./config holds grid config files
-  [NOTE] ./scr holds scripts on which otb relies 
+  [NOTE] ./scr holds scripts on which otb relies
 
-  utilities 
+  utilities
     -h or --help
        display this message and exit
 
@@ -41,7 +41,7 @@ help(){
        number of threads to use, clusters sometimes use this as number of cores, default: 20
 
     -n or --name
-       a name for the assembly 
+       a name for the assembly
 
     -y or --yahs
        run yahs as well
@@ -114,10 +114,10 @@ state "checking for nextflow"
 command -v nextflow >/dev/null 2>&1 || error "nextflow could not be found, aborting"
 state "using $(which nextflow) for nextflow"
 state "checking for singularity"
-command -v singularity >/dev/null 2>&1 || error "singularity could not be found, aborting" 
+command -v singularity >/dev/null 2>&1 || error "singularity could not be found, aborting"
 state "using $(which singularity) for singularity"
 state "output user environment"
-bash scr/check_env.sh 
+bash scr/check_env.sh
 
 state "checking runner"
 if [ -n "$RUNNER" ]; then
@@ -127,7 +127,7 @@ if [ -n "$RUNNER" ]; then
     "slurm_usda") state "$RUNNER being used";;
     "slurm_atlas") state "$RUNNER being used";;
     "none") state "$RUNNER being used";;
-    *) 
+    *)
       [ -f "config/${RUNNER}" ] && state "using custom config: $RUNNER" || error "runner type ${RUNNER} not found";;
   esac
 fi
@@ -161,7 +161,7 @@ else
 fi
 
 RUN+="--outfasta=\"${NAME}.genome.out\" "
-[ -n "$THREADS" ] && RUN+="--threads=\"$THREADS\" " || warn "threads not set, setting to 20 maximum threads" 
+[ -n "$THREADS" ] && RUN+="--threads=\"$THREADS\" " || warn "threads not set, setting to 20 maximum threads"
 [ -z "$THREADS" ] && RUN+="--threads=\"20\" "
 [ -f "$R1" ] && RUN+="--readf=\"$R1\" " || error "read pair file one not found, exiting"
 [ -f "$R2" ] && RUN+="--readr=\"$R2\" " || error "read pair file two not found, exiting"
@@ -177,7 +177,7 @@ pizzaz "$RUN"
 [ -z "$SUPRESS" ] && stop_check "check that the command is expected, continue"
 
 state "Prefetching singularity containers"
-[ -n "$NXF_SINGULARITY_CACHEDIR" ] && "Nextflow Singularity cache directory set: $NXF_SINGULARITY_CACHEDIR, will use for singularity images" || warn "NXF_SINGULARITY_CACHEDIR not set, using ./work/singularity instead" 
+[ -n "$NXF_SINGULARITY_CACHEDIR" ] && "Nextflow Singularity cache directory set: $NXF_SINGULARITY_CACHEDIR, will use for singularity images" || warn "NXF_SINGULARITY_CACHEDIR not set, using ./work/singularity instead"
 
 prefetch_container="./scr/prefetch_containers.sh"
 [ -n "$YAHS" ] && prefetch_container+=" -y"
@@ -186,7 +186,7 @@ prefetch_container="./scr/prefetch_containers.sh"
 [ -n "$NXF_SINGULARITY_CACHEDIR" ] || ( mkdir -p "./work/singularity"; prefetch_container+=" -l ./work/singularity" )
 eval $prefetch_container
 
-if [ -n "$TEST" ]; then  
+if [ -n "$TEST" ]; then
   check_container="./scr/check_containers.sh"
   [ -n "$BUSCO" ] && check_container+=" -b"
   [ -n "$POLISHTYPE" ] && check_container+=" -p $POLISHTYPE"
