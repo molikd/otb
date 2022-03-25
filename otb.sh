@@ -48,9 +48,19 @@ help(){
 
     grid computing:
        select one of the following, defaults to local which is highly not-recomended
-    --sge
-    --slurm
-    --slurm-usda
+    -u or --runner
+       runner choices are:
+          \"sge\": generic sge
+          \"slurm\": generic slurm
+          \"slurm_usda\": USDA Ceres Cluster
+          \"slurm_usda_atlas\": USDA Atlas Cluster, unstable
+          \"slurm_usd_mem\": USDA Ceres Large Memory on Ceres
+          \"none\": Local running
+        you can also overload runner by giving a custom config in the /config directory without the .cfg.
+        An exmple: there exists a config in the config directory called torque.cfg the following would 
+        be used:
+          --runner torque
+        the /config would not be included, otb.sh only looks in the config directory, and the .cfg is appended
 
     --polish-type
        turn on polishing one of:
@@ -89,11 +99,7 @@ while [ $# -gt 0 ] ; do
     -t | --threads) THREADS="$2";;
     -n | --name) NAME="$2";;
     -y | --yahs) YAHS="true";;
-    --sge) RUNNER="sge";;
-    --slurm) RUNNER="slurm";;
-    --slurm-usda) RUNNER="slurm_usda";;
-    --slurm-atlas) RUNNER="slurm_atlas";;
-    --none) RUNNER="none";;
+    -u | --runner) RUNNER="$2";;
     --busco) BUSCO="--busco ";;
     --polish-type) POLISHTYPE="$2";;
     --auto-lineage) LINEAGE="auto-lineage";;
@@ -125,7 +131,8 @@ if [ -n "$RUNNER" ]; then
     "sge") state "$RUNNER being used";;
     "slurm") state "$RUNNER being used";;
     "slurm_usda") state "$RUNNER being used";;
-    "slurm_atlas") state "$RUNNER being used";;
+    "slurm_usda_atlas") state "$RUNNER being used";;
+    "slurm_usda_mem") state "$RUNNER being used";;
     "none") state "$RUNNER being used";;
     *)
       [ -f "config/${RUNNER}" ] && state "using custom config: $RUNNER" || error "runner type ${RUNNER} not found";;

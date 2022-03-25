@@ -42,13 +42,17 @@ Polish_Type="simple" #Simple Polishing
 HiFi_Type="heterozygous"
 #HiFi_Type="trio"
 
+#Comment/Uncomment for Runner (only select one of)
+#Runner="slurm_usda"
+Runner="slurm_usda_mem"
+
 Threads="32"
 
 Busco_Location="-l /project/ag100pest/software/OTB_test/busco"
 Busco_DB="-p insecta_odb10"
 
 if [[ -z "$BUSCO" ]]; then
-  ./otb.sh -n ${Assembly_Name} -f ${Forward} -r ${Reverse} -in ${CCS} -m ${HiFi_Type} -t ${Threads} ${Yahs} ${Busco} --polish_type ${Polish_Type} --slurm-usda -c -s
+  ./otb.sh -n ${Assembly_Name} -f ${Forward} -r ${Reverse} -in ${CCS} -m ${HiFi_Type} -t ${Threads} ${Yahs} ${Busco} --polish_type ${Polish_Type} --runner ${Runner} -c -s
 else
-  ./otb.sh -n ${Assembly_Name} -f ${Forward} -r ${Reverse} -in ${CCS} -m ${HiFi_Type} -t ${Threads} ${Yahs} ${Busco} ${Busco_Location} ${Busco_DB} --polish_type ${Polish_Type} --slurm-usda -c -s
+  ./otb.sh -n ${Assembly_Name} -f ${Forward} -r ${Reverse} -in ${CCS} -m ${HiFi_Type} -t ${Threads} ${Yahs} ${Busco} ${Busco_Location} ${Busco_DB} --polish_type ${Polish_Type} --runner ${Runner} -c -s
 fi
