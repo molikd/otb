@@ -1,21 +1,27 @@
 #!/usr/bin/env nextflow
-
+//Global Parameters
 params.assembly = "an_assembly"
 params.readin = "$baseDir/data/*.bam"
 params.readf = "$baseDir/data/*.R1.fastq.gz"
 params.readr = "$baseDir/data/*.R2.fastq.gz"
 params.outfasta = "genome.out.fasta"
 params.outdir = 'results'
+params.threads = '21'  
+//Runtype Parameters
+params.busco = false
+params.polish = false
+params.polishtype = 'simple'  
+params.yahs = false  
+//HiFIASM Parameters
 params.mode = 'heterozygous'
 params.ploidy = '2'
-params.threads = '21'
-params.linreage = 'insecta_odb10'
+//Busco Parameters
 params.busco = false
 params.buscooffline = false
 params.buscodb = "/work/busco"
-params.polish = false
-params.polishtype = 'simple'
-params.yahs = false
+params.linreage = 'insecta_odb10'
+//Shhquis.jl Prameters
+params.hclust-linkage = "average"
 
 bam_ch = Channel.fromPath(params.readin)
 right_fastq_check = Channel.fromPath(params.readr)
@@ -417,7 +423,7 @@ process Shhquis_dot_jl {
     params.polish
   """
     touch shhquis.flag.txt
-    shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage "average"
+    shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage ${params.hclust-linkage}
     echo "finished reorientation"
     sleep 120;
     exit 0;

@@ -82,7 +82,13 @@ help(){
        -l or --lineage
           use a specific lineage with busco (recomended)
        -p or --busco-path
-          run busco in offline mode, with path to database, or with database name to try and download"
+          run busco in offline mode, with path to database, or with database name to try and download
+
+    Shhquis.jl:
+       Shhquis options, optional
+       --hclust-linkage
+          linkage is one of single, average, complete, ward, ward_presquared. Deafults to average. 
+    "
   exit 0;
 }
 
@@ -107,6 +113,7 @@ while [ $# -gt 0 ] ; do
     --auto-lineage-euk) LINEAGE="auto-lineage-euk";;
     -l | --lineage) LINEAGE="$2";;
     -p | --busco-path) BUSCOPATH="$2";;
+    --hclust-linkage) SHHQUISHCLST="$2";;
   esac
   shift
 done
@@ -166,6 +173,16 @@ else
   warn "mode not set, assuming heterozygous run"
   RUN+="--mode=\"heterozygous\" "
 fi
+
+[ -n "$SHHQUISHCLST" ] || SHHQUISHCLST="average"
+case $SHHQUISHCLST in
+  single) RUN+="--hclust-linkage=\"single\" "
+  average) RUN+="--hclust-linkage=\"average\" "
+  complete) RUN+="--hclust-linkage=\"complete\" "
+  ward) RUN+="--hclust-linkage=\"ward\" "
+  ward_presquared) RUN+="--hclust-linkage=\"ward_presquared\" "
+  *) error "shhquis linkage type set to $SHHQUISHCLST, not a vaild hclust linkage type"
+esac
 
 RUN+="--outfasta=\"${NAME}.genome.out\" "
 [ -n "$THREADS" ] && RUN+="--threads=\"$THREADS\" " || warn "threads not set, setting to 20 maximum threads"
