@@ -36,7 +36,7 @@ fi
 [ ! -f bryce911-bbtools.img ] && singularity pull --disable-cache --force bryce911-bbtools.img docker://bryce911/bbtools || state "   ...bbtools container found, not downloading"
 [ ! -f dmolik-genomescope2.img ] && singularity pull --disable-cache --force dmolik-genomescope2.img docker://dmolik/genomescope2 || state "   ...genomescope2 container found, not downloading"
 [ ! -f dmolik-hifiasm.img ] && singularity pull --disable-cache --force dmolik-hifiasm.img docker://dmolik/hifiasm || state "   ...hifiasm container found, not downloading"
-[ ! -f dmolik-jellyfish.img ] && singularity pull --disable-cache --force dmolik-jellyfish.img docker://dmolik/jellyfish || state "   ...jellyfish container found, not downloading"
+[ ! -f dmolik-k-mer-counting-tools.img ] && singularity pull --disable-cache --force dmolik-k-mer-counting-tools.img docker://dmolik/k-mer-counting-tools || state "   ...k-mer counting container found, not downloading"
 [ ! -f dmolik-pbadapterfilt.img ] && singularity pull --disable-cache --force dmolik-pbadapterfilt.img docker://dmolik/pbadapterfilt || state "   ...HiFi Filter container found, not downloading"
 [ ! -f mgibio-samtools-1.9.img ] && singularity pull --disable-cache --force mgibio-samtools-1.9.img docker://mgibio/samtools:1.9 || state "   ...samtools container found, not downloading"
 [ ! -f koszullab-hicstuff.img ] && singularity pull --disable-cache --force koszullab-hicstuff.img docker://koszullab/hicstuff || state "   ...hicstuff container found, not downloading"

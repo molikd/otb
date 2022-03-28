@@ -9,6 +9,7 @@ params.outdir = 'results'
 params.threads = '21'
 //Runtype Parameters
 params.busco = false
+params,k-mers = 'kmc'
 params.polish = false
 params.polishtype = 'simple'
 params.yahs = false
@@ -430,8 +431,8 @@ process Shhquis_dot_jl {
   """
 }
 
-process jellyfish {
-  container = 'dmolik/jellyfish'
+process K_mer_counting {
+  container = 'dmolik/k-mer-counting-tools'
   cpus = params.threads
 
   input:
@@ -441,6 +442,8 @@ process jellyfish {
     file '*.histo' into jellyfish_histo_ch
     file 'version.txt' into jellyfish_ver_ch
     stdout jellyfish_output
+
+  if( params.k-mers == 'jellyfish' )
   """
     touch jellyfish.flag.txt
     jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf <(zcat ${fastqr}) <(zcat ${fastqf})
@@ -449,6 +452,16 @@ process jellyfish {
     sleep 120;
     exit 0;
   """
+  else if( params.k-mers == 'kmc' )
+  """
+    mkdir tmp
+    ls *.fastq.gz > FILES.lst
+    kmc -v -k21 -t${task.cpus} -ci1 -cs10000 @FILES.lst reads tmp/
+    kmc_tools transform reads histogram ${params.assembly}.histo -cx10000
+    kmc | head -n 1 > version.txt
+  """
+  else
+    error "Invalid k-mer tool: ${params.k-mers}"
 }
 
 process genomescope2 {
@@ -1960,7 +1973,7 @@ process deepvariant_Version {
    """
 }
 
-process jellyfish_Version {
+process k_mer_Version {
   cpus 1
 
   input:
@@ -1969,8 +1982,8 @@ process jellyfish_Version {
     stdout jellyfish_version
 
   """
-    touch jellyfish_version.flag.txt
-    echo "Jellyfish Version:"
+    touch K_mer_counting_tool_version.flag.txt
+    echo "K-mer counting tool version:"
     cat $version
   """
 }

@@ -84,6 +84,13 @@ help(){
        -p or --busco-path
           run busco in offline mode, with path to database, or with database name to try and download
 
+    K-mer counting
+        options for k-mer counting 
+    -k or --kmer
+        one of:
+          \"kmc\": use kmc for k-mer counting
+          \"jellyfish\": use jellyfish for k-mer counting
+
     Shhquis.jl:
        Shhquis options, optional
        --hclust-linkage
@@ -106,6 +113,7 @@ while [ $# -gt 0 ] ; do
     -n | --name) NAME="$2";;
     -y | --yahs) YAHS="true";;
     -u | --runner) RUNNER="$2";;
+    -k | --kmer) KMER="$2";;
     --busco) BUSCO="--busco ";;
     --polish-type) POLISHTYPE="$2";;
     --auto-lineage) LINEAGE="auto-lineage";;
@@ -158,6 +166,8 @@ else
   state "   ...not polishing"
 fi
 
+state "building run parameters"
+
 #RUN="nextflow run run.nf -with-report ./reports/nextflow-${NAME}.report.html -with-trace ./reports/nextflow-${NAME}.trace.txt -with-timeline ./reports/nextflow-${NAME}.timeline.html -with-dag ./reports/nextflow-${NAME}.dag.png "
 RUN="nextflow run run.nf "
 [ -n "$RUNNER" ] && RUN+="-c config/${RUNNER}.cfg " || warn "no grid computing environment set, using local. this is not recomended."
@@ -176,12 +186,19 @@ fi
 
 [ -n "$SHHQUISHCLST" ] || SHHQUISHCLST="average"
 case $SHHQUISHCLST in
-  single) RUN+="--hclust-linkage=\"single\" "
-  average) RUN+="--hclust-linkage=\"average\" "
-  complete) RUN+="--hclust-linkage=\"complete\" "
-  ward) RUN+="--hclust-linkage=\"ward\" "
-  ward_presquared) RUN+="--hclust-linkage=\"ward_presquared\" "
-  *) error "shhquis linkage type set to $SHHQUISHCLST, not a vaild hclust linkage type"
+  single) RUN+="--hclust-linkage=\"single\" ";;
+  average) RUN+="--hclust-linkage=\"average\" ";;
+  complete) RUN+="--hclust-linkage=\"complete\" ";;
+  ward) RUN+="--hclust-linkage=\"ward\" ";;
+  ward_presquared) RUN+="--hclust-linkage=\"ward_presquared\" ";;
+  *) error "shhquis linkage type set to $SHHQUISHCLST, not a vaild hclust linkage type";;
+esac
+
+[ -n "$KMER" ] || KMER="kmc"
+case $KMER in
+  kmc) RUN+="--k-mer=\"kmc\" ";;
+  jellyfish) RUN+="--k-mer=\"jellyfish\" ";;
+  *) error "K-mer counting tool $KMER does not valid";;
 esac
 
 RUN+="--outfasta=\"${NAME}.genome.out\" "
