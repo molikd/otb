@@ -85,7 +85,7 @@ help(){
           run busco in offline mode, with path to database, or with database name to try and download
 
     K-mer counting
-        options for k-mer counting 
+        options for k-mer counting
     -k or --kmer
         one of:
           \"kmc\": use kmc for k-mer counting
