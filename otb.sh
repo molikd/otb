@@ -57,7 +57,7 @@ help(){
           \"slurm_usd_mem\": USDA Ceres Large Memory on Ceres
           \"none\": Local running
         you can also overload runner by giving a custom config in the /config directory without the .cfg.
-        An exmple: there exists a config in the config directory called torque.cfg the following would 
+        An exmple: there exists a config in the config directory called torque.cfg the following would
         be used:
           --runner torque
         the /config would not be included, otb.sh only looks in the config directory, and the .cfg is appended

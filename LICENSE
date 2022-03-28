@@ -15,16 +15,16 @@ software is a "United States Government Work" under the terms of the
 United States Copyright Act.  It was written as part of the authors'
 official duties as United States Government employees and thus cannot
 be copyrighted.  This software is freely available to the public for
-use. The United States Department of Agriculture, Agricultural 
-Research Service (USDA - ARS) and the U.S. Government have not placed 
+use. The United States Department of Agriculture, Agricultural
+Research Service (USDA - ARS) and the U.S. Government have not placed
 any restriction on its use or reproduction.
 
 Although all reasonable efforts have been taken to ensure the accuracy
 and reliability of the software and data, the USDA ARS and the U.S.
-Government do not and cannot warrant the performance or results tha may 
-be obtained by using this software or data. The USDA ARS and the U.S. 
+Government do not and cannot warrant the performance or results tha may
+be obtained by using this software or data. The USDA ARS and the U.S.
 Government disclaim all warranties, express or implied, including
-warranties of performance, merchantability or fitness for any particular 
+warranties of performance, merchantability or fitness for any particular
 purpose.
 
 Please cite the authors in any work or product based on this material.
@@ -33,9 +33,9 @@ Please cite the authors in any work or product based on this material.
 ==============================================================
 EXCEPTIONS (in all cases excluding USDA-ARS-written makefiles):
 
-Location: 
-Author:   
-License:  
+Location:
+Author:
+License:
 
 
 ==============================================================
@@ -60,7 +60,7 @@ Q. Can we (re)license all or part of the USDA - ARS source code?
 
 A. No, you cannot license or relicense the source code written by USDA - ARS
    since you cannot claim any copyright in the software that was developed
-   at USDA - ARS as a 'government work' and consequently is in the public 
+   at USDA - ARS as a 'government work' and consequently is in the public
    domain within the U.S.
 
 --------------------------------------------------------------
