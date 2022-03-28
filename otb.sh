@@ -87,7 +87,7 @@ help(){
     Shhquis.jl:
        Shhquis options, optional
        --hclust-linkage
-          linkage is one of single, average, complete, ward, ward_presquared. Deafults to average. 
+          linkage is one of single, average, complete, ward, ward_presquared. Deafults to average.
     "
   exit 0;
 }

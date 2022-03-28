@@ -6,12 +6,12 @@ params.readf = "$baseDir/data/*.R1.fastq.gz"
 params.readr = "$baseDir/data/*.R2.fastq.gz"
 params.outfasta = "genome.out.fasta"
 params.outdir = 'results'
-params.threads = '21'  
+params.threads = '21'
 //Runtype Parameters
 params.busco = false
 params.polish = false
-params.polishtype = 'simple'  
-params.yahs = false  
+params.polishtype = 'simple'
+params.yahs = false
 //HiFIASM Parameters
 params.mode = 'heterozygous'
 params.ploidy = '2'
