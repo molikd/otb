@@ -9,7 +9,7 @@ params.outdir = 'results'
 params.threads = '21'
 //Runtype Parameters
 params.busco = false
-params,k-mers = 'kmc'
+params.k-mers = 'kmc'
 params.polish = false
 params.polishtype = 'simple'
 params.yahs = false
