@@ -35,7 +35,7 @@ fi
 singularity exec "bryce911-bbtools.img" echo "   ...hello from bbtools container" || error "bbtools container broken, exiting"
 singularity exec "dmolik-genomescope2.img" echo "   ...hello from genomescope2 container" || error "genomescope2 container broken, exiting"
 singularity exec "dmolik-hifiasm.img"  echo "   ...hello from hifiasm container" || error "hifiasm container broken, exiting"
-singularity exec "dmolik-jellyfish.img" echo "   ...hello from jellyfish container" || error "jellyfish container broken, exiting"
+singularity exec "dmolik-k-mer-counting-tools.img" echo "   ...hello from jellyfish container" || error "jellyfish container broken, exiting"
 singularity exec "dmolik-pbadapterfilt.img" echo "   ...hello from pbadapterfilt container" || error "pbadapterfilt container broken, exiting"
 singularity exec "mgibio-samtools-1.9.img" echo "   ...hello from samtools container" || error "samtools container broken, exiting"
 singularity exec "koszullab-hicstuff.img" echo "   ...hello from hicstuff container" || error "hicstuff container broken, exiting"
