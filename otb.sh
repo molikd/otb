@@ -186,11 +186,11 @@ fi
 
 [ -n "$SHHQUISHCLST" ] || SHHQUISHCLST="average"
 case $SHHQUISHCLST in
-  single) RUN+="--hclust-linkage=\"single\" ";;
-  average) RUN+="--hclust-linkage=\"average\" ";;
-  complete) RUN+="--hclust-linkage=\"complete\" ";;
-  ward) RUN+="--hclust-linkage=\"ward\" ";;
-  ward_presquared) RUN+="--hclust-linkage=\"ward_presquared\" ";;
+  single) RUN+="--hclustlinkage=\"single\" ";;
+  average) RUN+="--hclustlinkage=\"average\" ";;
+  complete) RUN+="--hclustlinkage=\"complete\" ";;
+  ward) RUN+="--hclustlinkage=\"ward\" ";;
+  ward_presquared) RUN+="--hclustlinkage=\"ward_presquared\" ";;
   *) error "shhquis linkage type set to $SHHQUISHCLST, not a vaild hclust linkage type";;
 esac
 
