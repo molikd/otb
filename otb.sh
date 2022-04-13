@@ -196,8 +196,8 @@ esac
 
 [ -n "$KMER" ] || KMER="kmc"
 case $KMER in
-  kmc) RUN+="--k-mer=\"kmc\" ";;
-  jellyfish) RUN+="--k-mer=\"jellyfish\" ";;
+  kmc) RUN+="--kmer=\"kmc\" ";;
+  jellyfish) RUN+="--kmer=\"jellyfish\" ";;
   *) error "K-mer counting tool $KMER does not valid";;
 esac
 

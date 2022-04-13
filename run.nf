@@ -9,7 +9,7 @@ params.outdir = 'results'
 params.threads = '21'
 //Runtype Parameters
 params.busco = false
-params.k-mers = 'kmc'
+params.kmer = 'kmc'
 params.polish = false
 params.polishtype = 'simple'
 params.yahs = false
@@ -443,7 +443,7 @@ process K_mer_counting {
     file 'version.txt' into jellyfish_ver_ch
     stdout jellyfish_output
 
-  if( params.k-mers == 'jellyfish' )
+  if( params.kmer == 'jellyfish' )
   """
     touch jellyfish.flag.txt
     jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf <(zcat ${fastqr}) <(zcat ${fastqf})
@@ -452,7 +452,7 @@ process K_mer_counting {
     sleep 120;
     exit 0;
   """
-  else if( params.k-mers == 'kmc' )
+  else if( params.kmer == 'kmc' )
   """
     mkdir tmp
     ls *.fastq.gz > FILES.lst
@@ -461,7 +461,7 @@ process K_mer_counting {
     kmc | head -n 1 > version.txt
   """
   else
-    error "Invalid k-mer tool: ${params.k-mers}"
+    error "Invalid k-mer tool: ${params.kmer}"
 }
 
 process genomescope2 {
