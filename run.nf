@@ -442,6 +442,7 @@ process K_mer_counting {
     file '*.histo' into jellyfish_histo_ch
     file 'version.txt' into jellyfish_ver_ch
     stdout jellyfish_output
+  script:
 
   if( params.kmer == 'jellyfish' )
   """
