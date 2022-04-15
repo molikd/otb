@@ -8,7 +8,6 @@ params.outfasta = "genome.out.fasta"
 params.outdir = 'results'
 params.threads = '21'
 //Runtype Parameters
-params.busco = false
 params.kmer = 'kmc'
 params.polish = false
 params.polishtype = 'simple'
