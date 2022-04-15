@@ -60,7 +60,7 @@ process check_in_file {
      at_check=$(zcat $file | awk '{ print $1; exit }')
      [[ $at_check =~ '@' ]] || error "$file doesn't start with an @";
      state "check if file can be divided by four"
-     modulo_four_check=$(zcat $file | wc -l)
+     modulo_four_check=$(zcat $file | grep -v "^=.*"  | wc -l)
      [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || error "number of lines in $file not divisable by four"
    elif [[ $file == *.fastq || *.fq ]]; then
      state "   ...file type is fastq file type"
@@ -68,7 +68,7 @@ process check_in_file {
      at_check=$( head -n 1 $file )
      [[ $at_check =~ '@' ]] || error "$file doesn't start with an @";
      state "check if file can be divided by four"
-     modulo_four_check=$(cat $file | wc -l)
+     modulo_four_check=$(cat $file | grep -v "^=.*" | wc -l)
      [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || error "number of lines in $file not divisable by four"
    else
      error "trying to run otb with somthing that does not end with the corret file type"
@@ -113,8 +113,8 @@ process check_fastq {
    [[ $second =~ '@' ]] || errror "!{left_fastq} doesn't start with an @";
 
    state "check to make sure that fastqs are divisable by 4"
-   [[ !{right_fastq}  =~ ".gz" ]] && first=$(zcat !{right_fastq} | wc -l) || first=$( cat !{right_fastq} | wc -l)
-   [[ !{left_fastq} =~ ".gz" ]] && second=$(zcat !{left_fastq} | wc -l) || second=$( cat !{left_fastq} | wc -l )
+   [[ !{right_fastq}  =~ ".gz" ]] && first=$(zcat !{right_fastq} | grep -v "^=.*" | wc -l) || first=$( cat !{right_fastq} | grep -v "^=.*" | wc -l)
+   [[ !{left_fastq} =~ ".gz" ]] && second=$(zcat !{left_fastq} | grep -v "^=.*"  | wc -l) || second=$( cat !{left_fastq} | grep -v "^=.*"  | wc -l )
 
    [[ $(( $first % 4 )) -eq 0 ]] || error "number of lines in !{right_fastq} not divisable by four"
    [[ $(( $second % 4 )) -eq 0 ]] || error "number of lines in !{left_fastq} not divisable by four"
