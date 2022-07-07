@@ -36,7 +36,7 @@ otb operates from a local directory, and must be ran as ./otb.sh since it source
 in order to use otb download this repository and use ./otb.sh, an example:
 
 ```bash
- ./otb.sh --runner sge --mode homozygous --threads 40 -f otb_test_file_R2.fastq -r otb_test_file_R1.fastq --polish-type simple --bam otb_test.bam
+ ./otb.sh --runner sge --mode homozygous --threads 40 -f otb_test_file_R2.fastq -r otb_test_file_R1.fastq --polish-type simple --reads otb_test.bam
 ```
 
 otb runs in the following fashion:
