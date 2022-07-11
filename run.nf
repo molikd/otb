@@ -44,6 +44,7 @@ process check_in_file {
   '''
    state () { printf "%b\n" "[$(date)]: $*" 2>&1; }
    error () { printf "%b\n" "[$(date)]: $*" >&2; exit 1; }
+   warn () { printf "%b\n" "[$(date)]: $*" >&2; }
 
    touch check_bam.flag.txt
    state "checking file type"
@@ -60,7 +61,7 @@ process check_in_file {
      [[ $at_check =~ '@' ]] || error "$file doesn't start with an @";
      state "check if file can be divided by four"
      modulo_four_check=$(zcat $file | grep -v "^=.*"  | wc -l)
-     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || error "number of lines in $file not divisable by four"
+     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || warn "number of lines in $file not divisable by four, continuing anyway"
    elif [[ $file == *.fastq || *.fq ]]; then
      state "   ...file type is fastq file type"
      state "check if file can be opened, and it starts with @"
@@ -68,7 +69,7 @@ process check_in_file {
      [[ $at_check =~ '@' ]] || error "$file doesn't start with an @";
      state "check if file can be divided by four"
      modulo_four_check=$(cat $file | grep -v "^=.*" | wc -l)
-     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || error "number of lines in $file not divisable by four"
+     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || warn "number of lines in $file not divisable by four, continuing anyway"
    else
      error "trying to run otb with somthing that does not end with the corret file type"
    fi
@@ -94,6 +95,7 @@ process check_fastq {
   '''
    state () { printf "%b\n" "[$(date)]: $*" 2>&1; }
    error () { printf "%b\n" "[$(date)]: $*" >&2; exit 1; }
+   warn () { printf "%b\n" "[$(date)]: $*" >&2; }
 
    state "use touch to create a flag, so that I can be found easily"
    touch check_fastq.flag.txt
@@ -115,8 +117,8 @@ process check_fastq {
    [[ !{right_fastq}  =~ ".gz" ]] && first=$(zcat !{right_fastq} | grep -v "^=.*" | wc -l) || first=$( cat !{right_fastq} | grep -v "^=.*" | wc -l)
    [[ !{left_fastq} =~ ".gz" ]] && second=$(zcat !{left_fastq} | grep -v "^=.*"  | wc -l) || second=$( cat !{left_fastq} | grep -v "^=.*"  | wc -l )
 
-   [[ $(( $first % 4 )) -eq 0 ]] || error "number of lines in !{right_fastq} not divisable by four"
-   [[ $(( $second % 4 )) -eq 0 ]] || error "number of lines in !{left_fastq} not divisable by four"
+   [[ $(( $first % 4 )) -eq 0 ]] || warn "number of lines in !{right_fastq} not divisable by four, continuing anyway"
+   [[ $(( $second % 4 )) -eq 0 ]] || warn "number of lines in !{left_fastq} not divisable by four, continuing anyway"
 
    state "make softlinks for both files"
    mkdir out
