@@ -2060,7 +2060,7 @@ process HiFiAdapterFilt_Version {
 
   """
     touch hifiadapterfilt_version.flag.txt
-    echo "HiFiAdapterFilt  - - v1.0.0"
+    echo "HiFiAdapterFilt  - - v2.0.0"
     exit 0;
   """
 }
