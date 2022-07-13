@@ -2,8 +2,8 @@
 //Global Parameters
 params.assembly = "an_assembly"
 params.readin = "$baseDir/data/*.bam"
-params.readf = "$baseDir/data/*.R1.fastq.gz"
-params.readr = "$baseDir/data/*.R2.fastq.gz"
+params.hicreadf = "$baseDir/data/*.R1.fastq.gz"
+params.hicreadr = "$baseDir/data/*.R2.fastq.gz"
 params.outfasta = "genome.out.fasta"
 params.outdir = 'results'
 params.threads = '21'
@@ -14,7 +14,8 @@ params.polish = false
 params.polishtype = 'simple'
 params.yahs = false
 //HiFIASM Parameters
-params.mode = 'heterozygous'
+params.mode = 'default'
+params.trio = false
 params.ploidy = '2'
 //Busco Parameters
 params.busco = false
@@ -25,8 +26,8 @@ params.linreage = 'insecta_odb10'
 params.hclustlinkage = "average"
 
 bam_ch = Channel.fromPath(params.readin)
-right_fastq_check = Channel.fromPath(params.readr)
-left_fastq_check = Channel.fromPath(params.readf)
+right_hicfastq_check = Channel.fromPath(params.hicreadr)
+left_hicfastq_check = Channel.fromPath(params.hicreadf)
 
 bam_ch.into {
   in_check_ch
@@ -85,8 +86,8 @@ process check_fastq {
   cpus = 1
 
   input:
-    file right_fastq from right_fastq_check
-    file left_fastq from left_fastq_check
+    file right_fastq from right_hicfastq_check
+    file left_fastq from left_hicfastq_check
   output:
     file 'out/right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish
     file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish
@@ -171,8 +172,6 @@ process HiFiASM {
 
   input:
     file fasta from hifiasm_filt_fastq_ch.collect()
-    file left from left_fastq_HiFiASM
-    file right from right_fastq_HiFiASM
 
   output:
     file '*.gfa' into gfa_ch
@@ -180,23 +179,52 @@ process HiFiASM {
     stdout HiFiASM_output
   script:
 
- if( params.mode == 'homozygous' )
+ if( params.mode == 'purge.off' )
   """
     touch hifiasm.flag.txt
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -l0 ${fasta} 2>&1
-    echo "finished contig assembly"
+    echo "finished contig assembly with purging turned off"
     sleep 120;
     exit 0;
   """
-  else if( params.mode == 'heterozygous')
+  else if( params.mode == 'primary')
+  """
+    touch hifiasm.flag.txt
+    hifiasm -o ${params.assembly} -t ${task.cpus} --primary --write-paf --write-ec ${fasta} 2>&1
+    echo "finished contig assembly in default mode"
+    sleep 120;
+    exit 0;
+  """
+  else if( params.mode == 'default')
   """
     touch hifiasm.flag.txt
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
-    echo "finished contig assembly"
+    echo "finished contig assembly in default mode"
     sleep 120;
     exit 0;
   """
-  else if ( params.mode == 'trio')
+  else
+    error "Invalid alignment mode: ${params.mode}"
+}
+
+process HiFiASM_trio {
+  container = 'dmolik/hifiasm'
+  cpus = params.threads
+
+  input:
+    file fasta from hifiasm_filt_fastq_ch.collect()
+    file left from left_fastq_HiFiASM
+    file right from right_fastq_HiFiASM
+
+  output:
+    file '*.gfa' into gfa_ch
+    file '*.ec.fa' into fasta_ec_ch
+    stdout HiFiASM_output
+
+  when:
+      params.trio
+
+  script:
   """
     touch hifiasm.flag.txt
     yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left}) <(zcat ${left})
@@ -206,8 +234,6 @@ process HiFiASM {
     sleep 120;
     exit 0;
   """
-  else
-    error "Invalid alignment mode: ${params.mode}"
 }
 
 process HiFiASM_phasing {
@@ -366,7 +392,7 @@ process yahs_faidx {
     file "${params.assembly}.yahs.fasta.fai" into yahs_fai_ch
     file "${params.assembly}.yahs.fasta" into yahs_genome_ch
   when:
-    params.yahs & params.scaffold
+    params.yahs && params.scaffold
   """
     touch faidx.yahs.flag.txt
     ln -s ${genome} "${params.assembly}.yahs.fasta"
