@@ -4,6 +4,10 @@ params.assembly = "an_assembly"
 params.readin = "$baseDir/data/*.bam"
 params.hicreadf = "$baseDir/data/*.R1.fastq.gz"
 params.hicreadr = "$baseDir/data/*.R2.fastq.gz"
+params.matreadf = "$baseDir/data/*.R1.fastq.gz"
+params.matreadr = "$baseDir/data/*.R2.fastq.gz"
+params.patreadf = "$baseDir/data/*.R1.fastq.gz"
+params.patreadr = "$baseDir/data/*.R2.fastq.gz"
 params.outfasta = "genome.out.fasta"
 params.outdir = 'results'
 params.threads = '21'
@@ -28,6 +32,10 @@ params.hclustlinkage = "average"
 bam_ch = Channel.fromPath(params.readin)
 right_hicfastq_check = Channel.fromPath(params.hicreadr)
 left_hicfastq_check = Channel.fromPath(params.hicreadf)
+right_matfastq_check = Channel.fromPath(params.matreadf)
+left_matfastq_check = Channel.fromPath(params.matreadr)
+right_patfastq_check = Channel.fromPath(params.patreadf)
+left_patfastq_check = Channel.fromPath(params.patreadr)
 
 bam_ch.into {
   in_check_ch
@@ -63,7 +71,7 @@ process check_in_file {
      [[ $at_check =~ '@' ]] || error "$file doesn't start with an @";
      state "check if file can be divided by four"
      modulo_four_check=$(zcat $file | grep -v "^=.*"  | wc -l)
-     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || warn "number of lines in $file not divisable by four, continuing anyway"
+     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || warn "number of lines in $file not divisible by four, continuing anyway"
    elif [[ $file == *.fastq || *.fq ]]; then
      state "   ...file type is fastq file type"
      state "check if file can be opened, and it starts with @"
@@ -71,7 +79,7 @@ process check_in_file {
      [[ $at_check =~ '@' ]] || error "$file doesn't start with an @";
      state "check if file can be divided by four"
      modulo_four_check=$(cat $file | grep -v "^=.*" | wc -l)
-     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || warn "number of lines in $file not divisable by four, continuing anyway"
+     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || warn "number of lines in $file not divisible by four, continuing anyway"
    else
      error "trying to run otb with somthing that does not end with the correct file type"
    fi
@@ -91,6 +99,75 @@ process check_fastq {
   output:
     file 'out/right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish
     file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish
+    file 'out/*.fastq.gz' into fasta_in_ch
+    stdout check_fastq_output
+  shell:
+  '''
+   state () { printf "%b\n" "[$(date)]: $*" 2>&1; }
+   error () { printf "%b\n" "[$(date)]: $*" >&2; exit 1; }
+   warn () { printf "%b\n" "[$(date)]: $*" >&2; }
+
+   state "use touch to create a flag, so that I can be found easily"
+   touch check_fastq.flag.txt
+   state "stat !{right_fastq}..."
+   stat !{right_fastq}
+   state "stat !{left_fastq}..."
+   stat !{left_fastq}
+
+   state "if !{right_fastq} ends in gz zcat, and if it does not, cat the first line, save."
+   [[ !{right_fastq}  =~ ".gz" ]] && first=$(zcat !{right_fastq} | awk '{ print $1; exit }') || first=$( cat !{right_fastq} | awk '{ print $1; exit }')
+   state "if !{left_fastq} end in gz zcat, and if it does not, cat the first line, save"
+   [[ !{left_fastq} =~ ".gz" ]] && second=$(zcat !{left_fastq} | awk '{ print $1; exit }') || second=$( cat !{left_fastq} | awk '{ print $1; exit }')
+
+   state "if the first line of the fastqs doesn't start with an @, error out, otherwise continue"
+   [[ $first =~ '@' ]] || error "!{right_fastq} doesn't start with an @";
+   [[ $second =~ '@' ]] || errror "!{left_fastq} doesn't start with an @";
+
+   state "check to make sure that fastqs are divisable by 4"
+   [[ !{right_fastq}  =~ ".gz" ]] && first=$(zcat !{right_fastq} | grep -v "^=.*" | wc -l) || first=$( cat !{right_fastq} | grep -v "^=.*" | wc -l)
+   [[ !{left_fastq} =~ ".gz" ]] && second=$(zcat !{left_fastq} | grep -v "^=.*"  | wc -l) || second=$( cat !{left_fastq} | grep -v "^=.*"  | wc -l )
+
+   [[ $(( $first % 4 )) -eq 0 ]] || warn "number of lines in !{right_fastq} not divisable by four, continuing anyway"
+   [[ $(( $second % 4 )) -eq 0 ]] || warn "number of lines in !{left_fastq} not divisable by four, continuing anyway"
+
+   state "make softlinks for both files"
+   mkdir out
+
+   if [[ !{right_fastq}  =~ ".gz" ]]; then
+     cd out
+     ln -s ../!{right_fastq} right.fastq.gz
+     cd ..
+   else
+     gzip -c !{right_fastq} > out/right.fastq.gz
+   fi
+
+   if [[ !{left_fastq}  =~ ".gz" ]]; then
+     cd out
+     ln -s ../!{left_fastq} left.fastq.gz
+     cd ..
+   else
+     gzip -c !{left_fastq} > out/left.fastq.gz
+   fi
+
+   state "successful completion"
+   sleep 120;
+   exit 0;
+  '''
+}
+
+process check_fastq_trio {
+  cpus = 1
+
+  input:
+    file rightmat_fastq from right_matfastq_check
+    file leftmat_fastq from left_matfastq_check
+    file rightpat_fastq from right_patfastq_check
+    file leftpat_fastq from left_patfastq_check
+  output:
+    file 'out/right.mat.fastq.gz' into right_mat_fastq_HiFiASM_trio
+    file 'out/left.mat.fastq.gz' into left_mat__fastq_HiFiASM_trio
+    file 'out/right.pat.fastq.gz' into right_pat_fastq_HiFiASM_trio
+    file 'out/left.pat.fastq.gz' into left_pat_fastq_HiFiASM_trio
     file 'out/*.fastq.gz' into fasta_in_ch
     stdout check_fastq_output
   shell:
@@ -213,8 +290,10 @@ process HiFiASM_trio {
 
   input:
     file fasta from hifiasm_filt_fastq_ch.collect()
-    file left from left_fastq_HiFiASM
-    file right from right_fastq_HiFiASM
+    file left_mat from right_mat_fastq_HiFiASM_trio
+    file right_mat from right_mat_fastq_HiFiASM_trio
+    file left_pat from right_pat_fastq_HiFiASM_trio
+    file right_pat from right_pat_fastq_HiFiASM_trio
 
   output:
     file '*.gfa' into gfa_ch
@@ -227,9 +306,9 @@ process HiFiASM_trio {
   script:
   """
     touch hifiasm.flag.txt
-    yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left}) <(zcat ${left})
-    yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${right}) <(zcat ${right})
-    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta} 2>&1
+    yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left_pat}) <(zcat ${right_pat})
+    yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${left_mat}) <(zcat ${right_mat})
+    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -1 pat.yak -2 mat.yak ${fasta} 2>&1
     echo "finished contig assembly"
     sleep 120;
     exit 0;
