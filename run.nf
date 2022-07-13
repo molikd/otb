@@ -87,8 +87,8 @@ process check_fastq {
     file right_fastq from right_fastq_check
     file left_fastq from left_fastq_check
   output:
-    file 'out/right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish, right_fastq_jellyfish
-    file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_fastq_jellyfish
+    file 'out/right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish
+    file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish
     file 'out/*.fastq.gz' into fasta_in_ch
     stdout check_fastq_output
   shell:
@@ -437,10 +437,9 @@ process K_mer_counting {
   cpus = params.threads
 
   input:
-    file fastqr from right_fastq_jellyfish
-    file fastqf from left_fastq_jellyfish
+    file filt_reads from filt_fastq_ch
   output:
-    file '*.histo' into jellyfish_histo_ch
+    file '*.histo' into histo_ch
     file 'version.txt' into jellyfish_ver_ch
     stdout jellyfish_output
   script:
@@ -448,7 +447,7 @@ process K_mer_counting {
   if( params.kmer == 'jellyfish' )
   """
     touch jellyfish.flag.txt
-    jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf <(zcat ${fastqr}) <(zcat ${fastqf})
+    jellyfish count -C -m 21 -s 1000000000 -t ${task.cpus} -o reads.jf ${filt_reads}
     jellyfish histo -t ${task.cpus} reads.jf > ${params.assembly}.histo
     jellyfish cite > version.txt
     sleep 120;
@@ -457,7 +456,7 @@ process K_mer_counting {
   else if( params.kmer == 'kmc' )
   """
     mkdir tmp
-    ls *.fastq.gz > FILES.lst
+    ls ${filt_reads} > FILES.lst
     kmc -v -k21 -t${task.cpus} -ci1 -cs10000 @FILES.lst reads tmp/
     kmc_tools transform reads histogram ${params.assembly}.histo -cx10000
     kmc | head -n 1 > version.txt
@@ -472,7 +471,7 @@ process genomescope2 {
   cpus = params.threads
 
   input:
-    file histo from jellyfish_histo_ch
+    file histo from histo_ch
   output:
     file "${params.assembly}/*"
     file "kcov.txt" into kcov_ch
@@ -2060,7 +2059,7 @@ process HiFiAdapterFilt_Version {
 
   """
     touch hifiadapterfilt_version.flag.txt
-    echo "HiFiAdapterFilt  - - v1.0.0"
+    echo "HiFiAdapterFilt  - - v2.0.0"
     exit 0;
   """
 }
