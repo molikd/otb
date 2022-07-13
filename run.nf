@@ -8,6 +8,7 @@ params.outfasta = "genome.out.fasta"
 params.outdir = 'results'
 params.threads = '21'
 //Runtype Parameters
+params.scaffold = false
 params.kmer = 'kmc'
 params.polish = false
 params.polishtype = 'simple'
@@ -179,19 +180,11 @@ process HiFiASM {
     stdout HiFiASM_output
   script:
 
-  if( params.mode == 'phasing' )
-  """
-    touch hifiasm.flag.txt
-    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${left} --h2 ${right} ${fasta} 2>&1
-    echo "finished alignment"
-    sleep 120;
-    exit 0;
-  """
-  else if( params.mode == 'homozygous' )
+ if( params.mode == 'homozygous' )
   """
     touch hifiasm.flag.txt
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -l0 ${fasta} 2>&1
-    echo "finished alignment"
+    echo "finished contig assembly"
     sleep 120;
     exit 0;
   """
@@ -199,7 +192,7 @@ process HiFiASM {
   """
     touch hifiasm.flag.txt
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
-    echo "finished alignment"
+    echo "finished contig assembly"
     sleep 120;
     exit 0;
   """
@@ -209,12 +202,39 @@ process HiFiASM {
     yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left}) <(zcat ${left})
     yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${right}) <(zcat ${right})
     hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta} 2>&1
-    echo "finished alignment"
+    echo "finished contig assembly"
     sleep 120;
     exit 0;
   """
   else
     error "Invalid alignment mode: ${params.mode}"
+}
+
+process HiFiASM_phasing {
+  container = 'dmolik/hifiasm'
+  cpus = params.threads
+
+  input:
+    file fasta from hifiasm_filt_fastq_ch.collect()
+    file left from left_fastq_HiFiASM
+    file right from right_fastq_HiFiASM
+
+  output:
+    file '*.gfa' into gfa_ch
+    file '*.ec.fa' into fasta_ec_ch
+    stdout HiFiASM_output
+
+  when:
+    params.phasing
+
+  script:
+  """
+    touch hifiasm.flag.txt
+    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${left} --h2 ${right} ${fasta} 2>&1
+    echo "finished contig assembly"
+    sleep 120;
+    exit 0;
+  """
 }
 
 process gfa2fasta {
@@ -346,7 +366,7 @@ process yahs_faidx {
     file "${params.assembly}.yahs.fasta.fai" into yahs_fai_ch
     file "${params.assembly}.yahs.fasta" into yahs_genome_ch
   when:
-    params.yahs
+    params.yahs & params.scaffold
   """
     touch faidx.yahs.flag.txt
     ln -s ${genome} "${params.assembly}.yahs.fasta"
@@ -370,6 +390,8 @@ process hicstuff {
     file 'hicstuff_out/fragments_list.txt'
     file 'hicstuff_out/plots/frags_hist.pdf'
     stdout hicstuff_output
+  when:
+    params.scaffold
   """
     touch hicstuff.flag.txt
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
@@ -395,7 +417,7 @@ process hicstuff_polish {
     file 'hicstuff_out/plots/polish_frags_hist.pdf'
     stdout hicstuff_polish_output
   when:
-    params.polish
+    params.polish && params.scaffold
   """
     touch hicstuff_for_polished.flag.txt
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
@@ -422,7 +444,7 @@ process Shhquis_dot_jl {
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
   when:
-    params.polish
+    params.polish && params.scaffold
   """
     touch shhquis.flag.txt
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage ${params.hclustlinkage}
