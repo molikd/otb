@@ -73,7 +73,7 @@ process check_in_file {
      modulo_four_check=$(cat $file | grep -v "^=.*" | wc -l)
      [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || warn "number of lines in $file not divisable by four, continuing anyway"
    else
-     error "trying to run otb with somthing that does not end with the corret file type"
+     error "trying to run otb with somthing that does not end with the correct file type"
    fi
 
    state "check file on $file passed"
@@ -191,7 +191,7 @@ process HiFiASM {
   """
     touch hifiasm.flag.txt
     hifiasm -o ${params.assembly} -t ${task.cpus} --primary --write-paf --write-ec ${fasta} 2>&1
-    echo "finished contig assembly in default mode"
+    echo "finished contig assembly in primary mode"
     sleep 120;
     exit 0;
   """
