@@ -177,6 +177,7 @@ if [ -n "$MODE" ]; then
     homozygous) RUN+="--mode=\"homozygous\" ";;
     heterozygous) RUN+="--mode=\"heterozygous\" ";;
     trio) RUN+="--mode=\"trio\" ";;
+    primary) RUN+="--mode=\"primary\" ";;
     *) error "mode set to $MODE, not an actual mode";;
   esac
 else
