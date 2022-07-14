@@ -230,6 +230,7 @@ eval $prefetch_container
 
 if [ -n "$TEST" ]; then
   check_container="./scr/check_containers.sh"
+  [ -n "$YAHS" ] && check_container+=" -y"
   [ -n "$BUSCO" ] && check_container+=" -b"
   [ -n "$POLISHTYPE" ] && check_container+=" -p $POLISHTYPE"
   [ -n "$NXF_SINGULARITY_CACHEDIR" ] || check_container+=" -l ./work/singularity"
