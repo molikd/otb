@@ -87,8 +87,8 @@ process check_fastq {
     file right_fastq from right_fastq_check
     file left_fastq from left_fastq_check
   output:
-    file 'out/right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish
-    file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish
+    file 'out/right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish, right_yahs, simple_right_yahs, merfin_right_yahs, dv_right_yahs
+    file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_yahs, simple_left_yahs, merfin_right_yahs, dv_right_yahs
     file 'out/*.fastq.gz' into fasta_in_ch
     stdout check_fastq_output
   shell:
@@ -152,7 +152,7 @@ process HiFiAdapterFilt {
   input:
     file in_file from in_Hifi_ch.flatten()
   output:
-    file '*.filt.fastq' into hifiasm_filt_fastq_ch, filt_fastq_ch, minimap_merfin_filt_ch, meryl_filt_ch, yahs_filt_reads, yahs_simple_filt_reads, yahs_merfin_filt_reads, yahs_dv_filt_reads
+    file '*.filt.fastq' into hifiasm_filt_fastq_ch, filt_fastq_ch, minimap_merfin_filt_ch, meryl_filt_ch
     stdout pbadapterfilt_output
   """
     touch pbadapterfilt.flag.txt
@@ -749,7 +749,8 @@ process minimap_for_yahs {
   cpus = params.threads
 
   input:
-    file filt_reads from yahs_filt_reads
+    file left_reads from left_yahs
+    file right_reads from right_yahs
     file genome from no_polish_yahs_align_genome_ch
   output:
     file "mapped.sam" into yahs_sam_ch
@@ -758,7 +759,7 @@ process minimap_for_yahs {
       params.yahs
     """
       touch minimap.yahs.flag.sh
-      minimap2 -t ${task.cpus} -a ${genome} ${filt_reads} > mapped.sam
+      minimap2 -t ${task.cpus} -ax sr ${genome} ${left_reads} ${right_reads} > mapped.sam
       echo "finished minimap"
       sleep 120;
       exit 0;
@@ -770,7 +771,8 @@ process minimap_for_simple_yahs {
   cpus = params.threads
 
   input:
-    file filt_reads from yahs_simple_filt_reads
+    file left_reads from simple_left_yahs
+    file right_reads from simple_right_yahs
     file genome from yahs_simple_align_genome_ch
   output:
     file "mapped.sam" into yahs_simple_sam_ch
@@ -779,7 +781,7 @@ process minimap_for_simple_yahs {
       params.yahs
     """
       touch minimap.yahs.simple.flag.sh
-      minimap2 -t ${task.cpus} -a ${genome} ${filt_reads} > mapped.sam
+      minimap2 -t ${task.cpus} -ax sr ${genome} ${left_reads} ${right_reads} > mapped.sam
       echo "finished minimap"
       sleep 120;
       exit 0;
@@ -791,7 +793,8 @@ process minimap_for_merfin_yahs {
   cpus = params.threads
 
   input:
-    file filt_reads from yahs_merfin_filt_reads
+    file left_reads from merfin_left_yahs
+    file right_reads from merfin_right_yahs
     file genome from yahs_merfin_align_genome_ch
   output:
     file "mapped.sam" into yahs_merfin_sam_ch
@@ -800,7 +803,7 @@ process minimap_for_merfin_yahs {
       params.yahs
     """
       touch minimap.yahs.merfin.flag.sh
-      minimap2 -t ${task.cpus} -a ${genome} ${filt_reads} > mapped.sam
+      minimap2 -t ${task.cpus} -ax sr ${genome} ${left_reads} ${right_reads} > mapped.sam
       echo "finished minimap"
       sleep 120;
       exit 0;
@@ -812,7 +815,8 @@ process minimap_for_dv_yahs {
   cpus = params.threads
 
   input:
-    file filt_reads from yahs_dv_filt_reads
+    file left_reads from dv_left_yahs
+    file right_reads from dv_right_yahs
     file genome from yahs_dv_align_genome_ch
   output:
     file "mapped.sam" into yahs_dv_sam_ch
@@ -821,7 +825,7 @@ process minimap_for_dv_yahs {
       params.yahs
     """
       touch minimap.yahs.merfin.flag.sh
-      minimap2 -t ${task.cpus} -a ${genome} ${filt_reads} > mapped.sam
+      minimap2 -t ${task.cpus} -ax sr ${genome} ${left_reads} ${right_reads} > mapped.sam
       echo "finished minimap"
       sleep 120;
       exit 0;
