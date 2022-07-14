@@ -16,6 +16,7 @@ while [ $# -gt 0 ] ; do
       -p | --polish) POLISHTYPE="$2" ;;
       -b | --busco) BUSCO="true";;
       -l | --location) LOCATION="$2" ;;
+      -y | --yahs) YAHS="true" ;;
   esac
   shift
 done
@@ -67,6 +68,12 @@ case $POLISHTYPE in
     singularity exec "google-deepvariant.img" echo "   ...hello from deepvariant container" || error "deepvariant container broken, exiting"
   ;;
 esac
+
+if [ -n "$YAHS" ]; then
+  state "yahs containers will be required for this run, testing yahs"
+  singularity exec "dceoy-bwa-mem2.img" echo "   ...hello from the bwa container" || error "bwa container broken, exiting"
+  singularity exec "dmolik-yahs.img" echo "   ...hello from the yahs container" || error "yahs container broken, exiting"
+fi
 
 state "all required containers checked with an intial pass"
 

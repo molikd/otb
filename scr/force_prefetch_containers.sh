@@ -49,6 +49,7 @@ fi
 
 if [ -n "$YAHS" ]; then
   state "need yahs container for this run"
+  [ ! -f dceoy-bwa-mem2.img ] && singularity pull --disable-cache --force dceoy-bwa-mem2.img docker://dceoy/bwa-mem2 || state "bwa-mem container found, not downloading"
   [ ! -f dmolik-yahs.img ] && singularity pull --disable-cache --force dmolik-yahs.img docker://dmolik/yahs || state "yahs container found, not downloading"
 fi
 

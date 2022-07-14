@@ -776,9 +776,9 @@ process merfin_bcftools {
   """
 }
 
-process minimap_for_yahs {
+process bwa_for_yahs {
   label 'medium'
-  container = 'dmolik/ragtag'
+  container = 'dceoy/bwa-mem2'
   cpus = params.threads
 
   input:
@@ -787,21 +787,21 @@ process minimap_for_yahs {
     file genome from no_polish_yahs_align_genome_ch
   output:
     file "mapped.sam" into yahs_sam_ch
-    stdout minimap_for_yahs_output
+    stdout bwa_for_yahs_output
   when:
       params.yahs
     """
-      touch minimap.yahs.flag.sh
-      minimap2 -t ${task.cpus} -ax sr ${genome} ${left_reads} ${right_reads} > mapped.sam
-      echo "finished minimap"
+      touch bwa.yahs.flag.sh
+      bwa-mem2 mem -t ${task.cpus} -5 -S -P ${genome} ${left_reads} ${right_reads} > mapped.sam
+      echo "finished bwa"
       sleep 120;
       exit 0;
    """
 }
 
-process minimap_for_simple_yahs {
+process bwa_for_simple_yahs {
   label 'medium'
-  container = 'dmolik/ragtag'
+  container = 'dceoy/bwa-mem2'
   cpus = params.threads
 
   input:
@@ -810,21 +810,21 @@ process minimap_for_simple_yahs {
     file genome from yahs_simple_align_genome_ch
   output:
     file "mapped.sam" into yahs_simple_sam_ch
-    stdout minimap_for_yahs_simple_output
+    stdout bwa_for_yahs_simple_output
   when:
       params.yahs
     """
       touch minimap.yahs.simple.flag.sh
-      minimap2 -t ${task.cpus} -ax sr ${genome} ${left_reads} ${right_reads} > mapped.sam
-      echo "finished minimap"
+      bwa-mem2 mem -t ${task.cpus} -5 -S -P ${genome} ${left_reads} ${right_reads} > mapped.sam
+      echo "finished bwa"
       sleep 120;
       exit 0;
    """
 }
 
-process minimap_for_merfin_yahs {
+process bwa_for_merfin_yahs {
   label 'medium'
-  container = 'dmolik/ragtag'
+  container = 'dceoy/bwa-mem2'
   cpus = params.threads
 
   input:
@@ -833,21 +833,21 @@ process minimap_for_merfin_yahs {
     file genome from yahs_merfin_align_genome_ch
   output:
     file "mapped.sam" into yahs_merfin_sam_ch
-    stdout minimap_for_yahs_merfin_output
+    stdout bwa_for_yahs_merfin_output
   when:
       params.yahs
     """
-      touch minimap.yahs.merfin.flag.sh
-      minimap2 -t ${task.cpus} -ax sr ${genome} ${left_reads} ${right_reads} > mapped.sam
-      echo "finished minimap"
+      touch bwa.yahs.merfin.flag.sh
+      bwa-mem2 mem -t ${task.cpus} -5 -S -P ${genome} ${left_reads} ${right_reads} > mapped.sam
+      echo "finished bwa"
       sleep 120;
       exit 0;
    """
 }
 
-process minimap_for_dv_yahs {
+process bwa_for_dv_yahs {
   label 'medium'
-  container = 'dmolik/ragtag'
+  container = 'dceoy/bwa-mem2'
   cpus = params.threads
 
   input:
@@ -856,13 +856,13 @@ process minimap_for_dv_yahs {
     file genome from yahs_dv_align_genome_ch
   output:
     file "mapped.sam" into yahs_dv_sam_ch
-    stdout minimap_for_yahs_dv_output
+    stdout bwa_for_yahs_dv_output
   when:
       params.yahs
     """
-      touch minimap.yahs.merfin.flag.sh
-      minimap2 -t ${task.cpus} -ax sr ${genome} ${left_reads} ${right_reads} > mapped.sam
-      echo "finished minimap"
+      touch bwa.yahs.merfin.flag.sh
+      bwa-mem2 mem -t ${task.cpus} -5 -S -P ${genome} ${left_reads} ${right_reads} > mapped.sam
+      echo "finished bwa"
       sleep 120;
       exit 0;
    """
@@ -1413,6 +1413,7 @@ process dv_busco_fasta {
 
 process yahs_busco_fasta {
   label 'long'
+  container = 'ezlabgva/busco:v5.2.2_cv1'
   publishDir "${params.outdir}/busco_no_polish/yahs", mode: 'rellink'
   input:
     file fasta from yahs_no_polish_busco_ch
@@ -1462,6 +1463,7 @@ process yahs_busco_fasta {
 
 process yahs_simple_busco_fasta {
   label 'long'
+  container = 'ezlabgva/busco:v5.2.2_cv1'
   publishDir "${params.outdir}/busco_polish/yahs", mode: 'rellink'
   input:
     file fasta from yahs_simple_polish_busco_ch
@@ -1511,6 +1513,7 @@ process yahs_simple_busco_fasta {
 
 process yahs_merfin_busco_fasta {
   label 'long'
+  container = 'ezlabgva/busco:v5.2.2_cv1'
   publishDir "${params.outdir}/busco_polish/yahs", mode: 'rellink'
   input:
     file fasta from yahs_merfin_polish_busco_ch
@@ -1560,6 +1563,7 @@ process yahs_merfin_busco_fasta {
 
 process yahs_merfin_dv_fasta {
   label 'long'
+  container = 'ezlabgva/busco:v5.2.2_cv1'
   publishDir "${params.outdir}/busco_polish/yahs", mode: 'rellink'
   input:
     file fasta from yahs_dv_polish_busco_ch
@@ -1996,6 +2000,24 @@ process YaHS_Version {
   """
 }
 
+process bwa_mem_2_Version {
+  label 'short'
+  container = 'dceoy/bwa-mem2'
+  cpus 1
+
+  output:
+    stdout bwa_mem_2_version
+  when:
+    params.yahs
+  """
+    touch bwa_version.flag.txt
+    echo "bwa-mem2 Version:"
+    bwa-mem2 version
+    exit 0;
+  """
+}
+
+
 process bcftools_Version {
   label 'short'
   container = 'mgibio/bcftools:1.9'
@@ -2241,17 +2263,17 @@ merfin_bcftools_output
 dv_bcftools_output
    .collectFile(name:'bcftools.log.txt', newLine: true, storeDir:"${params.outdir}/genome/log")
 
-minimap_for_yahs_output
-   .collectFile(name:'minimap.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+bwa_for_yahs_output
+   .collectFile(name:'bwa.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
 
-minimap_for_yahs_simple_output
-   .collectFile(name:'minimap.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+bwa_for_yahs_simple_output
+   .collectFile(name:'bwa.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
 
-minimap_for_yahs_merfin_output
-   .collectFile(name:'minimap.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+bwa_for_yahs_merfin_output
+   .collectFile(name:'bwa.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
 
-minimap_for_yahs_dv_output
-   .collectFile(name:'minimap.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
+bwa_for_yahs_dv_output
+   .collectFile(name:'bwa.polished.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
 
 bam_sort_for_yahs_output
    .collectFile(name:'bam.sort.log.txt', newLine: true, storeDir:"${params.outdir}/genome/yahs/log")
@@ -2320,6 +2342,10 @@ samtools_version
 yahs_version
    .collectFile(name:'yahs_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
+
+bwa_mem_2_version
+    .collectFile(name:'bwa_mem_2_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+    .view{ it.text } 
 
 bcftools_version
    .collectFile(name:'bcftools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
