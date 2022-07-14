@@ -207,6 +207,14 @@ process HiFiASM {
     sleep 120;
     exit 0;
   """
+  else if( params.mode == 'primary')
+  """
+    touch hifiasm.flag.txt
+    hifiasm -o ${params.assembly} --primary -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
+    echo "finished alignment"
+    sleep 120;
+    exit 0;
+  """
   else if ( params.mode == 'trio')
   """
     touch hifiasm.flag.txt

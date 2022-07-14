@@ -17,7 +17,7 @@ help(){
        display otb version and exit
 
     -s or --supress
-       supress stop and checks, and submit without sending to background
+       supress \"stop and gather user input\", and submit without sending to background
 
     -c or --check
        perform checks to insure smoother operation
@@ -35,7 +35,7 @@ help(){
 
   suggested:
     -m or --mode
-       mode to use, must be one of \"phasing\",\"homozygous\",\"heterozygous\",\"trio\", default: homozygous
+       mode to use, must be one of \"phasing\",\"homozygous\",\"heterozygous\",\"primary\",\"trio\", default: homozygous
 
     -t or --threads
        number of threads to use, clusters sometimes use this as number of cores, default: 20
