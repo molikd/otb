@@ -2129,7 +2129,8 @@ process merfin_Version {
 
   """
     touch merfin_version.flag.txt
-    echo "merfin  - - - - - - beta?"
+    echo "merfin  Version:"
+    echo "beta?"
     exit 0;
   """
 
@@ -2146,7 +2147,8 @@ process BUSCO_Version {
 
   """
     touch busco_version.flag.txt
-    echo "BUSCO  - - - - - - - v5.2.2_cv1"
+    echo "BUSCO  Version:"
+    echo "v5.2.2_cv1"
     exit 0;
   """
 
@@ -2163,13 +2165,15 @@ process shhquis_Version {
 
   """
     touch shhquis_version.flag.txt
-    echo "Shhquis.jl - - - - - 0.1.0"
+    echo "Shhquis.jl Version:"
+    echo "0.1.0"
     exit 0;
   """
 }
 
 process HiFiAdapterFilt_Version {
   label 'short'
+  container = 'dmolik/pbadapterfilt'  
   cpus 1
 
   output:
@@ -2177,7 +2181,8 @@ process HiFiAdapterFilt_Version {
 
   """
     touch hifiadapterfilt_version.flag.txt
-    echo "HiFiAdapterFilt  - - v2.0.0"
+    echo "HiFiAdapterFilt Version:"
+    pbadapterfilt.sh -version
     exit 0;
   """
 }
