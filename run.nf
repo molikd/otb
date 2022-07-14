@@ -33,6 +33,7 @@ bam_ch.into {
 }
 
 process check_in_file {
+  label 'short'
   container = 'mgibio/samtools:1.9'
   cpus = 1
 
@@ -81,6 +82,7 @@ process check_in_file {
 }
 
 process check_fastq {
+  label 'short'
   cpus = 1
 
   input:
@@ -146,6 +148,7 @@ process check_fastq {
 }
 
 process HiFiAdapterFilt {
+  label 'short'
   container = 'dmolik/pbadapterfilt'
   cpus = params.threads
 
@@ -165,6 +168,7 @@ process HiFiAdapterFilt {
 }
 
 process HiFiASM {
+  label 'long'
   container = 'dmolik/hifiasm'
   cpus = params.threads
 
@@ -218,6 +222,7 @@ process HiFiASM {
 }
 
 process gfa2fasta {
+  label 'short'
   publishDir "${params.outdir}/genome", mode: 'rellink'
   container = 'pvstodghill/any2fasta'
   cpus 1
@@ -239,6 +244,7 @@ process gfa2fasta {
 }
 
 process busco_gfa {
+  label 'long'
   publishDir "${params.outdir}/busco_no_polish", mode: 'rellink'
   container = 'ezlabgva/busco:v5.2.2_cv1'
   cpus = params.threads
@@ -296,6 +302,7 @@ process busco_gfa {
 }
 
 process ragtag_dot_py {
+  label 'medium'
   container = 'dmolik/ragtag'
   cpus = params.threads
 
@@ -317,6 +324,7 @@ process ragtag_dot_py {
 }
 
 process faidx {
+  label 'short'
   container = 'mgibio/samtools:1.9'
   cpus 1
 
@@ -337,6 +345,7 @@ process faidx {
 }
 
 process yahs_faidx {
+  label 'short'
   container = 'mgibio/samtools:1.9'
   cpus 1
 
@@ -358,6 +367,7 @@ process yahs_faidx {
 }
 
 process hicstuff {
+  label 'long'
   publishDir "${params.outdir}/hicstuff", mode: 'rellink'
   container = 'koszullab/hicstuff'
   cpus = params.threads
@@ -380,6 +390,7 @@ process hicstuff {
 }
 
 process hicstuff_polish {
+  label 'long'
   publishDir "${params.outdir}/hicstuff", mode: 'rellink'
   container = 'koszullab/hicstuff'
   cpus = params.threads
@@ -408,6 +419,7 @@ process hicstuff_polish {
 }
 
 process Shhquis_dot_jl {
+  label 'medium'
   publishDir "${params.outdir}/genome", mode: 'rellink'
   container = 'dmolik/shhquis'
   cpus 1
@@ -433,6 +445,7 @@ process Shhquis_dot_jl {
 }
 
 process K_mer_counting {
+  label 'medium'
   container = 'dmolik/k-mer-counting-tools'
   cpus = params.threads
 
@@ -466,6 +479,7 @@ process K_mer_counting {
 }
 
 process genomescope2 {
+  label 'medium'
   publishDir "${params.outdir}/genomescope", mode: 'rellink'
   container = 'dmolik/genomescope2'
   cpus = params.threads
@@ -490,6 +504,7 @@ process genomescope2 {
 }
 
 process simple_polish {
+  label 'short'
   container = 'mgibio/samtools:1.9'
   cpus = 1
 
@@ -511,6 +526,7 @@ process simple_polish {
 }
 
 process minimap_for_merfin {
+  label 'medium'
   container = 'dmolik/ragtag'
   cpus = params.threads
 
@@ -532,6 +548,7 @@ process minimap_for_merfin {
 }
 
 process samtools_mpileup_merfin {
+  label 'medium'
   container = 'mgibio/samtools:1.9'
   cpus = params.threads
 
@@ -557,6 +574,7 @@ process samtools_mpileup_merfin {
 }
 
 process bcftools_refmt {
+  label 'short'
   container = 'mgibio/bcftools:1.9'
   cpus = params.threads
 
@@ -592,6 +610,7 @@ process bcftools_refmt {
 }
 
 process merfin {
+  label 'long'
   publishDir "${params.outdir}/merfin", mode: 'rellink'
   container = 'dmolik/merfin'
   cpus = params.threads
@@ -622,6 +641,7 @@ process merfin {
 }
 
 process minimap_for_deep_variant {
+  label 'medium'
   container = 'dmolik/ragtag'
   cpus = params.threads
 
@@ -644,6 +664,7 @@ process minimap_for_deep_variant {
 
 
 process samtools_index_for_deep_variant {
+  label 'short'
   container = 'mgibio/samtools:1.9'
   cpus = params.threads
 
@@ -669,6 +690,7 @@ process samtools_index_for_deep_variant {
 }
 
 process deep_variant {
+  label 'long'
   publishDir "${params.outdir}/deepvariant", mode: 'rellink'
   container = 'google/deepvariant'
   cpus = params.threads
@@ -695,6 +717,7 @@ process deep_variant {
 }
 
 process dv_bcftools {
+  label 'medium'
   publishDir "${params.outdir}/genome", mode: 'rellink'
   container = 'mgibio/bcftools:1.9'
   cpus = params.threads
@@ -720,6 +743,7 @@ process dv_bcftools {
 }
 
 process merfin_bcftools {
+  label 'medium'
   publishDir "${params.outdir}/genome", mode: 'rellink'
   container = 'mgibio/bcftools:1.9'
   cpus = params.threads
@@ -745,6 +769,7 @@ process merfin_bcftools {
 }
 
 process minimap_for_yahs {
+  label 'medium'
   container = 'dmolik/ragtag'
   cpus = params.threads
 
@@ -767,6 +792,7 @@ process minimap_for_yahs {
 }
 
 process minimap_for_simple_yahs {
+  label 'medium'
   container = 'dmolik/ragtag'
   cpus = params.threads
 
@@ -789,6 +815,7 @@ process minimap_for_simple_yahs {
 }
 
 process minimap_for_merfin_yahs {
+  label 'medium'
   container = 'dmolik/ragtag'
   cpus = params.threads
 
@@ -811,6 +838,7 @@ process minimap_for_merfin_yahs {
 }
 
 process minimap_for_dv_yahs {
+  label 'medium'
   container = 'dmolik/ragtag'
   cpus = params.threads
 
@@ -833,6 +861,7 @@ process minimap_for_dv_yahs {
 }
 
 process bam_sort_for_yahs {
+  label 'short'
   container = 'mgibio/samtools:1.9'
   cpus = params.threads
 
@@ -854,6 +883,7 @@ process bam_sort_for_yahs {
 }
 
 process bam_sort_for_simple_yahs {
+  label 'short'
   container = 'mgibio/samtools:1.9'
   cpus = params.threads
 
@@ -875,6 +905,7 @@ process bam_sort_for_simple_yahs {
 }
 
 process bam_sort_for_merfin_yahs {
+  label 'short'
   container = 'mgibio/samtools:1.9'
   cpus = params.threads
 
@@ -896,6 +927,7 @@ process bam_sort_for_merfin_yahs {
 }
 
 process bam_sort_for_dv_yahs {
+  label 'short'
   container = 'mgibio/samtools:1.9'
   cpus = params.threads
 
@@ -917,6 +949,7 @@ process bam_sort_for_dv_yahs {
 }
 
 process yahs {
+  label 'medium'
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'dmolik/yahs'
 
@@ -936,6 +969,7 @@ process yahs {
 }
 
 process simple_yahs {
+  label 'medium'
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'dmolik/yahs'
 
@@ -955,6 +989,7 @@ process simple_yahs {
 }
 
 process merfin_yahs_faidx {
+  label 'medium'
   container = 'mgibio/samtools:1.9'
   cpus 1
 
@@ -976,6 +1011,7 @@ process merfin_yahs_faidx {
 }
 
 process dv_yahs_faidx {
+  label 'medium'
   container = 'mgibio/samtools:1.9'
   cpus 1
 
@@ -997,6 +1033,7 @@ process dv_yahs_faidx {
 }
 
 process merfin_yahs {
+  label 'medium'
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'dmolik/yahs'
 
@@ -1017,6 +1054,7 @@ process merfin_yahs {
 
 
 process dv_yahs {
+  label 'medium'
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'dmolik/yahs'
 
@@ -1036,6 +1074,7 @@ process dv_yahs {
 }
 
 process ragtag_dot_py_hap_simple_polish {
+  label 'long'
   publishDir "${params.outdir}/genome", mode: 'rellink'
   container = 'dmolik/ragtag'
   cpus = params.threads
@@ -1060,6 +1099,7 @@ process ragtag_dot_py_hap_simple_polish {
 }
 
 process ragtag_dot_py_hap_merfin_polish {
+  label 'long'
   publishDir "${params.outdir}/genome", mode: 'rellink'
   container = 'dmolik/ragtag'
   cpus = params.threads
@@ -1083,6 +1123,7 @@ process ragtag_dot_py_hap_merfin_polish {
 }
 
 process ragtag_dot_py_hap_deep_variant_polish {
+  label 'long'
   publishDir "${params.outdir}/genome", mode: 'rellink'
   container = 'dmolik/ragtag'
   cpus = params.threads
@@ -1107,6 +1148,7 @@ process ragtag_dot_py_hap_deep_variant_polish {
 }
 
 process ragtag_dot_py_yahs {
+  label 'long'
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'dmolik/ragtag'
   cpus = params.threads
@@ -1131,6 +1173,7 @@ process ragtag_dot_py_yahs {
 }
 
 process ragtag_dot_py_simple_yahs {
+  label 'long'
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'dmolik/ragtag'
   cpus = params.threads
@@ -1155,6 +1198,7 @@ process ragtag_dot_py_simple_yahs {
 }
 
 process ragtag_dot_py_merfin_yahs {
+  label 'long'
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'dmolik/ragtag'
   cpus = params.threads
@@ -1179,6 +1223,7 @@ process ragtag_dot_py_merfin_yahs {
 }
 
 process ragtag_dot_py_dv_yahs {
+  label 'long'
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'dmolik/ragtag'
   cpus = params.threads
@@ -1203,6 +1248,7 @@ process ragtag_dot_py_dv_yahs {
 }
 
 process simple_busco_fasta {
+  label 'long'
   publishDir "${params.outdir}/busco_polish", mode: 'rellink'
   container = 'ezlabgva/busco:v5.2.2_cv1'
   cpus = params.threads
@@ -1254,6 +1300,7 @@ process simple_busco_fasta {
 }
 
 process merfin_busco_fasta {
+  label 'long'
   publishDir "${params.outdir}/busco_polish", mode: 'rellink'
   container = 'ezlabgva/busco:v5.2.2_cv1'
   cpus = params.threads
@@ -1305,6 +1352,7 @@ process merfin_busco_fasta {
 }
 
 process dv_busco_fasta {
+  label 'long'
   publishDir "${params.outdir}/busco_polish", mode: 'rellink'
   container = 'ezlabgva/busco:v5.2.2_cv1'
   cpus = params.threads
@@ -1356,6 +1404,7 @@ process dv_busco_fasta {
 }
 
 process yahs_busco_fasta {
+  label 'long'
   publishDir "${params.outdir}/busco_no_polish/yahs", mode: 'rellink'
   input:
     file fasta from yahs_no_polish_busco_ch
@@ -1404,6 +1453,7 @@ process yahs_busco_fasta {
 }
 
 process yahs_simple_busco_fasta {
+  label 'long'
   publishDir "${params.outdir}/busco_polish/yahs", mode: 'rellink'
   input:
     file fasta from yahs_simple_polish_busco_ch
@@ -1452,6 +1502,7 @@ process yahs_simple_busco_fasta {
 }
 
 process yahs_merfin_busco_fasta {
+  label 'long'
   publishDir "${params.outdir}/busco_polish/yahs", mode: 'rellink'
   input:
     file fasta from yahs_merfin_polish_busco_ch
@@ -1500,6 +1551,7 @@ process yahs_merfin_busco_fasta {
 }
 
 process yahs_merfin_dv_fasta {
+  label 'long'
   publishDir "${params.outdir}/busco_polish/yahs", mode: 'rellink'
   input:
     file fasta from yahs_dv_polish_busco_ch
@@ -1548,6 +1600,7 @@ process yahs_merfin_dv_fasta {
 }
 
 process fasta_in_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1565,6 +1618,7 @@ process fasta_in_dot_sh {
 }
 
 process gfa2fasta_stats_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1582,6 +1636,7 @@ process gfa2fasta_stats_dot_sh {
 }
 
 process ragtag_stats_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1599,6 +1654,7 @@ process ragtag_stats_dot_sh {
 }
 
 process shhquis_stats_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1616,6 +1672,7 @@ process shhquis_stats_dot_sh {
 }
 
 process merfin_vcf_stats_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1633,6 +1690,7 @@ process merfin_vcf_stats_dot_sh {
 }
 
 process dv_vcf_stats_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1651,6 +1709,7 @@ process dv_vcf_stats_dot_sh {
 
 
 process simple_hap_patch_stats_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1669,6 +1728,7 @@ process simple_hap_patch_stats_dot_sh {
 
 
 process merfin_hap_patch_stats_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1686,6 +1746,7 @@ process merfin_hap_patch_stats_dot_sh {
 }
 
 process dv_hap_patch_stats_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome", mode: 'copy'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1703,6 +1764,7 @@ process dv_hap_patch_stats_dot_sh {
 }
 
 process yahs_no_polish_stats_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1720,6 +1782,7 @@ process yahs_no_polish_stats_dot_sh {
 }
 
 process yahs_simple_polish_stats_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1737,6 +1800,7 @@ process yahs_simple_polish_stats_dot_sh {
 }
 
 process yahs_merfin_polish_stats_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1754,6 +1818,7 @@ process yahs_merfin_polish_stats_dot_sh {
 }
 
 process yahs_dv_polish_stats_dot_sh {
+  label 'short'
   publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
   container = 'bryce911/bbtools'
   cpus 1
@@ -1771,6 +1836,7 @@ process yahs_dv_polish_stats_dot_sh {
 }
 
 process yahs_hap_patch_stats_dot_sh {
+   label 'short'
    publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
    container = 'bryce911/bbtools'
    cpus 1
@@ -1788,6 +1854,7 @@ process yahs_hap_patch_stats_dot_sh {
 }
 
 process yahs_hap_patch_simple_polish_stats_dot_sh {
+   label 'short'
    publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
    container = 'bryce911/bbtools'
    cpus 1
@@ -1805,6 +1872,7 @@ process yahs_hap_patch_simple_polish_stats_dot_sh {
 }
 
 process yahs_hap_patch_merfin_polish_stats_dot_sh {
+   label 'short'
    publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
    container = 'bryce911/bbtools'
    cpus 1
@@ -1822,6 +1890,7 @@ process yahs_hap_patch_merfin_polish_stats_dot_sh {
 }
 
 process yahs_hap_patch_dv_polish_stats_dot_sh {
+   label 'short'
    publishDir "${params.outdir}/genome/yahs", mode: 'rellink'
    container = 'bryce911/bbtools'
    cpus 1
@@ -1839,6 +1908,7 @@ process yahs_hap_patch_dv_polish_stats_dot_sh {
 }
 
 process HiFiASM_Version {
+  label 'short'
   container = 'dmolik/hifiasm'
   cpus 1
 
@@ -1854,6 +1924,7 @@ process HiFiASM_Version {
 }
 
 process any2fasta_Version {
+  label 'short'
   container = 'pvstodghill/any2fasta'
   cpus 1
 
@@ -1869,6 +1940,7 @@ process any2fasta_Version {
 }
 
 process ragtag_Version {
+  label 'short'
   container = 'dmolik/ragtag'
   cpus 1
 
@@ -1884,6 +1956,7 @@ process ragtag_Version {
 }
 
 process samtools_Version {
+  label 'short'
   container = 'mgibio/samtools:1.9'
   cpus 1
 
@@ -1899,6 +1972,7 @@ process samtools_Version {
 }
 
 process YaHS_Version {
+  label 'short'
   container = 'dmolik/yahs'
   cpus 1
 
@@ -1915,6 +1989,7 @@ process YaHS_Version {
 }
 
 process bcftools_Version {
+  label 'short'
   container = 'mgibio/bcftools:1.9'
   cpus 1
 
@@ -1932,6 +2007,7 @@ process bcftools_Version {
 }
 
 process hicstuff_Version {
+  label 'short'
   container = 'koszullab/hicstuff'
   cpus 1
 
@@ -1947,6 +2023,7 @@ process hicstuff_Version {
 }
 
 process bbtools_Version {
+  label 'short'
   container = 'bryce911/bbtools'
   cpus 1
 
@@ -1962,6 +2039,7 @@ process bbtools_Version {
 }
 
 process deepvariant_Version {
+   label 'short'
    container = 'google/deepvariant'
    cpus 1
 
@@ -1979,6 +2057,7 @@ process deepvariant_Version {
 }
 
 process k_mer_Version {
+  label 'short'
   cpus 1
 
   input:
@@ -1994,6 +2073,7 @@ process k_mer_Version {
 }
 
 process genomescope_Version {
+  label 'short'
   cpus 1
 
   input:
@@ -2009,6 +2089,7 @@ process genomescope_Version {
 }
 
 process merfin_Version {
+  label 'short'
   cpus 1
 
   output:
@@ -2025,6 +2106,7 @@ process merfin_Version {
 }
 
 process BUSCO_Version {
+  label 'short'
   cpus 1
 
   output:
@@ -2041,6 +2123,7 @@ process BUSCO_Version {
 }
 
 process shhquis_Version {
+  label 'short'
   cpus 1
 
   output:
@@ -2056,6 +2139,7 @@ process shhquis_Version {
 }
 
 process HiFiAdapterFilt_Version {
+  label 'short'
   cpus 1
 
   output:
