@@ -25,7 +25,7 @@ params.linreage = 'insecta_odb10'
 params.hclustlinkage = "average"
 
 bam_ch = Channel.fromPath(params.readin)
-right_fastq_check = Channel.fromPath(params.readr) 
+right_fastq_check = Channel.fromPath(params.readr)
 left_fastq_check = Channel.fromPath(params.readf)
 
 bam_ch.into {
@@ -94,7 +94,7 @@ process check_fastq {
     file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_yahs, simple_left_yahs, merfin_left_yahs, dv_left_yahs
     file 'out/*.fastq.gz' into fasta_in_ch
     stdout check_fastq_output
- when:                                                                         
+ when:                             
     !params.lite
   shell:
   '''
