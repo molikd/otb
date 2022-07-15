@@ -2173,7 +2173,7 @@ process shhquis_Version {
 
 process HiFiAdapterFilt_Version {
   label 'short'
-  container = 'dmolik/pbadapterfilt'  
+  container = 'dmolik/pbadapterfilt'
   cpus 1
 
   output:
@@ -2350,7 +2350,7 @@ yahs_version
 
 bwa_mem_2_version
     .collectFile(name:'bwa_mem_2_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
-    .view{ it.text } 
+    .view{ it.text }
 
 bcftools_version
    .collectFile(name:'bcftools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
