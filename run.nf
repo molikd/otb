@@ -1,12 +1,13 @@
 #!/usr/bin/env nextflow
 //Global Parameters
 params.assembly = "an_assembly"
-params.readin = "$baseDir/data/*.bam"
-params.readf = "$baseDir/data/*.R1.fastq.gz"
-params.readr = "$baseDir/data/*.R2.fastq.gz"
+params.readin = "NO_FILE"
+params.readf = "NO_FILE"
+params.readr = "NO_FILE"
 params.outfasta = "genome.out.fasta"
 params.outdir = 'results'
 params.threads = '21'
+params.lite = false
 //Runtype Parameters
 params.kmer = 'kmc'
 params.polish = false
@@ -24,7 +25,7 @@ params.linreage = 'insecta_odb10'
 params.hclustlinkage = "average"
 
 bam_ch = Channel.fromPath(params.readin)
-right_fastq_check = Channel.fromPath(params.readr)
+right_fastq_check = Channel.fromPath(params.readr) 
 left_fastq_check = Channel.fromPath(params.readf)
 
 bam_ch.into {
@@ -93,6 +94,8 @@ process check_fastq {
     file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_yahs, simple_left_yahs, merfin_left_yahs, dv_left_yahs
     file 'out/*.fastq.gz' into fasta_in_ch
     stdout check_fastq_output
+ when:                                                                         
+    !params.lite
   shell:
   '''
    state () { printf "%b\n" "[$(date)]: $*" 2>&1; }
@@ -182,51 +185,50 @@ process HiFiASM {
     file '*.ec.fa' into fasta_ec_ch
     stdout HiFiASM_output
   script:
-
-  if( params.mode == 'phasing' )
-  """
-    touch hifiasm.flag.txt
-    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${left} --h2 ${right} ${fasta} 2>&1
-    echo "finished alignment"
-    sleep 120;
-    exit 0;
-  """
-  else if( params.mode == 'homozygous' )
-  """
-    touch hifiasm.flag.txt
-    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -l0 ${fasta} 2>&1
-    echo "finished alignment"
-    sleep 120;
-    exit 0;
-  """
-  else if( params.mode == 'heterozygous')
-  """
-    touch hifiasm.flag.txt
-    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
-    echo "finished alignment"
-    sleep 120;
-    exit 0;
-  """
-  else if( params.mode == 'primary')
-  """
-    touch hifiasm.flag.txt
-    hifiasm -o ${params.assembly} --primary -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
-    echo "finished alignment"
-    sleep 120;
-    exit 0;
-  """
-  else if ( params.mode == 'trio')
-  """
-    touch hifiasm.flag.txt
-    yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left}) <(zcat ${left})
-    yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${right}) <(zcat ${right})
-    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta} 2>&1
-    echo "finished alignment"
-    sleep 120;
-    exit 0;
-  """
-  else
-    error "Invalid alignment mode: ${params.mode}"
+    if( params.mode == 'phasing' && params.readf != 'NO_FILE' && params.readr != 'NO_FILE' )
+    """
+      touch hifiasm.flag.txt
+      hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${left} --h2 ${right} ${fasta} 2>&1
+      echo "finished alignment"
+      sleep 120;
+      exit 0;
+    """
+    else if( params.mode == 'homozygous' )
+    """
+      touch hifiasm.flag.txt
+      hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -l0 ${fasta} 2>&1
+      echo "finished alignment"
+      sleep 120;
+      exit 0;
+    """
+    else if( params.mode == 'heterozygous')
+    """
+      touch hifiasm.flag.txt
+      hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
+      echo "finished alignment"
+      sleep 120;
+      exit 0;
+    """
+    else if( params.mode == 'primary')
+    """
+      touch hifiasm.flag.txt
+      hifiasm -o ${params.assembly} --primary -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
+      echo "finished alignment"
+      sleep 120;
+      exit 0;
+    """
+    else if ( params.mode == 'trio' && params.readf != 'NO_FILE' && params.readr != 'NO_FILE' )
+    """
+      touch hifiasm.flag.txt
+      yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left}) <(zcat ${left})
+      yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${right}) <(zcat ${right})
+      hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta} 2>&1
+      echo "finished alignment"
+      sleep 120;
+      exit 0;
+    """
+    else
+      error "Invalid alignment mode: ${params.mode}"
 }
 
 process gfa2fasta {

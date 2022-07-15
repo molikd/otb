@@ -22,12 +22,15 @@ help(){
     -c or --check
        perform checks to insure smoother operation
 
+    --lite
+       don't perform anything with HiC
+
   required:
     -f or --forward
        a fastq or fastq.gz file for the pipline, in HiC runs this is one of the sequencing files, in a trio run, this is either the maternal or paternal sequences, order does not matter
 
     -r or --reverse
-       another fastq or fastq.gz file for the pipeline, in HiC runs this is one of the sequencing files, in a trio run, this is either the materna    l or paternal sequences, order does not matter
+       another fastq or fastq.gz file for the pipeline, in HiC runs this is one of the sequencing files, in a trio run, this is either the maternal or paternal sequences, order does not matter
 
     -in or --reads
        path to HiFi reads (generally from pacbio), may include a wildcard for multiple files, can be fastq or bam
@@ -114,6 +117,7 @@ while [ $# -gt 0 ] ; do
     -y | --yahs) YAHS="true";;
     -u | --runner) RUNNER="$2";;
     -k | --kmer) KMER="$2";;
+    --lite) LITE="true";;
     --busco) BUSCO="--busco ";;
     --polish-type) POLISHTYPE="$2";;
     --auto-lineage) LINEAGE="auto-lineage";;
@@ -276,6 +280,8 @@ state "running busco, checking busco things"
 else
   state "   ...not running busco"
 fi
+
+[ -z "$LITE" ] && RUN+="--lite "
 
 [ -z "$SUPRESS" ] && RUN+="-bg"
 
