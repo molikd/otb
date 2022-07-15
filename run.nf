@@ -90,7 +90,7 @@ process check_fastq {
     file left_fastq from left_fastq_check
   output:
     file 'out/right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish, right_yahs, simple_right_yahs, merfin_right_yahs, dv_right_yahs
-    file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_yahs, simple_left_yahs, merfin_right_yahs, dv_right_yahs
+    file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_yahs, simple_left_yahs, merfin_left_yahs, dv_left_yahs
     file 'out/*.fastq.gz' into fasta_in_ch
     stdout check_fastq_output
   shell:
