@@ -52,7 +52,7 @@ Busco_Location="-l /project/ag100pest/software/OTB_test/busco"
 Busco_DB="-p insecta_odb10"
 
 if [[ -z "$BUSCO" ]]; then
-  ./otb.sh -n ${Assembly_Name} -f ${Forward} -r ${Reverse} -in ${CCS} -m ${HiFi_Type} -t ${Threads} ${Yahs} ${Busco} --polish_type ${Polish_Type} --runner ${Runner} -c -s
+  ./otb.sh -n ${Assembly_Name} -f "$( echo ${Forward})" -r "$(echo ${Reverse})" -in "$(echo ${CCS})" -m ${HiFi_Type} -t ${Threads} ${Yahs} ${Busco} --polish_type ${Polish_Type} --runner ${Runner} -c -s
 else
-  ./otb.sh -n ${Assembly_Name} -f ${Forward} -r ${Reverse} -in ${CCS} -m ${HiFi_Type} -t ${Threads} ${Yahs} ${Busco} ${Busco_Location} ${Busco_DB} --polish_type ${Polish_Type} --runner ${Runner} -c -s
+  ./otb.sh -n ${Assembly_Name} -f "$( echo ${Forward})" -r "$(echo ${Reverse})" -in "$(echo ${CCS})" -m ${HiFi_Type} -t ${Threads} ${Yahs} ${Busco} ${Busco_Location} ${Busco_DB} --polish_type ${Polish_Type} --runner ${Runner} -c -s
 fi
