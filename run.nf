@@ -155,7 +155,7 @@ process HiFiAdapterFilt {
   input:
     file in_file from in_Hifi_ch.flatten()
   output:
-    file '*.filt.fastq' into hifiasm_filt_fastq_ch, filt_fastq_ch, minimap_merfin_filt_ch, meryl_filt_ch
+    file '*.filt.fastq' into hifiasm_filt_fastq_ch, filt_fastq_ch, minimap_dv_filt_ch,  minimap_merfin_filt_ch, meryl_filt_ch
     stdout pbadapterfilt_output
   """
     touch pbadapterfilt.flag.txt
@@ -654,7 +654,7 @@ process minimap_for_deep_variant {
   cpus = params.threads
 
   input:
-    file filt_reads from filt_fastq_ch
+    file filt_reads from minimap_dv_filt_ch
     file genome from shhquis_dv_minimap_ch
   output:
     file "mapped.sam" into sam_for_dv_ch
