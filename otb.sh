@@ -24,13 +24,13 @@ help(){
 
   required:
     -f or --forward
-       a fastq or fastq.gz file for the pipline, order does not matter
+       a fastq or fastq.gz file for the pipline, in HiC runs this is one of the sequencing files, in a trio run, this is either the maternal or paternal sequences, order does not matter
 
     -r or --reverse
-       another fastq or fastq.gz file for the pipeline, order does not matter
+       another fastq or fastq.gz file for the pipeline, in HiC runs this is one of the sequencing files, in a trio run, this is either the materna    l or paternal sequences, order does not matter
 
     -in or --reads
-       path to reads (generally from pacbio), may include a wildcard for multiple files, can be fastq or bam
+       path to HiFi reads (generally from pacbio), may include a wildcard for multiple files, can be fastq or bam
 
 
   suggested:
