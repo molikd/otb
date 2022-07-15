@@ -60,6 +60,7 @@ otb is fully featured and utilzes the following softwares:
 - deep variant
 - yahs
 - bcftools
+- bwa-mem2
 ```
 otb is in the public domain in the United States per 17 U.S.C. § 105
 ```
