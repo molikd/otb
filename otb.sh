@@ -281,7 +281,7 @@ else
   state "   ...not running busco"
 fi
 
-[ -z "$LITE" ] && RUN+="--lite "
+[ -n "$LITE" ] && RUN+="--lite "
 
 [ -z "$SUPRESS" ] && RUN+="-bg"
 
