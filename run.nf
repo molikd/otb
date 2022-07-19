@@ -28,6 +28,9 @@ bam_ch = Channel.fromPath(params.readin)
 right_fastq_check = Channel.fromPath(params.readr)
 left_fastq_check = Channel.fromPath(params.readf)
 
+right_optional = file(params.readr)
+left_optional = file(params.readf)
+
 bam_ch.into {
   in_check_ch
   in_Hifi_ch
@@ -90,8 +93,8 @@ process check_fastq {
     file right_fastq from right_fastq_check
     file left_fastq from left_fastq_check
   output:
-    file 'out/right.fastq.gz' into right_fastq_HiFiASM, right_fastq_hicstuff, right_fastq_hicstuff_polish, right_yahs, simple_right_yahs, merfin_right_yahs, dv_right_yahs
-    file 'out/left.fastq.gz' into left_fastq_HiFiASM, left_fastq_hicstuff, left_fastq_hicstuff_polish, left_yahs, simple_left_yahs, merfin_left_yahs, dv_left_yahs
+    file 'out/right.fastq.gz' into right_fastq_hicstuff, right_fastq_hicstuff_polish, right_yahs, simple_right_yahs, merfin_right_yahs, dv_right_yahs
+    file 'out/left.fastq.gz' into left_fastq_hicstuff, left_fastq_hicstuff_polish, left_yahs, simple_left_yahs, merfin_left_yahs, dv_left_yahs
     file 'out/*.fastq.gz' into fasta_in_ch
     stdout check_fastq_output
  when:
@@ -177,8 +180,8 @@ process HiFiASM {
 
   input:
     file fasta from hifiasm_filt_fastq_ch.collect()
-    file left from left_fastq_HiFiASM
-    file right from right_fastq_HiFiASM
+    path left from left_optional
+    path right from right_optional
 
   output:
     file '*.gfa' into gfa_ch
