@@ -1,20 +1,30 @@
 #!/usr/bin/env nextflow
 //Global Parameters
 params.assembly = "an_assembly"
+
 params.readin = "NO_FILE"
 params.readf = "NO_FILE"
 params.readr = "NO_FILE"
+params.hicreadf = "$baseDir/data/*.R1.fastq.gz"
+params.hicreadr = "$baseDir/data/*.R2.fastq.gz"
+params.matreadf = "$baseDir/data/*.R1.fastq.gz"
+params.matreadr = "$baseDir/data/*.R2.fastq.gz"
+params.patreadf = "$baseDir/data/*.R1.fastq.gz"
+params.patreadr = "$baseDir/data/*.R2.fastq.gz"
+
 params.outfasta = "genome.out.fasta"
 params.outdir = 'results'
 params.threads = '21'
 params.lite = false
 //Runtype Parameters
+params.scaffold = false
 params.kmer = 'kmc'
 params.polish = false
 params.polishtype = 'simple'
 params.yahs = false
 //HiFIASM Parameters
-params.mode = 'heterozygous'
+params.mode = 'default'
+params.trio = false
 params.ploidy = '2'
 //Busco Parameters
 params.busco = false
@@ -25,8 +35,12 @@ params.linreage = 'insecta_odb10'
 params.hclustlinkage = "average"
 
 bam_ch = Channel.fromPath(params.readin)
-right_fastq_check = Channel.fromPath(params.readr)
-left_fastq_check = Channel.fromPath(params.readf)
+right_hicfastq_check = Channel.fromPath(params.hicreadr)
+left_hicfastq_check = Channel.fromPath(params.hicreadf)
+right_matfastq_check = Channel.fromPath(params.matreadf)
+left_matfastq_check = Channel.fromPath(params.matreadr)
+right_patfastq_check = Channel.fromPath(params.patreadf)
+left_patfastq_check = Channel.fromPath(params.patreadr)
 
 right_optional = file(params.readr)
 left_optional = file(params.readf)
@@ -66,7 +80,7 @@ process check_in_file {
      [[ $at_check =~ '@' ]] || error "$file doesn't start with an @";
      state "check if file can be divided by four"
      modulo_four_check=$(zcat $file | grep -v "^=.*"  | wc -l)
-     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || warn "number of lines in $file not divisable by four, continuing anyway"
+     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || warn "number of lines in $file not divisible by four, continuing anyway"
    elif [[ $file == *.fastq || *.fq ]]; then
      state "   ...file type is fastq file type"
      state "check if file can be opened, and it starts with @"
@@ -74,9 +88,9 @@ process check_in_file {
      [[ $at_check =~ '@' ]] || error "$file doesn't start with an @";
      state "check if file can be divided by four"
      modulo_four_check=$(cat $file | grep -v "^=.*" | wc -l)
-     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || warn "number of lines in $file not divisable by four, continuing anyway"
+     [[ $(( $modulo_four_check % 4 )) -eq 0 ]] || warn "number of lines in $file not divisible by four, continuing anyway"
    else
-     error "trying to run otb with somthing that does not end with the corret file type"
+     error "trying to run otb with somthing that does not end with the correct file type"
    fi
 
    state "check file on $file passed"
@@ -90,8 +104,8 @@ process check_fastq {
   cpus = 1
 
   input:
-    file right_fastq from right_fastq_check
-    file left_fastq from left_fastq_check
+    file right_fastq from right_hicfastq_check
+    file left_fastq from left_hicfastq_check
   output:
     file 'out/right.fastq.gz' into right_fastq_hicstuff, right_fastq_hicstuff_polish, right_yahs, simple_right_yahs, merfin_right_yahs, dv_right_yahs
     file 'out/left.fastq.gz' into left_fastq_hicstuff, left_fastq_hicstuff_polish, left_yahs, simple_left_yahs, merfin_left_yahs, dv_left_yahs
@@ -99,6 +113,75 @@ process check_fastq {
     stdout check_fastq_output
  when:
     !params.lite
+  shell:
+  '''
+   state () { printf "%b\n" "[$(date)]: $*" 2>&1; }
+   error () { printf "%b\n" "[$(date)]: $*" >&2; exit 1; }
+   warn () { printf "%b\n" "[$(date)]: $*" >&2; }
+
+   state "use touch to create a flag, so that I can be found easily"
+   touch check_fastq.flag.txt
+   state "stat !{right_fastq}..."
+   stat !{right_fastq}
+   state "stat !{left_fastq}..."
+   stat !{left_fastq}
+
+   state "if !{right_fastq} ends in gz zcat, and if it does not, cat the first line, save."
+   [[ !{right_fastq}  =~ ".gz" ]] && first=$(zcat !{right_fastq} | awk '{ print $1; exit }') || first=$( cat !{right_fastq} | awk '{ print $1; exit }')
+   state "if !{left_fastq} end in gz zcat, and if it does not, cat the first line, save"
+   [[ !{left_fastq} =~ ".gz" ]] && second=$(zcat !{left_fastq} | awk '{ print $1; exit }') || second=$( cat !{left_fastq} | awk '{ print $1; exit }')
+
+   state "if the first line of the fastqs doesn't start with an @, error out, otherwise continue"
+   [[ $first =~ '@' ]] || error "!{right_fastq} doesn't start with an @";
+   [[ $second =~ '@' ]] || errror "!{left_fastq} doesn't start with an @";
+
+   state "check to make sure that fastqs are divisable by 4"
+   [[ !{right_fastq}  =~ ".gz" ]] && first=$(zcat !{right_fastq} | grep -v "^=.*" | wc -l) || first=$( cat !{right_fastq} | grep -v "^=.*" | wc -l)
+   [[ !{left_fastq} =~ ".gz" ]] && second=$(zcat !{left_fastq} | grep -v "^=.*"  | wc -l) || second=$( cat !{left_fastq} | grep -v "^=.*"  | wc -l )
+
+   [[ $(( $first % 4 )) -eq 0 ]] || warn "number of lines in !{right_fastq} not divisable by four, continuing anyway"
+   [[ $(( $second % 4 )) -eq 0 ]] || warn "number of lines in !{left_fastq} not divisable by four, continuing anyway"
+
+   state "make softlinks for both files"
+   mkdir out
+
+   if [[ !{right_fastq}  =~ ".gz" ]]; then
+     cd out
+     ln -s ../!{right_fastq} right.fastq.gz
+     cd ..
+   else
+     gzip -c !{right_fastq} > out/right.fastq.gz
+   fi
+
+   if [[ !{left_fastq}  =~ ".gz" ]]; then
+     cd out
+     ln -s ../!{left_fastq} left.fastq.gz
+     cd ..
+   else
+     gzip -c !{left_fastq} > out/left.fastq.gz
+   fi
+
+   state "successful completion"
+   sleep 120;
+   exit 0;
+  '''
+}
+
+process check_fastq_trio {
+  cpus = 1
+
+  input:
+    file rightmat_fastq from right_matfastq_check
+    file leftmat_fastq from left_matfastq_check
+    file rightpat_fastq from right_patfastq_check
+    file leftpat_fastq from left_patfastq_check
+  output:
+    file 'out/right.mat.fastq.gz' into right_mat_fastq_HiFiASM_trio
+    file 'out/left.mat.fastq.gz' into left_mat__fastq_HiFiASM_trio
+    file 'out/right.pat.fastq.gz' into right_pat_fastq_HiFiASM_trio
+    file 'out/left.pat.fastq.gz' into left_pat_fastq_HiFiASM_trio
+    file 'out/*.fastq.gz' into fasta_in_ch
+    stdout check_fastq_output
   shell:
   '''
    state () { printf "%b\n" "[$(date)]: $*" 2>&1; }
@@ -187,6 +270,7 @@ process HiFiASM {
     file '*.gfa' into gfa_ch
     file '*.ec.fa' into fasta_ec_ch
     stdout HiFiASM_output
+  
   script:
     if( params.mode == 'phasing' && params.readf != 'NO_FILE' && params.readr != 'NO_FILE' )
     """
@@ -196,7 +280,7 @@ process HiFiASM {
       sleep 120;
       exit 0;
     """
-    else if( params.mode == 'homozygous' )
+    else if( params.mode == 'purge.off' )
     """
       touch hifiasm.flag.txt
       hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -l0 ${fasta} 2>&1
@@ -204,7 +288,7 @@ process HiFiASM {
       sleep 120;
       exit 0;
     """
-    else if( params.mode == 'heterozygous')
+    else if( params.mode == 'default')
     """
       touch hifiasm.flag.txt
       hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
@@ -220,18 +304,41 @@ process HiFiASM {
       sleep 120;
       exit 0;
     """
-    else if ( params.mode == 'trio' && params.readf != 'NO_FILE' && params.readr != 'NO_FILE' )
-    """
-      touch hifiasm.flag.txt
-      yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left}) <(zcat ${left})
-      yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${right}) <(zcat ${right})
-      hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec 1 pat.yak -2 mat.yak ${fasta} 2>&1
-      echo "finished alignment"
-      sleep 120;
-      exit 0;
-    """
     else
       error "Invalid alignment mode: ${params.mode}"
+
+}
+
+process HiFiASM_trio {
+  label 'longq'
+  container = 'dmolik/hifiasm'
+  cpus = params.threads
+
+  input:
+    file fasta from hifiasm_filt_fastq_ch.collect()
+    file left_mat from right_mat_fastq_HiFiASM_trio
+    file right_mat from right_mat_fastq_HiFiASM_trio
+    file left_pat from right_pat_fastq_HiFiASM_trio
+    file right_pat from right_pat_fastq_HiFiASM_trio
+
+  output:
+    file '*.gfa' into gfa_ch
+    file '*.ec.fa' into fasta_ec_ch
+    stdout HiFiASM_output
+
+  when:
+      params.trio && params.readf != 'NO_FILE' && params.readr != 'NO_FILE'
+
+  script:
+  """
+    touch hifiasm.flag.txt
+    yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left_pat}) <(zcat ${right_pat})
+    yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${left_mat}) <(zcat ${right_mat})
+    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -1 pat.yak -2 mat.yak ${fasta} 2>&1
+    echo "finished contig assembly"
+    sleep 120;
+    exit 0;
+  """
 }
 
 process gfa2fasta {
@@ -368,7 +475,7 @@ process yahs_faidx {
     file "${params.assembly}.yahs.fasta.fai" into yahs_fai_ch
     file "${params.assembly}.yahs.fasta" into yahs_genome_ch
   when:
-    params.yahs
+    params.yahs && params.scaffold
   """
     touch faidx.yahs.flag.txt
     ln -s ${genome} "${params.assembly}.yahs.fasta"
@@ -393,6 +500,8 @@ process hicstuff {
     file 'hicstuff_out/fragments_list.txt'
     file 'hicstuff_out/plots/frags_hist.pdf'
     stdout hicstuff_output
+  when:
+    params.scaffold
   """
     touch hicstuff.flag.txt
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
@@ -419,7 +528,7 @@ process hicstuff_polish {
     file 'hicstuff_out/plots/polish_frags_hist.pdf'
     stdout hicstuff_polish_output
   when:
-    params.polish
+    params.polish && params.scaffold
   """
     touch hicstuff_for_polished.flag.txt
     hicstuff pipeline -t ${task.cpus} -a minimap2 --no-cleanup -e 10000000 --force --out hicstuff_out --duplicates --matfmt=bg2 --plot -g ${genome} ${left} ${right}
@@ -447,7 +556,7 @@ process Shhquis_dot_jl {
     file "${params.outfasta}"
     stdout Shhquis_dot_jl_output
   when:
-    params.polish
+    params.polish && params.scaffold
   """
     touch shhquis.flag.txt
     shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage ${params.hclustlinkage}
