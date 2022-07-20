@@ -49,6 +49,9 @@ help(){
     -y or --yahs
        run yahs as well
 
+    --purge-dups
+       [0-3], the amount of dups purging requested in HiFiASM, by default no purging is done. default: 0
+
     grid computing:
        select one of the following, defaults to local which is highly not-recomended
     -u or --runner
@@ -118,6 +121,7 @@ while [ $# -gt 0 ] ; do
     -u | --runner) RUNNER="$2";;
     -k | --kmer) KMER="$2";;
     --lite) LITE="true";;
+    --purge-dups) PURGE_DUPS="$2";;
     --busco) BUSCO="--busco ";;
     --polish-type) POLISHTYPE="$2";;
     --auto-lineage) LINEAGE="auto-lineage";;
@@ -197,6 +201,15 @@ case $SHHQUISHCLST in
   ward) RUN+="--hclustlinkage=\"ward\" ";;
   ward_presquared) RUN+="--hclustlinkage=\"ward_presquared\" ";;
   *) error "shhquis linkage type set to $SHHQUISHCLST, not a vaild hclust linkage type";;
+esac
+
+[ -n "$PURGE_DUPS" ] || PURGE_DUPS="0"
+case $PURGE_DUPS in 
+  0) RUN+="--l=\"0\" ";;
+  1) RUN+="--l=\"1\" ";;
+  2) RUN+="--l=\"2\" ";;
+  3) RUN+="--l=\"3\" ";;
+  *) error "purge dups level can not be set to $PURGE_DUPS. not a valid level";;
 esac
 
 [ -n "$KMER" ] || KMER="kmc"

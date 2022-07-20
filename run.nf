@@ -23,6 +23,7 @@ params.polish = false
 params.polishtype = 'simple'
 params.yahs = false
 //HiFIASM Parameters
+params.l = 0
 params.mode = 'default'
 params.trio = false
 params.ploidy = '2'
@@ -275,15 +276,7 @@ process HiFiASM {
     if( params.mode == 'phasing' && params.readf != 'NO_FILE' && params.readr != 'NO_FILE' )
     """
       touch hifiasm.flag.txt
-      hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${left} --h2 ${right} ${fasta} 2>&1
-      echo "finished alignment"
-      sleep 120;
-      exit 0;
-    """
-    else if( params.mode == 'purge.off' )
-    """
-      touch hifiasm.flag.txt
-      hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -l0 ${fasta} 2>&1
+      hifiasm -l${params.l} -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${left} --h2 ${right} ${fasta} 2>&1
       echo "finished alignment"
       sleep 120;
       exit 0;
@@ -291,7 +284,7 @@ process HiFiASM {
     else if( params.mode == 'default')
     """
       touch hifiasm.flag.txt
-      hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
+      hifiasm -l${params.l} -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
       echo "finished alignment"
       sleep 120;
       exit 0;
@@ -299,7 +292,7 @@ process HiFiASM {
     else if( params.mode == 'primary')
     """
       touch hifiasm.flag.txt
-      hifiasm -o ${params.assembly} --primary -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
+      hifiasm -l${parms.l} -o ${params.assembly} --primary -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
       echo "finished alignment"
       sleep 120;
       exit 0;
@@ -334,7 +327,7 @@ process HiFiASM_trio {
     touch hifiasm.flag.txt
     yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left_pat}) <(zcat ${right_pat})
     yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${left_mat}) <(zcat ${right_mat})
-    hifiasm -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -1 pat.yak -2 mat.yak ${fasta} 2>&1
+    hifiasm -l${params.l} -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -1 pat.yak -2 mat.yak ${fasta} 2>&1
     echo "finished contig assembly"
     sleep 120;
     exit 0;
