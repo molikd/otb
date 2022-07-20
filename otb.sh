@@ -203,7 +203,7 @@ case $SHHQUISHCLST in
 esac
 
 [ -n "$PURGE_DUPS" ] || PURGE_DUPS="0"
-case $PURGE_DUPS in 
+case $PURGE_DUPS in
   0) RUN+="--l=\"0\" ";;
   1) RUN+="--l=\"1\" ";;
   2) RUN+="--l=\"2\" ";;

@@ -271,7 +271,7 @@ process HiFiASM {
     file '*.gfa' into gfa_ch
     file '*.ec.fa' into fasta_ec_ch
     stdout HiFiASM_output
-  
+
   script:
     if( params.mode == 'phasing' && params.readf != 'NO_FILE' && params.readr != 'NO_FILE' )
     """
