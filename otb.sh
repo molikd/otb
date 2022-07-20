@@ -38,7 +38,7 @@ help(){
 
   suggested:
     -m or --mode
-       mode to use, must be one of \"phasing\",\"homozygous\",\"heterozygous\",\"primary\",\"trio\", default: homozygous
+       mode to use, must be one of \"phasing\",\"default\",\"trio\",\"primary\". default: \"default\"
 
     -t or --threads
        number of threads to use, clusters sometimes use this as number of cores, default: 20
@@ -182,8 +182,7 @@ RUN="nextflow run run.nf "
 if [ -n "$MODE" ]; then
   case $MODE in
     phasing) RUN+="--mode=\"phasing\" ";;
-    homozygous) RUN+="--mode=\"homozygous\" ";;
-    heterozygous) RUN+="--mode=\"heterozygous\" ";;
+    default) RUN+="--mode=\"default\" ";;
     trio) RUN+="--mode=\"trio\" ";;
     primary) RUN+="--mode=\"primary\" ";;
     *) error "mode set to $MODE, not an actual mode";;
