@@ -31,15 +31,14 @@ Yahs="-y" #Yahs will be run
 #Yahs="" #Yahs will not be run
 
 #Comment/Uncomment for Polishing (only select one of)
-#Polish_Type="" #No polishing
-Polish_Type="simple" #Simple Polishing
+Polish_Type="" #No polishing
+#Polish_Type="simple" #Simple Polishing
 #Polish_Type="dv" #Deep Variant Polishing
 #Polish_Type="merfin" #merfin Polishing
 
 #Comment/Uncomment for Type (only select one of)
 #HiFi_Type="phasing"
-#HiFi_Type="homozygous"
-HiFi_Type="heterozygous"
+HiFi_Type="default"
 #HiFi_Type="trio"
 
 #Comment/Uncomment for Runner (only select one of)
@@ -48,11 +47,4 @@ Runner="slurm_usda_mem"
 
 Threads="32"
 
-Busco_Location="-l /project/ag100pest/software/OTB_test/busco"
-Busco_DB="-p insecta_odb10"
-
-if [[ -z "$BUSCO" ]]; then
-  ./otb.sh -n ${Assembly_Name} -f "$( echo ${Forward})" -r "$(echo ${Reverse})" -in "$(echo ${CCS})" -m ${HiFi_Type} -t ${Threads} ${Yahs} ${Busco} --polish_type ${Polish_Type} --runner ${Runner} -c -s
-else
-  ./otb.sh -n ${Assembly_Name} -f "$( echo ${Forward})" -r "$(echo ${Reverse})" -in "$(echo ${CCS})" -m ${HiFi_Type} -t ${Threads} ${Yahs} ${Busco} ${Busco_Location} ${Busco_DB} --polish_type ${Polish_Type} --runner ${Runner} -c -s
-fi
+./otb.sh --lite -n ${Assembly_Name} -f "$( echo ${Forward})" -r "$(echo ${Reverse})" -in "$(echo ${CCS})" -m ${HiFi_Type} -t ${Threads} --polish_type ${Polish_Type} --runner ${Runner} -c -s
