@@ -36,7 +36,7 @@ help(){
        optional maternal sequences forward and reverse
 
     --patf and --patr
-       optional paternal sequences forward and reverse 
+       optional paternal sequences forward and reverse
 
     -in or --reads
        path to HiFi reads (generally from pacbio), may include a wildcard for multiple files, can be fastq or bam
