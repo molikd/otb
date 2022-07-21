@@ -32,6 +32,12 @@ help(){
     -r or --reverse
        another fastq or fastq.gz file for the pipeline, in HiC runs this is one of the sequencing files, in a trio run, this is either the maternal or paternal sequences, order does not matter
 
+    --matf and --matr
+       optional maternal sequences forward and reverse
+
+    --patf and --patr
+       optional paternal sequences forward and reverse 
+
     -in or --reads
        path to HiFi reads (generally from pacbio), may include a wildcard for multiple files, can be fastq or bam
 
@@ -121,6 +127,10 @@ while [ $# -gt 0 ] ; do
     -u | --runner) RUNNER="$2";;
     -k | --kmer) KMER="$2";;
     --lite) LITE="true";;
+    --matf) MATR1="$2";;
+    --marr) MATR2="$2";;
+    --patf) PATR1="$2";;
+    --patr) PATR2="$2";;
     --purge-dups) PURGE_DUPS="$2";;
     --busco) BUSCO="--busco ";;
     --polish-type) POLISHTYPE="$2";;
@@ -188,9 +198,36 @@ if [ -n "$MODE" ]; then
     *) error "mode set to $MODE, not an actual mode";;
   esac
 else
-  warn "mode not set, assuming heterozygous run"
-  RUN+="--mode=\"heterozygous\" "
+  warn "mode not set, assuming default run"
+  RUN+="--mode=\"default\" "
 fi
+
+state "checking required parameters for selected mode: $MODE"
+
+case $MODE in
+  phasing)
+    if [ ! -f "$R1" ] || [ ! -f "$R2" ]; then error "phasing mode can not be run without HiC data, not found"; fi
+    if [ -f "$R1" ] && [ -f "$R2" ]; then warn "not using HiC data in assembly step, only as HiC polishing"; fi
+    if [ -f "$MATR" ] || [ -f "$MATF" ] || [ -f "$PATR" ] || [ -f "$PATF" ]; then warn "some trio data given, but HiFiASM mode $MODE, does not utilize trio data, data will be ignored"; fi
+  ;;
+  default)
+     if [ -z "$LITE" ]; then if [ ! -f "$R1" ] || [ ! -f "$R2" ]; then error "trying to run HiC polishing without HiC data in non-lite mode, some files not found"; fi; fi
+     if [ -f "$R1" ] && [ -f "$R2" ]; then warn "not using HiC data in assembly step, only as HiC polishing"; fi
+     if [ -f "$MATR" ] || [ -f "$MATF" ] || [ -f "$PATR" ] || [ -f "$PATF" ]; then warn "some trio data given, but HiFiASM mode $MODE, does not utilize trio data, data will be ignored"; fi
+  ;;
+  trio)
+    if [ ! -f "$R1" ] || [ ! -f "$R2" ]; then error "trying to run trio mode without HiC data"; fi
+    if [ ! -f "$MATR" ] || [ ! -f "$MATF" ] || [ ! -f "$PATR" ] || [ ! -f "$PATF" ]; then error "trying to run tro mode without Mat/Pat data"; fi
+  ;;
+  primary)
+    if [ -z "$LITE" ]; then if [ ! -f "$R1" ] || [ ! -f "$R2" ]; then error "trying to run HiC polishing without HiC data in non-lite mode, some files not found"; fi; fi
+    if [ -f "$R1" ] && [ -f "$R2" ]; then warn "not using HiC data in assembly step, only as HiC polishing"; fi
+    if [ -f "$MATR" ] || [ -f "$MATF" ] || [ -f "$PATR" ] || [ -f "$PATF" ]; then warn "some trio data given, but HiFiASM mode $MODE, does not utilize trio data, data will be ignored"; fi
+  ;;
+  *)
+  error "Mode not found"
+  ;;
+esac
 
 [ -n "$SHHQUISHCLST" ] || SHHQUISHCLST="average"
 case $SHHQUISHCLST in
@@ -221,8 +258,12 @@ esac
 RUN+="--outfasta=\"${NAME}.genome.out\" "
 [ -n "$THREADS" ] && RUN+="--threads=\"$THREADS\" " || warn "threads not set, setting to 20 maximum threads"
 [ -z "$THREADS" ] && RUN+="--threads=\"20\" "
-[ -f "$R1" ] && RUN+="--readf=\"$R1\" " || error "read pair file one not found, exiting"
-[ -f "$R2" ] && RUN+="--readr=\"$R2\" " || error "read pair file two not found, exiting"
+[ -f "$R1" ] && RUN+="--hicreadf=\"$R1\" "
+[ -f "$R2" ] && RUN+="--hicreadr=\"$R2\" "
+[ -f "$MATR1" ] && RUN+="--matreadf=\"$MATR1\" "
+[ -f "$MATR2" ] && RUN+="--matreadr=\"$MATR2\" "
+[ -f "$PATR1" ] && RUN+="--patreadf=\"$PATR1\" "
+[ -f "$PATR2" ] && RUN+="--patreadr=\"$PATR2\" "
 [ -n "$YAHS" ] && RUN+="--yahs "
 [ -n "$BUSCO" ] && RUN+="$BUSCO " || state "not running busco"
 [ -n "$POLISHTYPE" ] && RUN+="--polish --polishtype=\"$POLISHTYPE\" " || warn "not polishing, it is recomended that you polish"
