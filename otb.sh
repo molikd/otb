@@ -95,7 +95,7 @@ help(){
           use a specific lineage with busco (recomended)
        -p or --busco-path
           run busco in offline mode, with path to database, or with database name to try and download
-       --evalue 
+       --evalue
           change default busco evalue, default is 0.001
 
     K-mer counting
