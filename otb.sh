@@ -95,6 +95,8 @@ help(){
           use a specific lineage with busco (recomended)
        -p or --busco-path
           run busco in offline mode, with path to database, or with database name to try and download
+       --evalue 
+          change default busco evalue, default is 0.001
 
     K-mer counting
         options for k-mer counting
@@ -133,6 +135,7 @@ while [ $# -gt 0 ] ; do
     --patr) PATR2="$2";;
     --purge-dups) PURGE_DUPS="$2";;
     --busco) BUSCO="--busco ";;
+    --evalue) BUSCOEVALUE="$2";;
     --polish-type) POLISHTYPE="$2";;
     --auto-lineage) LINEAGE="auto-lineage";;
     --auto-lineage-prok) LINEAGE="auto-lineage-prok";;
@@ -255,45 +258,6 @@ case $KMER in
   *) error "K-mer counting tool $KMER does not valid";;
 esac
 
-RUN+="--outfasta=\"${NAME}.genome.out\" "
-[ -n "$THREADS" ] && RUN+="--threads=\"$THREADS\" " || warn "threads not set, setting to 20 maximum threads"
-[ -z "$THREADS" ] && RUN+="--threads=\"20\" "
-[ -f "$R1" ] && RUN+="--hicreadf=\"$R1\" "
-[ -f "$R2" ] && RUN+="--hicreadr=\"$R2\" "
-[ -f "$MATR1" ] && RUN+="--matreadf=\"$MATR1\" "
-[ -f "$MATR2" ] && RUN+="--matreadr=\"$MATR2\" "
-[ -f "$PATR1" ] && RUN+="--patreadf=\"$PATR1\" "
-[ -f "$PATR2" ] && RUN+="--patreadr=\"$PATR2\" "
-[ -n "$YAHS" ] && RUN+="--yahs "
-[ -n "$BUSCO" ] && RUN+="$BUSCO " || state "not running busco"
-[ -n "$POLISHTYPE" ] && RUN+="--polish --polishtype=\"$POLISHTYPE\" " || warn "not polishing, it is recomended that you polish"
-[ -n "$BUSCOSTRING" ] && RUN+="$BUSCOSTRING"
-[ -n "$READS" ] && RUN+="--readin=\"$READS\" " || error "reads file(s) not given, exiting"
-[ -z "$NAME" ] && NAME="$(date +%s)" && state "name not given, setting name to: $NAME"
-RUN+="--assembly=\"$NAME\" "
-
-pizzaz "$RUN"
-[ -z "$SUPRESS" ] && stop_check "check that the command is expected, continue"
-
-state "Prefetching singularity containers"
-[ -n "$NXF_SINGULARITY_CACHEDIR" ] && "Nextflow Singularity cache directory set: $NXF_SINGULARITY_CACHEDIR, will use for singularity images" || warn "NXF_SINGULARITY_CACHEDIR not set, using ./work/singularity instead"
-
-prefetch_container="./scr/prefetch_containers.sh"
-[ -n "$YAHS" ] && prefetch_container+=" -y"
-[ -n "$BUSCO" ] && prefetch_container+=" -b"
-[ -n "$POLISHTYPE" ] && prefetch_container+=" -p $POLISHTYPE"
-[ -n "$NXF_SINGULARITY_CACHEDIR" ] || ( mkdir -p "./work/singularity"; prefetch_container+=" -l ./work/singularity" )
-eval $prefetch_container
-
-if [ -n "$TEST" ]; then
-  check_container="./scr/check_containers.sh"
-  [ -n "$YAHS" ] && check_container+=" -y"
-  [ -n "$BUSCO" ] && check_container+=" -b"
-  [ -n "$POLISHTYPE" ] && check_container+=" -p $POLISHTYPE"
-  [ -n "$NXF_SINGULARITY_CACHEDIR" ] || check_container+=" -l ./work/singularity"
-  eval $check_container
-fi
-
 state "checking for running busco"
 if [ -n "$BUSCO" -o -n "$LINEAGE" -o -n "$BUSCOPATH" ]; then
 state "running busco, checking busco things"
@@ -334,9 +298,47 @@ else
   state "   ...not running busco"
 fi
 
+RUN+="--outfasta=\"${NAME}.genome.out\" "
+[ -n "$THREADS" ] && RUN+="--threads=\"$THREADS\" " || warn "threads not set, setting to 20 maximum threads"
+[ -z "$THREADS" ] && RUN+="--threads=\"20\" "
+[ -f "$R1" ] && RUN+="--hicreadf=\"$R1\" "
+[ -f "$R2" ] && RUN+="--hicreadr=\"$R2\" "
+[ -f "$MATR1" ] && RUN+="--matreadf=\"$MATR1\" "
+[ -f "$MATR2" ] && RUN+="--matreadr=\"$MATR2\" "
+[ -f "$PATR1" ] && RUN+="--patreadf=\"$PATR1\" "
+[ -f "$PATR2" ] && RUN+="--patreadr=\"$PATR2\" "
+[ -n "$YAHS" ] && RUN+="--yahs "
+[ -n "$BUSCO" ] && RUN+="$BUSCO " || state "not running busco"
+[ -n "$BUSCO" ] && [ -n "$BUSCOEVALUE" ] && RUN+=" --buscoevalue=\"BUSCOEVALUE\" "
+[ -n "$POLISHTYPE" ] && RUN+="--polish --polishtype=\"$POLISHTYPE\" " || warn "not polishing, it is recomended that you polish"
+[ -n "$BUSCOSTRING" ] && RUN+="$BUSCOSTRING"
+[ -n "$READS" ] && RUN+="--readin=\"$READS\" " || error "reads file(s) not given, exiting"
+[ -z "$NAME" ] && NAME="$(date +%s)" && state "name not given, setting name to: $NAME"
 [ -n "$LITE" ] && RUN+="--lite "
-
+RUN+="--assembly=\"$NAME\" "
 [ -z "$SUPRESS" ] && RUN+="-bg"
+
+pizzaz "$RUN"
+[ -z "$SUPRESS" ] && stop_check "check that the command is expected, continue"
+
+state "Prefetching singularity containers"
+[ -n "$NXF_SINGULARITY_CACHEDIR" ] && "Nextflow Singularity cache directory set: $NXF_SINGULARITY_CACHEDIR, will use for singularity images" || warn "NXF_SINGULARITY_CACHEDIR not set, using ./work/singularity instead"
+
+prefetch_container="./scr/prefetch_containers.sh"
+[ -n "$YAHS" ] && prefetch_container+=" -y"
+[ -n "$BUSCO" ] && prefetch_container+=" -b"
+[ -n "$POLISHTYPE" ] && prefetch_container+=" -p $POLISHTYPE"
+[ -n "$NXF_SINGULARITY_CACHEDIR" ] || ( mkdir -p "./work/singularity"; prefetch_container+=" -l ./work/singularity" )
+eval $prefetch_container
+
+if [ -n "$TEST" ]; then
+  check_container="./scr/check_containers.sh"
+  [ -n "$YAHS" ] && check_container+=" -y"
+  [ -n "$BUSCO" ] && check_container+=" -b"
+  [ -n "$POLISHTYPE" ] && check_container+=" -p $POLISHTYPE"
+  [ -n "$NXF_SINGULARITY_CACHEDIR" ] || check_container+=" -l ./work/singularity"
+  eval $check_container
+fi
 
 [ -z "$SUPRESS" ] && stop_check "proceed with run"
 state "making /reports dir"

@@ -32,6 +32,7 @@ params.busco = false
 params.buscooffline = false
 params.buscodb = "/work/busco"
 params.linreage = 'insecta_odb10'
+params.buscoevalue = '0.001'
 //Shhquis.jl Prameters
 params.hclustlinkage = "average"
 
@@ -375,37 +376,37 @@ process busco_gfa {
   if( params.linreage == 'auto-lineage' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
     exit 0;
   """
   else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
     exit 0;
   """
   else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
     exit 0;
   """
   else if( params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
     exit 0;
   """
   else if( params.buscooffline == true && params.buscodb == 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
     exit 0;
   """
   else if( params.buscooffline == true && params.buscodb != 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
     exit 0;
   """
   else
@@ -1385,32 +1386,32 @@ process simple_busco_fasta {
   if( params.linreage == 'auto-lineage' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else if( params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
   else if( params.buscooffline == true && params.buscodb == 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
   """
   else if( params.buscooffline == true && params.buscodb != 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
   """
   else
   """
@@ -1437,32 +1438,32 @@ process merfin_busco_fasta {
   if( params.linreage == 'auto-lineage' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else if( params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
   else if( params.buscooffline == true && params.buscodb == 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
   """
   else if( params.buscooffline == true && params.buscodb != 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
   """
   else
   """
@@ -1489,32 +1490,32 @@ process dv_busco_fasta {
   if( params.linreage == 'auto-lineage' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else if( params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
   else if( params.buscooffline == true && params.buscodb == 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
   """
   else if( params.buscooffline == true && params.buscodb != 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
   """
   else
   """
@@ -1539,32 +1540,32 @@ process yahs_busco_fasta {
   if( params.linreage == 'auto-lineage' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else if( params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
   else if( params.buscooffline == true && params.buscodb == 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
   """
   else if( params.buscooffline == true && params.buscodb != 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
   """
   else
   """
@@ -1589,32 +1590,32 @@ process yahs_simple_busco_fasta {
   if( params.linreage == 'auto-lineage' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else if( params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
   else if( params.buscooffline == true && params.buscodb == 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
   """
   else if( params.buscooffline == true && params.buscodb != 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
   """
   else
   """
@@ -1639,32 +1640,32 @@ process yahs_merfin_busco_fasta {
   if( params.linreage == 'auto-lineage' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else if( params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
   else if( params.buscooffline == true && params.buscodb == 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
   """
   else if( params.buscooffline == true && params.buscodb != 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
   """
   else
   """
@@ -1689,32 +1690,32 @@ process yahs_merfin_dv_fasta {
   if( params.linreage == 'auto-lineage' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage
   """
   else if( params.linreage == 'auto-lineage-prok' && params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-prok
   """
   else if( params.linreage == 'auto-lineage-euk'&& params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} --auto-lineage-euk
   """
   else if( params.buscooffline == false)
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage}
   """
   else if( params.buscooffline == true && params.buscodb == 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$baseDir/work/busco"
   """
   else if( params.buscooffline == true && params.buscodb != 'work/busco')
   """
     touch busco.flag.txt
-    busco -q -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
+    busco -q --long -e ${params.buscoevalue} -i ${fasta} -o "${params.assembly}_${fasta}_busco" -m genome -c ${task.cpus} -l ${params.linreage} --offline --download_path "$params.buscodb"
   """
   else
   """
