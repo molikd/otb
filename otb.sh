@@ -80,6 +80,9 @@ help(){
           \"merfin\": merfin variant calls ontop of ragtag, bcftools consensus
           \"dv\": deep variant calls ontop of ragtag, bcftools consensus
 
+    --hapscaffold
+       turn on ragtag scaffolding for the haplotypes to algin and add N's to the haplotypes from the primary/parental genome
+
     busco:
        busco options, requires a lineage option
     --busco
@@ -135,6 +138,7 @@ while [ $# -gt 0 ] ; do
     --patr) PATR2="$2";;
     --purge-dups) PURGE_DUPS="$2";;
     --busco) BUSCO="--busco ";;
+    --hapscaffold) HAPSCAFFOLD="true";;
     --evalue) BUSCOEVALUE="$2";;
     --polish-type) POLISHTYPE="$2";;
     --auto-lineage) LINEAGE="auto-lineage";;
@@ -258,6 +262,8 @@ case $KMER in
   *) error "K-mer counting tool $KMER does not valid";;
 esac
 
+[ -n "$HAPSCAFFOLD" ] && [ -z $POLISHTYPE ] && warn "running hapscaffold without any polishing results in no change, not going to run ragtag"
+
 state "checking for running busco"
 if [ -n "$BUSCO" -o -n "$LINEAGE" -o -n "$BUSCOPATH" ]; then
 state "running busco, checking busco things"
@@ -308,6 +314,7 @@ RUN+="--outfasta=\"${NAME}.genome.out\" "
 [ -f "$PATR1" ] && RUN+="--patreadf=\"$PATR1\" "
 [ -f "$PATR2" ] && RUN+="--patreadr=\"$PATR2\" "
 [ -n "$YAHS" ] && RUN+="--yahs "
+[ -n "$HAPSCAFFOLD" ] && RUN+="--hapscaffold "
 [ -n "$BUSCO" ] && RUN+="$BUSCO " || state "not running busco"
 [ -n "$BUSCO" ] && [ -n "$BUSCOEVALUE" ] && RUN+=" --buscoevalue=\"BUSCOEVALUE\" "
 [ -n "$POLISHTYPE" ] && RUN+="--polish --polishtype=\"$POLISHTYPE\" " || warn "not polishing, it is recomended that you polish"
