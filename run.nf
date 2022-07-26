@@ -21,7 +21,7 @@ params.scaffold = false
 params.kmer = 'kmc'
 params.polish = false
 params.polishtype = 'simple'
-params.hapscaffold = true
+params.hapscaffold = false
 params.yahs = false
 //HiFIASM Parameters
 params.l = 0
