@@ -21,7 +21,7 @@
 ```
 *o*nly *t*he *b*est (genome assemblies) is a Hi-C / HiFi pipeline specifically designed for phasing
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6689817.svg)](https://doi.org/10.5281/zenodo.6689817)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6689817.svg)](https://doi.org/10.5281/zenodo.6689817) [![License: Public Domain](https://img.shields.io/badge/License-Public%20Domain-green)](https://raw.githubusercontent.com/molikd/otb/1/LICENSE)
 ---
 
 Checkout the [wiki](https://github.com/molikd/otb/wiki), and [tutorial](https://github.com/molikd/otb/wiki/Tutorial)
