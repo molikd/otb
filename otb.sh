@@ -329,7 +329,8 @@ pizzaz "$RUN"
 [ -z "$SUPRESS" ] && stop_check "check that the command is expected, continue"
 
 state "Prefetching singularity containers"
-[ -n "$NXF_SINGULARITY_CACHEDIR" ] && "Nextflow Singularity cache directory set: $NXF_SINGULARITY_CACHEDIR, will use for singularity images" || warn "NXF_SINGULARITY_CACHEDIR not set, using ./work/singularity instead"
+[ -n "$NXF_SINGULARITY_LIBRARYDIR" ] && "Nextflow Singularity Library directory set: $NXF_SINGULARITY_LIBRARYDIR, will use for singularity images" || warn "NXF_SINGULARITY_LIBRARYDIR not set"
+[ -n "$NXF_SINGULARITY_CACHEDIR" ] && "Nextflow Singularity cache directory set: $NXF_SINGULARITY_CACHEDIR" || warn "NXF_SINGULARITY_CACHEDIR not set"
 
 prefetch_container="./scr/prefetch_containers.sh"
 [ -n "$YAHS" ] && prefetch_container+=" -y"

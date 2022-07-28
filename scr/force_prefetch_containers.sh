@@ -23,14 +23,14 @@ done
 
 location=$( pwd )
 describe "fetch location is:"
-if [ -n "$NXF_SINGULARITY_CACHEDIR" ]; then
- pizzaz $NXF_SINGULARITY_CACHEDIR
- cd $NXF_SINGULARITY_CACHEDIR
+if [ -n "$NXF_SINGULARITY_LIBRARYDIR" ]; then
+ pizzaz $NXF_SINGULARITY_LIBRARYDIR
+ cd $NXF_SINGULARITY_LIBRARYDIR
 elif [ -n "$LOCATION" ]; then
  pizzaz $LOCATION
  cd $LOCATION
 else
- error "..not set, please set NXF_SINGULARITY_CACHEDIR or give me a location"
+ error "..not set, please set NXF_SINGULARITY_LIBRARYDIR or give me a location"
 fi
 
 [ ! -f bryce911-bbtools.img ] && singularity pull --disable-cache --force bryce911-bbtools.img docker://bryce911/bbtools || state "   ...bbtools container found, not downloading"

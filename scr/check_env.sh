@@ -65,6 +65,8 @@ printf "%b\n" "\e[96m[SINGULARITY_TMPDIR]\e[0m Singularity temporary directory:"
 pizzaz "$SINGULARITY_TMPDIR"
 printf "%b\n" "\e[96m[NXF_SINGULARITY_CACHEDIR]\e[0m Nextflow's Singularity cache directory:" 2>&1;
 pizzaz "$NXF_SINGULARITY_CACHEDIR"
+printf "%b\n" "\e[96m[NXF_SINGULARITY_LIBRARYDIR]\e[0m Nextflow's Singularity Library:" 2>&1;
+pizzaz "$NXF_SINGULARITY_LIBRARYDIR"
 describe ""
 state "Singularity Things"
 printf "%b\n" "\e[96m[which singularity]\e[0m Which Singularity?" 2>&1;
