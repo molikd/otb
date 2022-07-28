@@ -33,7 +33,7 @@ Most HPC support groups will either already have these tools installed, or be wi
 
 otb operates from a local directory, and must be ran as ./otb.sh since it sources some shell scripts in the scr directory.
 
-we recomend that you set `NXF_SINGULARITY_LIBRARYDIR` in your bashrc (or similar CLI) environment, otb containers will be stored at that location. 
+we recomend that you set `NXF_SINGULARITY_LIBRARYDIR` in your bashrc (or similar CLI) environment, otb containers will be stored at that location.
 
 in order to use otb download this repository and use ./otb.sh, an example:
 
