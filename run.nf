@@ -567,7 +567,7 @@ process K_mer_counting {
   cpus = params.threads
 
   input:
-    file filt_reads from filt_fastq_ch
+    file filt_reads from filt_fastq_ch.collect()
   output:
     file '*.histo' into histo_ch
     file 'version.txt' into jellyfish_ver_ch
