@@ -417,7 +417,7 @@ process busco_gfa {
 }
 
 process ragtag_dot_py {
-  label 'mediumq'
+  label 'longq'
   container = 'dmolik/ragtag'
   cpus = params.threads
 
