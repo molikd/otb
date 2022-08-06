@@ -431,7 +431,7 @@ process ragtag_dot_py {
     params.polish
   """
     touch ragtag.flag.txt
-    ragtag.py patch --aligner minimap2 -t ${task.cpus} -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
+    ragtag.py patch --aligner minimap2 -t ${task.cpus} --mm2-params '-x map-hifi -t ${task.cpus} -I 8GB -2 -K 2G' -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
     echo "finished patching"
     sleep 120;
     exit 0;
@@ -1211,7 +1211,7 @@ process ragtag_dot_py_hap_simple_polish {
     params.hapscaffold && params.polishtype == "simple"
   """
     touch ragtag.hap.flag.txt
-    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} --mm2-params '-x asm10 -t ${task.cpus} -I 8GB -2 -K 2G' -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta polished.${fasta_hap}
     echo "finished patching"
     sleep 120;
@@ -1235,7 +1235,7 @@ process ragtag_dot_py_hap_merfin_polish {
   when:
     params.hapscaffold && params.polishtype == "merfin"
   """
-    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} --mm2-params '-x asm10 -t ${task.cpus} -I 8GB -2 -K 2G' -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta polished.${fasta_hap}
     echo "finished patching"
     sleep 120;
@@ -1260,7 +1260,7 @@ process ragtag_dot_py_hap_deep_variant_polish {
     params.hapscaffold && params.polishtype == "dv"
   """
     touch ragtag.hap.flag.txt
-    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} --mm2-params '-x asm10 -t ${task.cpus} -I 8GB -2 -K 2G' -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
     sleep 120;
@@ -1285,7 +1285,7 @@ process ragtag_dot_py_yahs {
     params.hapscaffold && params.yahs
   """
     touch ragtag.hap.yahs.flag.txt
-    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} --mm2-params '-x asm10 -t ${task.cpus} -I 8GB -2 -K 2G' -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
     sleep 120;
@@ -1310,7 +1310,7 @@ process ragtag_dot_py_simple_yahs {
     params.hapscaffold && params.polishtype == "simple"
   """
     touch ragtag.hap.yahs.simple.flag.txt
-    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} --mm2-params '-x asm10 -t ${task.cpus} -I 8GB -2 -K 2G' -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
     sleep 120;
@@ -1335,7 +1335,7 @@ process ragtag_dot_py_merfin_yahs {
     params.hapscaffold && params.polishtype == "merfin"
   """
     touch ragtag.hap.yahs.simple.flag.txt
-    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} --mm2-params '-x asm10 -t ${task.cpus} -I 8GB -2 -K 2G' -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
     sleep 120;
@@ -1360,7 +1360,7 @@ process ragtag_dot_py_dv_yahs {
     params.hapscaffold && params.polishtype == "dv"
   """
     touch ragtag.hap.yahs.simple.flag.txt
-    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
+    ragtag.py scaffold --aligner minimap2 -t ${task.cpus} --mm2-params '-x asm10 -t ${task.cpus} -I 8GB -2 -K 2G' -o ./${params.assembly}_ragtag_scaffold ${fasta_genome} ${fasta_hap}
     mv ${params.assembly}_ragtag_scaffold/ragtag.scaffold.fasta ${params.assembly}_ragtag_scaffold/polished.${fasta_hap}
     echo "finished patching"
     sleep 120;
