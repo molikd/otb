@@ -236,6 +236,13 @@ case $MODE in
   ;;
 esac
 
+[[ -f "$R1" ]] && R1=$( readlink -f $R1 )
+[[ -f "$R2" ]] && R2=$( readlink -f $R2 )
+[[ -f "$MATR" ]] && MATR=$( readlink -f $MATR )
+[[ -f "$PATR" ]] && PATR=$( readlink -f $PATR )
+[[ -f "$MATF" ]] && MATF=$( readlink -f $MATF )
+[[ -f "$PATF" ]] && PATF=$( readlink -f $PATF )
+
 [ -n "$SHHQUISHCLST" ] || SHHQUISHCLST="average"
 case $SHHQUISHCLST in
   single) RUN+="--hclustlinkage=\"single\" ";;
@@ -307,12 +314,12 @@ fi
 RUN+="--outfasta=\"${NAME}.genome.out\" "
 [ -n "$THREADS" ] && RUN+="--threads=\"$THREADS\" " || warn "threads not set, setting to 20 maximum threads"
 [ -z "$THREADS" ] && RUN+="--threads=\"20\" "
-[ -f "$R1" ] && RUN+="--hicreadf=\"$R1\" "
-[ -f "$R2" ] && RUN+="--hicreadr=\"$R2\" "
-[ -f "$MATR1" ] && RUN+="--matreadf=\"$MATR1\" "
-[ -f "$MATR2" ] && RUN+="--matreadr=\"$MATR2\" "
-[ -f "$PATR1" ] && RUN+="--patreadf=\"$PATR1\" "
-[ -f "$PATR2" ] && RUN+="--patreadr=\"$PATR2\" "
+[ -f "$R1" ] && RUN+="--hicreadf=\"$( readlink -f $R1 )\" "
+[ -f "$R2" ] && RUN+="--hicreadr=\"$( readlink -f $R2 )\" "
+[ -f "$MATF" ] && RUN+="--matreadf=\"$( readlink -f $MATF )\" "
+[ -f "$MATR" ] && RUN+="--matreadr=\"$( readlink -f $MATR )\" "
+[ -f "$PATF" ] && RUN+="--patreadf=\"$( readlink -f $PATF )\" "
+[ -f "$PATR" ] && RUN+="--patreadr=\"$( readlink -f $PATR )\" "
 [ -n "$YAHS" ] && RUN+="--yahs "
 [ -n "$HAPSCAFFOLD" ] && RUN+="--hapscaffold "
 [ -n "$BUSCO" ] && RUN+="$BUSCO " || state "not running busco"
