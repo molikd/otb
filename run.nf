@@ -2306,10 +2306,10 @@ pbadapterfilt_output
    .collectFile(name:'filtering_information.log.txt', newLine: true, storeDir:"${params.outdir}/00_ordination/log/filtering")
 
 check_fastq_output
-   .collectFile(name:'fastq_check.log.txt', newLine: true, storeDir:"${params.outdir}/00_ordination/log/filtering")
+   .collectFile(name:'hic_check.log.txt', newLine: true, storeDir:"${params.outdir}/00_ordination/log/filtering")
 
 check_in_file_output
-   .collectFile(name:'bam_check.log.txt', newLine: true, storeDir:"${params.outdir}/00_ordination/log/filtering")
+   .collectFile(name:'hifi_check.log.txt', newLine: true, storeDir:"${params.outdir}/00_ordination/log/filtering")
 
 HiFiASM_output
    .collectFile(name:'HiFiASM.log.txt', newLine: true, storeDir:"${params.outdir}/01_hifiasm/log")
