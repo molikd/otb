@@ -348,7 +348,7 @@ process gfa2fasta {
     file gfa from gfa_ch.flatten()
   output:
     file '*.p_ctg.gfa.fasta' optional true into gfa2fasta_fasta_res_ch
-    file '*.[a-z]{2-3}.p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch, no_polish_yahs_align_genome_ch, fasta_fai_yahs_genome_ch
+    file '*[a-z].p_ctg.gfa.fasta' optional true into fasta_unoriented_ch, fasta_genome_ch, fasta_busco_ch, no_polish_yahs_align_genome_ch, fasta_fai_yahs_genome_ch
     file '*hap[12].p_ctg.gfa.fasta' optional true into fasta_hap_ch, simple_fasta_hap_polish_ch, merfin_fasta_hap_polish_ch, dv_fasta_hap_polish_ch, yahs_fasta_hap_polish_ch, yahs_simple_fasta_hap_polish_ch, yahs_merfin_fasta_hap_polish_ch, yahs_dv_fasta_hap_polish_ch
     stdout gfa2fasta_output
   """
