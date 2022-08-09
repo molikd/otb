@@ -293,13 +293,13 @@ process HiFiASM {
     """
     else if( params.mode == 'trio' && params.patreadf != 'NO_FILE'  && params.patreadr != 'NO_FILE'  && params.matreadf != 'NO_FILE'  && params.matreadr != 'NO_FILE')
     """
-      touch hifiasm.flag.txt                                                    
+      touch hifiasm.flag.txt
       yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${params.patreadf}) <(zcat ${params.patreadr})
       yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${params.matreadf}) <(zcat ${params.matreadr})
       hifiasm -l${parms.l} -o ${params.assembly} --primary -t ${task.cpus} --write-paf --write-ec -1 pat.yak -2 mat.yak${fasta} 2>&1
-      echo "finished alignment"                                                 
-      sleep 120;                                                                
-      exit 0; 
+      echo "finished alignment"
+      sleep 120;
+      exit 0;
     """
     else
       error "Invalid alignment mode: ${params.mode}"
