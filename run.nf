@@ -2354,7 +2354,7 @@ dv_busco_fasta_output
    .collectFile(name:'polished.busco.log.txt', newLine: true, storeDir:"${params.outdir}/03_polish/log" )
 
 jellyfish_output
-   .collectFile(name:'jellyfish.log.txt', newLine: true, storeDir:"${params.outdir}/00_ordination/log/genomescope" )
+   .collectFile(name:'kmer_counter.log.txt', newLine: true, storeDir:"${params.outdir}/00_ordination/log/genomescope" )
 
 genomescope2_output
    .collectFile(name:'genomescope2.log.txt', newLine: true, storeDir:"${params.outdir}/00_ordination/log/genomescope" )
