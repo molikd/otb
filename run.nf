@@ -21,6 +21,7 @@ params.polish = false
 params.polishtype = 'simple'
 params.hapscaffold = false
 params.yahs = false
+params.patch = false
 //HiFIASM Parameters
 params.l = 0
 params.mode = 'default'
@@ -430,11 +431,25 @@ process ragtag_dot_py {
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch, ragtag_fasta_genome_ch, fasta_fai_genome_ch, fasta_sshquis_genome_ch
     stdout ragtag_dot_py_output
   when:
-    params.polish
+    params.polish 
+
+  script:
+
+  if ( params.patch )
   """
     touch ragtag.flag.txt
-    ragtag.py patch --aligner minimap2 -t ${task.cpus} --mm2-params '-x map-hifi -t ${task.cpus} -I 64GB -2 -K 4G -w 21 -k 21' -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
+    ragtag.py patch -u --aligner minimap2 -t ${task.cpus} --mm2-params '-x map-hifi -t ${task.cpus} -I 64GB -2 -K 4G -w 21 -k 21' -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
     echo "finished patching"
+    sleep 120;
+    exit 0;
+  """
+  else
+  """
+    touch ratag.flag.txt
+    echo "ignoring ragtag patch"
+    mkdir ${params.assembly}_ragtag_ec_patch
+    cd ${params.assembly}_ragtag_ec_patch
+    ln -s ../${fasta} ragtag.patch.fasta
     sleep 120;
     exit 0;
   """

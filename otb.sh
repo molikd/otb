@@ -80,6 +80,9 @@ help(){
           \"merfin\": merfin variant calls ontop of ragtag, bcftools consensus
           \"dv\": deep variant calls ontop of ragtag, bcftools consensus
 
+    --patch 
+       perform error corrected read patching as part of polishing
+
     --hapscaffold
        turn on ragtag scaffolding for the haplotypes to algin and add N's to the haplotypes from the primary/parental genome
 
@@ -139,6 +142,7 @@ while [ $# -gt 0 ] ; do
     --purge-dups) PURGE_DUPS="$2";;
     --busco) BUSCO="--busco ";;
     --hapscaffold) HAPSCAFFOLD="true";;
+    --patch) PATCH="true";;
     --evalue) BUSCOEVALUE="$2";;
     --polish-type) POLISHTYPE="$2";;
     --auto-lineage) LINEAGE="auto-lineage";;
@@ -189,6 +193,11 @@ if [ -n "$POLISHTYPE" ]; then
   esac
 else
   state "   ...not polishing"
+fi
+
+if [ -n "$PATCH" ]; then 
+  [ -n $POLISHTYPE ] || error "can't patch without polishing first, select a polish type"; 
+  RUN+="--patch ";
 fi
 
 state "building run parameters"
