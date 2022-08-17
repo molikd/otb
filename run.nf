@@ -433,7 +433,7 @@ process ragtag_dot_py {
     params.polish
   """
     touch ragtag.flag.txt
-    ragtag.py patch --aligner minimap2 -t ${task.cpus} --mm2-params '-x map-hifi -t ${task.cpus} -I 8GB -2 -K 2G' -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
+    ragtag.py patch --aligner minimap2 -t ${task.cpus} --mm2-params '-x map-hifi -t ${task.cpus} -I 64GB -2 -K 4G -w 21 -k 21' -o ./${params.assembly}_ragtag_ec_patch ${fasta} ${fasta_ec}
     echo "finished patching"
     sleep 120;
     exit 0;
@@ -494,6 +494,8 @@ process hicstuff {
     file left from left_fastq_hicstuff
     file right from right_fastq_hicstuff
   output:
+    file 'hicstuff_out/abs_fragments_contacts_weighted.bg2' into abs_ch 
+    file 'hicstuff_out/info_contigs.txt' into contigs_ch 
     file 'hicstuff_out/fragments_list.txt'
     file 'hicstuff_out/plots/frags_hist.pdf'
     stdout hicstuff_output
