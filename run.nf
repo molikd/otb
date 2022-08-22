@@ -1105,6 +1105,8 @@ process yahs {
      params.yahs
   """
     yahs -o yahs.no_polish --no-contig-ec ${input_genome} ${input_bam}
+    mkdir yahs.no_polish.JBAT
+    juicer_pre -a -o yahs.no_polish.JBAT yahs.no_polish.bin yahs.no_polish_scaffolds_final.agp ${input_fai} 2>yahs.no_polish.JBAT/tmp_juicer_pre_JBAT.log
   """
 }
 
@@ -1125,6 +1127,8 @@ process simple_yahs {
      params.yahs
   """
     yahs -o yahs.simple --no-contig-ec ${input_genome} ${input_bam}
+    mkdir yahs.simple.JBAT
+    juicer_pre -a -o yahs.simple.JBAT yahs.simple.bin yahs.simple_scaffolds_final.agp ${input_fai} 2> yahs.simple.JBAT/tmp_juicer_pre_JBAT.log
   """
 }
 
@@ -1189,6 +1193,8 @@ process merfin_yahs {
      params.yahs
   """
     yahs -o yahs.merfin --no-contig-ec ${input_genome} ${input_bam}
+    mkdir yahs.merfin.JBAT
+    juicer_pre -a -o yahs.merfin.JBAT yahs.merfin.bin yahs.merfin_scaffolds_final.agp ${input_fai} 2> yahs.merfin.JBAT/tmp_juicer_pre_JBAT.log
   """
 }
 
@@ -1210,6 +1216,8 @@ process dv_yahs {
      params.yahs
   """
     yahs -o yahs.dv --no-contig-ec ${input_genome} ${input_bam}
+    mkdir yahs.dv.JBAT
+    juicer_pre -a -o yahs.dv.JBAT yahs.dv.bin yahs.dv_scaffolds_final.agp ${input_fai} 2> yahs.dv.JBAT/tmp_juicer_pre_JBAT.log
   """
 }
 
