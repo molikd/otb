@@ -1100,13 +1100,17 @@ process yahs {
   output:
     file "yahs.no_polish*"
     file "yahs.no_polish_scaffolds_final.fa" into yahs_no_polish_stats_ch, yahs_no_polish_haps_genome_ch, yahs_no_polish_busco_ch
+    file "yahs.no_polish.JBAT/tmp_juicer_pre_JBAT.log" into yahs_JBAT_ch
     stdout yahs_output
   when:
      params.yahs
   """
+    touch yahs.flag.txt
     yahs -o yahs.no_polish --no-contig-ec ${input_genome} ${input_bam}
     mkdir yahs.no_polish.JBAT
     juicer_pre -a -o yahs.no_polish.JBAT yahs.no_polish.bin yahs.no_polish_scaffolds_final.agp ${input_fai} 2>yahs.no_polish.JBAT/tmp_juicer_pre_JBAT.log
+    sleep 120;
+    exit 0;
   """
 }
 
@@ -1122,13 +1126,17 @@ process simple_yahs {
   output:
     file "yahs.simple*"
     file "yahs.simple_scaffolds_final.fa" into yahs_simple_polish_stats_ch, yahs_simple_polish_haps_genome_ch, yahs_simple_polish_busco_ch
+    file "yahs.simple.JBAT/tmp_juicer_pre_JBAT.log" into yahs_simple_JBAT_ch
     stdout yahs_simple_output
   when:
      params.yahs
   """
+    touch simple_yahs.flag.txt
     yahs -o yahs.simple --no-contig-ec ${input_genome} ${input_bam}
     mkdir yahs.simple.JBAT
     juicer_pre -a -o yahs.simple.JBAT yahs.simple.bin yahs.simple_scaffolds_final.agp ${input_fai} 2> yahs.simple.JBAT/tmp_juicer_pre_JBAT.log
+    sleep 120;
+    exit 0;
   """
 }
 
@@ -1188,13 +1196,17 @@ process merfin_yahs {
   output:
     file "yahs.merfin*"
     file "yahs.merfin_scaffolds_final.fa" into yahs_merfin_polish_stats_ch, yahs_merfin_polish_haps_genome_ch, yahs_merfin_polish_busco_ch
+    file "yahs.merfin.JBAT/tmp_juicer_pre_JBAT.log" into yahs_merfin_JBAT_ch
     stdout yahs_merfin_output
   when:
      params.yahs
   """
+    touch merfin_yahs.flag.txt
     yahs -o yahs.merfin --no-contig-ec ${input_genome} ${input_bam}
     mkdir yahs.merfin.JBAT
     juicer_pre -a -o yahs.merfin.JBAT yahs.merfin.bin yahs.merfin_scaffolds_final.agp ${input_fai} 2> yahs.merfin.JBAT/tmp_juicer_pre_JBAT.log
+    sleep 120;
+    exit 0;
   """
 }
 
@@ -1211,13 +1223,93 @@ process dv_yahs {
   output:
     file "yahs.dv*"
     file "yahs.dv_scaffolds_final.fa" into yahs_dv_polish_stats_ch, yahs_dv_polish_haps_genome_ch, yahs_dv_polish_busco_ch
+    file "yahs.dv.JBAT/tmp_juicer_pre_JBAT.log" into yahs_dv_JBAT_ch
     stdout yahs_dv_output
   when:
      params.yahs
   """
+    touch dv_yahs.flag.txt
     yahs -o yahs.dv --no-contig-ec ${input_genome} ${input_bam}
     mkdir yahs.dv.JBAT
     juicer_pre -a -o yahs.dv.JBAT yahs.dv.bin yahs.dv_scaffolds_final.agp ${input_fai} 2> yahs.dv.JBAT/tmp_juicer_pre_JBAT.log
+    sleep 120;
+    exit 0;
+  """
+}
+
+process juicer_tools_pre_yahs {
+  label 'shortq'
+  publishDir "${params.outdir}/04_yahs", mode: 'rellink'
+  container = 'dmolik/juicer-tools'
+  cpus = 1
+
+  input:
+    file yahs_JBAT from yahs_JBAT_ch
+  output:
+    file "*_JBAT.hic"
+    stdout juicer_tools_pre_yahs_output
+
+  """
+    touch juicer_tools_pre_yahs.flag.txt
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}')) && (mv out_JBAT.hic.part no_polish_JBAT.hic)
+    exit 0;
+  """
+}
+
+process juicer_tools_pre_yahs_simple {
+  label 'shortq'
+  publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
+  container = 'dmolik/juicer-tools'
+  cpus = 1
+
+  input:
+    file yahs_JBAT from yahs_simple_JBAT_ch
+  output:
+    file "*_JBAT.hic"
+    stdout juicer_tools_pre_yahs_simple_output
+
+  """
+    touch juicer_tools_pre_yahs_simple.flag.txt
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}')) && (mv out_JBAT.hic.part simple_JBAT.hic)
+    exit 0;
+  """
+}
+
+process juicer_tools_pre_yahs_merfin {
+  label 'shortq'
+  publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
+  container = 'dmolik/juicer-tools'
+  cpus = 1
+
+  input:
+    file yahs_JBAT from yahs_merfin_JBAT_ch
+  output:
+    file "*_JBAT.hic"
+    stdout juicer_tools_pre_yahs_merfin_output 
+
+  """
+    touch juicer_tools_pre_yahs_merfin.flag.txt
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}')) && (mv out_JBAT.hic.part merfin_JBAT.hic)
+    exit 0;
+  """
+}
+
+process juicer_tools_pre_yahs_dv {
+  label 'shortq'
+  publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
+  container = 'dmolik/juicer-tools'
+  cpus = 1
+
+  input:
+    file yahs_JBAT from yahs_dv_JBAT_ch
+  output:
+    file "*_JBAT.hic"
+    stdout juicer_tools_pre_yahs_dv_output
+
+  """
+    touch juicer_tools_pre_yahs_dv.flag.txt
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}')) && (mv out_JBAT.hic.part dv_JBAT.hic)
+    exit 0;
   """
 }
 
@@ -2327,6 +2419,23 @@ process HiFiAdapterFilt_Version {
   """
 }
 
+process Juicer_Tools_Version {
+  label 'shortq'
+  container = 'dmolik/juicer-tools'
+  cpus 1
+
+  output:
+    stdout Juicer_Tools_version
+
+  when:
+    params.yahs
+  """
+    touch juicer_tools_version.flag.txt
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar --version
+    exit 0;
+  """
+}
+
 pbadapterfilt_output
    .collectFile(name:'filtering_information.log.txt', newLine: true, storeDir:"${params.outdir}/00_ordination/log/filtering")
 
@@ -2444,6 +2553,18 @@ yahs_merfin_output
 yahs_dv_output
    .collectFile(name:'yahs.polished.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_polish/log")
 
+juicer_tools_pre_yahs_output
+   .collectFile(name:'juicer_tools.log.txt', newLine: true, storeDir:"${params.outdir}/04_yahs/log")
+
+juicer_tools_pre_yahs_simple_output
+   .collectFile(name:'juicer_tools.polished.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_polish/log")
+
+juicer_tools_pre_yahs_merfin_output
+   .collectFile(name:'juicer_tools.polished.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_pol     ish/log")
+
+juicer_tools_pre_yahs_sdv_output
+   .collectFile(name:'juicer_tools.polished.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_pol     ish/log")
+
 yahs_ragtag_dot_py_hap_output
    .collectFile(name:'yahs.ragtag.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_polish/log")
 
@@ -2530,4 +2651,8 @@ shhquis_version
 
 pbadapterfilt_version
    .collectFile(name:'pbadapterfilt_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+   .view{ it.text }
+
+Juicer_Tools_version
+   .collectFile(name:'juicer_tools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
