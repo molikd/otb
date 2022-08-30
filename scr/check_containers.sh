@@ -33,7 +33,7 @@ else
  error "..not set, please set NXF_SINGULARITY_CACHEDIR or give me a location"
 fi
 
-singularity exec "bryce911-bbtools.img" echo "   ...hello from bbtools container" || error "bbtools container broken, exiting"
+singularity exec "dmolik-gfastats.img" echo "   ...hello from gfastats container" || error "gfastats container broken, exiting"
 singularity exec "dmolik-genomescope2.img" echo "   ...hello from genomescope2 container" || error "genomescope2 container broken, exiting"
 singularity exec "dmolik-hifiasm.img"  echo "   ...hello from hifiasm container" || error "hifiasm container broken, exiting"
 singularity exec "dmolik-k-mer-counting-tools.img" echo "   ...hello from jellyfish container" || error "jellyfish container broken, exiting"

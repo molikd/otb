@@ -1846,7 +1846,7 @@ process yahs_merfin_dv_fasta {
 process fasta_in_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/00_ordination", mode: 'copy'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -1855,7 +1855,7 @@ process fasta_in_dot_sh {
     file '*.stats'
   """
     touch any2fasta_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1864,7 +1864,7 @@ process fasta_in_dot_sh {
 process gfa2fasta_stats_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/01_hifiasm", mode: 'copy'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -1873,7 +1873,7 @@ process gfa2fasta_stats_dot_sh {
     file '*.stats'
   """
     touch any2fasta_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1882,7 +1882,7 @@ process gfa2fasta_stats_dot_sh {
 process ragtag_stats_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/02_hicstuff", mode: 'copy'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -1891,7 +1891,7 @@ process ragtag_stats_dot_sh {
     file '*.stats'
   """
     touch ragtag_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1900,7 +1900,7 @@ process ragtag_stats_dot_sh {
 process shhquis_stats_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/03_polish", mode: 'copy'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -1909,7 +1909,7 @@ process shhquis_stats_dot_sh {
     file '*.stats'
   """
     touch shhquis_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1918,7 +1918,7 @@ process shhquis_stats_dot_sh {
 process merfin_vcf_stats_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/03_polish", mode: 'copy'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -1927,7 +1927,7 @@ process merfin_vcf_stats_dot_sh {
     file '*.stats'
   """
     touch vcf_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1936,7 +1936,7 @@ process merfin_vcf_stats_dot_sh {
 process dv_vcf_stats_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/03_polish", mode: 'copy'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -1945,7 +1945,7 @@ process dv_vcf_stats_dot_sh {
     file '*.stats'
   """
     touch vcf_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1955,7 +1955,7 @@ process dv_vcf_stats_dot_sh {
 process simple_hap_patch_stats_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/03_polish", mode: 'copy'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -1964,7 +1964,7 @@ process simple_hap_patch_stats_dot_sh {
     file '*.stats'
   """
     touch hap_patch_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1974,7 +1974,7 @@ process simple_hap_patch_stats_dot_sh {
 process merfin_hap_patch_stats_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/03_polish", mode: 'copy'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -1983,7 +1983,7 @@ process merfin_hap_patch_stats_dot_sh {
     file '*.stats'
   """
     touch hap_patch_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1992,7 +1992,7 @@ process merfin_hap_patch_stats_dot_sh {
 process dv_hap_patch_stats_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/03_polish", mode: 'copy'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -2001,7 +2001,7 @@ process dv_hap_patch_stats_dot_sh {
     file '*.stats'
   """
     touch hap_patch_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -2010,7 +2010,7 @@ process dv_hap_patch_stats_dot_sh {
 process yahs_no_polish_stats_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/04_yahs", mode: 'rellink'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -2019,7 +2019,7 @@ process yahs_no_polish_stats_dot_sh {
     file '*.stats'
   """
     touch yahs_no_polish_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -2028,7 +2028,7 @@ process yahs_no_polish_stats_dot_sh {
 process yahs_simple_polish_stats_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -2037,7 +2037,7 @@ process yahs_simple_polish_stats_dot_sh {
     file '*.stats'
   """
     touch yahs_simple_polish_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -2046,7 +2046,7 @@ process yahs_simple_polish_stats_dot_sh {
 process yahs_merfin_polish_stats_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -2055,7 +2055,7 @@ process yahs_merfin_polish_stats_dot_sh {
     file '*.stats'
   """
     touch yahs_merfin_polish_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -2064,7 +2064,7 @@ process yahs_merfin_polish_stats_dot_sh {
 process yahs_dv_polish_stats_dot_sh {
   label 'shortq'
   publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   input:
@@ -2073,7 +2073,7 @@ process yahs_dv_polish_stats_dot_sh {
     file '*.stats'
   """
     touch yahs_dv_polish_stats.flag.txt
-    stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+    gfastats ${fasta} -o ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -2082,7 +2082,7 @@ process yahs_dv_polish_stats_dot_sh {
 process yahs_hap_patch_stats_dot_sh {
    label 'shortq'
    publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
-   container = 'bryce911/bbtools'
+   container = 'dmolik/gfastats'
    cpus 1
 
    input:
@@ -2091,7 +2091,7 @@ process yahs_hap_patch_stats_dot_sh {
      file '*.stats'
    """
      touch yahs_hap_no_polish_stats.flag.txt
-     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+     gfastats ${fasta} -o ${fasta}.stats
      echo "finished stats"
      exit 0;
    """
@@ -2100,7 +2100,7 @@ process yahs_hap_patch_stats_dot_sh {
 process yahs_hap_patch_simple_polish_stats_dot_sh {
    label 'shortq'
    publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
-   container = 'bryce911/bbtools'
+   container = 'dmolik/gfastats'
    cpus 1
 
    input:
@@ -2109,7 +2109,7 @@ process yahs_hap_patch_simple_polish_stats_dot_sh {
      file '*.stats'
    """
      touch yahs_hap_simple_polish_stats.flag.txt
-     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+     gfastats ${fasta} -o ${fasta}.stats
      echo "finished stats"
      exit 0;
    """
@@ -2118,7 +2118,7 @@ process yahs_hap_patch_simple_polish_stats_dot_sh {
 process yahs_hap_patch_merfin_polish_stats_dot_sh {
    label 'shortq'
    publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
-   container = 'bryce911/bbtools'
+   container = 'dmolik/gfastats'
    cpus 1
 
    input:
@@ -2127,7 +2127,7 @@ process yahs_hap_patch_merfin_polish_stats_dot_sh {
      file '*.stats'
    """
      touch yahs_hap_merfin_polish_stats.flag.txt
-     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+     gfastats ${fasta} -o ${fasta}.stats
      echo "finished stats"
      exit 0;
    """
@@ -2136,7 +2136,7 @@ process yahs_hap_patch_merfin_polish_stats_dot_sh {
 process yahs_hap_patch_dv_polish_stats_dot_sh {
    label 'shortq'
    publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
-   container = 'bryce911/bbtools'
+   container = 'dmolik/gfastats'
    cpus 1
 
    input:
@@ -2145,7 +2145,7 @@ process yahs_hap_patch_dv_polish_stats_dot_sh {
      file '*.stats'
    """
      touch yahs_hap_dv_polish_stats.flag.txt
-     stats.sh -Xmx4g ${fasta} > ${fasta}.stats
+     gfastats ${fasta} -o ${fasta}.stats
      echo "finished stats"
      exit 0;
    """
@@ -2284,18 +2284,18 @@ process hicstuff_Version {
   """
 }
 
-process bbtools_Version {
+process gfastats_Version {
   label 'shortq'
-  container = 'bryce911/bbtools'
+  container = 'dmolik/gfastats'
   cpus 1
 
   output:
-    stdout bbtools_version
+    stdout gfastats_version
 
   """
-    touch bbtools_version.flag.txt
-    echo "BBTools Version"
-    stats.sh --version 2>&1
+    touch gfastats_version.flag.txt
+    echo "gfastats Version"
+    gfastats --version 2>&1
     exit 0;
   """
 }
@@ -2621,8 +2621,8 @@ hicstuff_version
    .collectFile(name:'hicstuff_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
-bbtools_version
-   .collectFile(name:'bbtools_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+gfastats_version
+   .collectFile(name:'gfastats_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 deepvariant_version

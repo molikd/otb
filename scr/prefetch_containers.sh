@@ -33,7 +33,7 @@ else
  error "..not set, please set NXF_SINGULARITY_LIBRARYDIR or give me a location"
 fi
 
-[ ! -f bryce911-bbtools.img ] && singularity pull bryce911-bbtools.img docker://bryce911/bbtools || state "   ...bbtools container found, not downloading"
+[ ! -f dmolik-gfastats.img ] && singularity pull dmolik-gfastats.img docker://dmolik/gfastats || state "   ...gfastats container found, not downloading"
 [ ! -f dmolik-genomescope2.img ] && singularity pull dmolik-genomescope2.img docker://dmolik/genomescope2 || state "   ...genomescope2 container found, not downloading"
 [ ! -f dmolik-hifiasm.img ] && singularity pull dmolik-hifiasm.img docker://dmolik/hifiasm || state "   ...hifiasm container found, not downloading"
 [ ! -f dmolik-k-mer-counting-tools.img ] && singularity pull dmolik-k-mer-counting-tools.img docker://dmolik/k-mer-counting-tools || state "   ...k-mer counting container found, not downloading"
