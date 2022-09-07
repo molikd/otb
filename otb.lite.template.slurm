@@ -23,18 +23,11 @@ Reverse="RawData/*_R2.fastq.gz"
 CCS='RawData/*.fastq'
 
 #Comment/Uncommment for busco
-#Busco="--busco" #Busco will be run
-Busco="" #Busco will not be run
+Busco="--busco" #Busco will be run
+Busco_Location="-l /project/ag100pest/software/OTB_test/busco"
+Busco_DB="-p insecta_odb10"
 
-#Comment/Uncommment for Yahs
-Yahs="-y" #Yahs will be run
-#Yahs="" #Yahs will not be run
-
-#Comment/Uncomment for Polishing (only select one of)
-Polish_Type="" #No polishing
-#Polish_Type="simple" #Simple Polishing
-#Polish_Type="dv" #Deep Variant Polishing
-#Polish_Type="merfin" #merfin Polishing
+#Busco="" #Busco will not be run
 
 #Comment/Uncomment for Type (only select one of)
 #HiFi_Type="phasing"
@@ -43,8 +36,12 @@ HiFi_Type="default"
 
 #Comment/Uncomment for Runner (only select one of)
 #Runner="slurm_usda"
-Runner="slurm_usda_mem"
+Runner="slurm_usda"
 
 Threads="32"
 
-./otb.sh --lite -n ${Assembly_Name} -f "$( echo ${Forward})" -r "$(echo ${Reverse})" -in "$(echo ${CCS})" -m ${HiFi_Type} -t ${Threads} --polish_type ${Polish_Type} --runner ${Runner} -c -s
+if [[ -z "$BUSCO" ]]; then
+  ./otb.sh --lite -n ${Assembly_Name} -f "$( echo ${Forward})" -r "$(echo ${Reverse})" -in "$(echo ${CCS})" -m ${HiFi_Type} -t ${Threads} --runner ${Runner} -c -s
+else
+  ./otb.sh --lite -n ${Assembly_Name} -f "$( echo ${Forward})" -r "$(echo ${Reverse})" -in "$(echo ${CCS})" -m ${HiFi_Type} -t ${Threads} --runner ${Runner} ${Busco} ${Busco_Location} ${Busco_DB} -c -s
+fi
