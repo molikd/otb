@@ -286,7 +286,7 @@ state "running busco, checking busco things"
   [ -z "$LINEAGE" -a -z "$BUSCOPATH" ] && error "trying to setup busco, but no lineage/path/file given"
   if [ -n "$LINEAGE" ]; then
     state "   ...busco lineage described: ${LINEAGE}"
-    BUSCOSTRING="--busco --linreage=\"${LINEAGE} \""
+    BUSCOSTRING="--busco --linreage=\"${LINEAGE}\" "
   elif [ -n "$BUSCOPATH" ]; then
     state "   ...attempting offline busco run"
     if [ -f "$BUSCOPATH" ]; then

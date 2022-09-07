@@ -525,7 +525,7 @@ process hicstuff {
   """
 }
 
-process hicstuff_polish {
+/*process hicstuff_polish {
   label 'longq'
   publishDir "${params.outdir}/02_hicstuff", mode: 'rellink'
   container = 'koszullab/hicstuff'
@@ -552,7 +552,7 @@ process hicstuff_polish {
     sleep 120;
     exit 0;
   """
-}
+}*/
 
 process Shhquis_dot_jl {
   label 'mediumq'
@@ -1249,11 +1249,11 @@ process juicer_tools_pre_yahs {
     file "*_JBAT.hic"
     stdout juicer_tools_pre_yahs_output
 
-  """
+  '''
     touch juicer_tools_pre_yahs.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}')) && (mv out_JBAT.hic.part no_polish_JBAT.hic)
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat !{yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}')) && (mv out_JBAT.hic.part no_polish_JBAT.hic)
     exit 0;
-  """
+  '''
 }
 
 process juicer_tools_pre_yahs_simple {
@@ -1268,11 +1268,11 @@ process juicer_tools_pre_yahs_simple {
     file "*_JBAT.hic"
     stdout juicer_tools_pre_yahs_simple_output
 
-  """
+  '''
     touch juicer_tools_pre_yahs_simple.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}')) && (mv out_JBAT.hic.part simple_JBAT.hic)
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat !{yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}')) && (mv out_JBAT.hic.part simple_JBAT.hic)
     exit 0;
-  """
+  '''
 }
 
 process juicer_tools_pre_yahs_merfin {
@@ -1287,11 +1287,11 @@ process juicer_tools_pre_yahs_merfin {
     file "*_JBAT.hic"
     stdout juicer_tools_pre_yahs_merfin_output 
 
-  """
+  '''
     touch juicer_tools_pre_yahs_merfin.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}')) && (mv out_JBAT.hic.part merfin_JBAT.hic)
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat !{yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}')) && (mv out_JBAT.hic.part merfin_JBAT.hic)
     exit 0;
-  """
+  '''
 }
 
 process juicer_tools_pre_yahs_dv {
@@ -1306,11 +1306,11 @@ process juicer_tools_pre_yahs_dv {
     file "*_JBAT.hic"
     stdout juicer_tools_pre_yahs_dv_output
 
-  """
+  '''
     touch juicer_tools_pre_yahs_dv.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}')) && (mv out_JBAT.hic.part dv_JBAT.hic)
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat !{yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}')) && (mv out_JBAT.hic.part dv_JBAT.hic)
     exit 0;
-  """
+  '''
 }
 
 process ragtag_dot_py_hap_simple_polish {
@@ -2454,8 +2454,9 @@ gfa2fasta_output
 hicstuff_output
    .collectFile(name:'hicstuff.log.txt', newLine: true, storeDir:"${params.outdir}/02_hicstuff/log")
 
-hicstuff_polish_output
+/*hicstuff_polish_output
    .collectFile(name:'hicstuff_polish.log.txt', newLine: true, storeDir:"${params.outdir}/02_hicstuff/log")
+*/
 
 ragtag_dot_py_output
    .collectFile(name:'ragtag.log.txt', newLine: true, storeDir:"${params.outdir}/02_hicstuff/log")
@@ -2562,7 +2563,7 @@ juicer_tools_pre_yahs_simple_output
 juicer_tools_pre_yahs_merfin_output
    .collectFile(name:'juicer_tools.polished.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_pol     ish/log")
 
-juicer_tools_pre_yahs_sdv_output
+juicer_tools_pre_yahs_dv_output
    .collectFile(name:'juicer_tools.polished.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_pol     ish/log")
 
 yahs_ragtag_dot_py_hap_output
