@@ -18,8 +18,6 @@ module load nextflow/20.07.1
 Assembly_Name=$(basename "$( pwd )")
 
 # Foward and reverse reads
-Forward="RawData/*_R1.fastq.gz"
-Reverse="RawData/*_R2.fastq.gz"
 CCS='RawData/*.fastq'
 
 #Comment/Uncommment for busco
@@ -41,7 +39,7 @@ Runner="slurm_usda"
 Threads="32"
 
 if [[ -z "$BUSCO" ]]; then
-  ./otb.sh --lite -n ${Assembly_Name} -f "$( echo "${Forward}")" -r "$(echo "${Reverse}")" -in "$(echo "${CCS}")" -m ${HiFi_Type} -t ${Threads} --runner ${Runner} -c -s
+  ./otb.sh --lite -n ${Assembly_Name}  -in "$(echo "${CCS}")" -m ${HiFi_Type} -t ${Threads} --runner ${Runner} -c -s
 else
-  ./otb.sh --lite -n ${Assembly_Name} -f "$( echo ${Forward})" -r "$(echo ${Reverse})" -in "$(echo ${CCS})" -m ${HiFi_Type} -t ${Threads} --runner ${Runner} ${Busco} ${Busco_Location} ${Busco_DB} -c -s
+  ./otb.sh --lite -n ${Assembly_Name}  -in "$(echo ${CCS})" -m ${HiFi_Type} -t ${Threads} --runner ${Runner} ${Busco} ${Busco_Location} ${Busco_DB} -c -s
 fi
