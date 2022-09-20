@@ -166,75 +166,6 @@ process check_fastq {
   '''
 }
 
-/*process check_fastq_trio {
-  cpus = 1
-
-  input:
-    file rightmat_fastq from right_matfastq_check
-    file leftmat_fastq from left_matfastq_check
-    file rightpat_fastq from right_patfastq_check
-    file leftpat_fastq from left_patfastq_check
-  output:
-    file 'out/right.mat.fastq.gz' into right_mat_fastq_HiFiASM_trio
-    file 'out/left.mat.fastq.gz' into left_mat__fastq_HiFiASM_trio
-    file 'out/right.pat.fastq.gz' into right_pat_fastq_HiFiASM_trio
-    file 'out/left.pat.fastq.gz' into left_pat_fastq_HiFiASM_trio
-    file 'out/*.fastq.gz' into fasta_in_ch
-    stdout check_fastq_output
-  shell:
-  '''
-   state () { printf "%b\n" "[$(date)]: $*" 2>&1; }
-   error () { printf "%b\n" "[$(date)]: $*" >&2; exit 1; }
-   warn () { printf "%b\n" "[$(date)]: $*" >&2; }
-
-   state "use touch to create a flag, so that I can be found easily"
-   touch check_fastq.flag.txt
-   state "stat !{right_fastq}..."
-   stat !{right_fastq}
-   state "stat !{left_fastq}..."
-   stat !{left_fastq}
-
-   state "if !{right_fastq} ends in gz zcat, and if it does not, cat the first line, save."
-   [[ !{right_fastq}  =~ ".gz" ]] && first=$(zcat !{right_fastq} | awk '{ print $1; exit }') || first=$( cat !{right_fastq} | awk '{ print $1; exit }')
-   state "if !{left_fastq} end in gz zcat, and if it does not, cat the first line, save"
-   [[ !{left_fastq} =~ ".gz" ]] && second=$(zcat !{left_fastq} | awk '{ print $1; exit }') || second=$( cat !{left_fastq} | awk '{ print $1; exit }')
-
-   state "if the first line of the fastqs doesn't start with an @, error out, otherwise continue"
-   [[ $first =~ '@' ]] || error "!{right_fastq} doesn't start with an @";
-   [[ $second =~ '@' ]] || errror "!{left_fastq} doesn't start with an @";
-
-   state "check to make sure that fastqs are divisable by 4"
-   [[ !{right_fastq}  =~ ".gz" ]] && first=$(zcat !{right_fastq} | grep -v "^=.*" | wc -l) || first=$( cat !{right_fastq} | grep -v "^=.*" | wc -l)
-   [[ !{left_fastq} =~ ".gz" ]] && second=$(zcat !{left_fastq} | grep -v "^=.*"  | wc -l) || second=$( cat !{left_fastq} | grep -v "^=.*"  | wc -l )
-
-   [[ $(( $first % 4 )) -eq 0 ]] || warn "number of lines in !{right_fastq} not divisable by four, continuing anyway"
-   [[ $(( $second % 4 )) -eq 0 ]] || warn "number of lines in !{left_fastq} not divisable by four, continuing anyway"
-
-   state "make softlinks for both files"
-   mkdir out
-
-   if [[ !{right_fastq}  =~ ".gz" ]]; then
-     cd out
-     ln -s ../!{right_fastq} right.fastq.gz
-     cd ..
-   else
-     gzip -c !{right_fastq} > out/right.fastq.gz
-   fi
-
-   if [[ !{left_fastq}  =~ ".gz" ]]; then
-     cd out
-     ln -s ../!{left_fastq} left.fastq.gz
-     cd ..
-   else
-     gzip -c !{left_fastq} > out/left.fastq.gz
-   fi
-
-   state "successful completion"
-   sleep 120;
-   exit 0;
-  '''
-}*/
-
 process HiFiAdapterFilt {
   label 'shortq'
   container = 'dmolik/pbadapterfilt'
@@ -306,38 +237,6 @@ process HiFiASM {
       error "Invalid alignment mode: ${params.mode}"
 
 }
-
-/*process HiFiASM_trio {
-  label 'longq'
-  container = 'dmolik/hifiasm'
-  cpus = params.threads
-
-  input:
-    file fasta from hifiasm_filt_fastq_ch.collect()
-    file left_mat from right_mat_fastq_HiFiASM_trio
-    file right_mat from right_mat_fastq_HiFiASM_trio
-    file left_pat from right_pat_fastq_HiFiASM_trio
-    file right_pat from right_pat_fastq_HiFiASM_trio
-
-  output:
-    file '*.gfa' into gfa_ch
-    file '*.ec.fa' into fasta_ec_ch
-    stdout HiFiASM_output
-
-  when:
-      params.trio && params.readf != 'NO_FILE' && params.readr != 'NO_FILE'
-
-  script:
-  """
-    touch hifiasm.flag.txt
-    yak count -b37 -t${task.cpus} -o pat.yak <(zcat ${left_pat}) <(zcat ${right_pat})
-    yak count -b37 -t${task.cpus} -o mat.yak <(zcat ${left_mat}) <(zcat ${right_mat})
-    hifiasm -l${params.l} -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec -1 pat.yak -2 mat.yak ${fasta} 2>&1
-    echo "finished contig assembly"
-    sleep 120;
-    exit 0;
-  """
-}*/
 
 process gfa2fasta {
   label 'shortq'
@@ -1251,7 +1150,7 @@ process juicer_tools_pre_yahs {
 
   '''
     touch juicer_tools_pre_yahs.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat !{yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}') && (mv out_JBAT.hic.part no_polish_JBAT.hic)
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}') && (mv out_JBAT.hic.part no_polish_JBAT.hic)
     exit 0;
   '''
 }
@@ -1270,7 +1169,7 @@ process juicer_tools_pre_yahs_simple {
 
   '''
     touch juicer_tools_pre_yahs_simple.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat !{yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}') && (mv out_JBAT.hic.part simple_JBAT.hic)
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}') && (mv out_JBAT.hic.part simple_JBAT.hic)
     exit 0;
   '''
 }
@@ -1289,7 +1188,7 @@ process juicer_tools_pre_yahs_merfin {
 
   '''
     touch juicer_tools_pre_yahs_merfin.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat !{yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}') && (mv out_JBAT.hic.part merfin_JBAT.hic)
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}') && (mv out_JBAT.hic.part merfin_JBAT.hic)
     exit 0;
   '''
 }
@@ -1308,7 +1207,7 @@ process juicer_tools_pre_yahs_dv {
 
   '''
     touch juicer_tools_pre_yahs_dv.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat !{yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}') && (mv out_JBAT.hic.part dv_JBAT.hic)
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}') && (mv out_JBAT.hic.part dv_JBAT.hic)
     exit 0;
   '''
 }
@@ -1855,7 +1754,7 @@ process fasta_in_dot_sh {
     file '*.stats'
   """
     touch any2fasta_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -1873,7 +1772,7 @@ process gfa2fasta_stats_dot_sh {
     file '*.stats'
   """
     touch any2fasta_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -1891,7 +1790,7 @@ process ragtag_stats_dot_sh {
     file '*.stats'
   """
     touch ragtag_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -1909,7 +1808,7 @@ process shhquis_stats_dot_sh {
     file '*.stats'
   """
     touch shhquis_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -1927,7 +1826,7 @@ process merfin_vcf_stats_dot_sh {
     file '*.stats'
   """
     touch vcf_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -1945,7 +1844,7 @@ process dv_vcf_stats_dot_sh {
     file '*.stats'
   """
     touch vcf_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -1964,7 +1863,7 @@ process simple_hap_patch_stats_dot_sh {
     file '*.stats'
   """
     touch hap_patch_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -1983,7 +1882,7 @@ process merfin_hap_patch_stats_dot_sh {
     file '*.stats'
   """
     touch hap_patch_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -2001,7 +1900,7 @@ process dv_hap_patch_stats_dot_sh {
     file '*.stats'
   """
     touch hap_patch_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -2019,7 +1918,7 @@ process yahs_no_polish_stats_dot_sh {
     file '*.stats'
   """
     touch yahs_no_polish_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -2037,7 +1936,7 @@ process yahs_simple_polish_stats_dot_sh {
     file '*.stats'
   """
     touch yahs_simple_polish_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -2055,7 +1954,7 @@ process yahs_merfin_polish_stats_dot_sh {
     file '*.stats'
   """
     touch yahs_merfin_polish_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -2073,7 +1972,7 @@ process yahs_dv_polish_stats_dot_sh {
     file '*.stats'
   """
     touch yahs_dv_polish_stats.flag.txt
-    gfastats ${fasta} -o ${fasta}.stats
+    gfastats ${fasta} > ${fasta}.stats 
     echo "finished stats"
     exit 0;
   """
@@ -2091,7 +1990,7 @@ process yahs_hap_patch_stats_dot_sh {
      file '*.stats'
    """
      touch yahs_hap_no_polish_stats.flag.txt
-     gfastats ${fasta} -o ${fasta}.stats
+     gfastats ${fasta} > ${fasta}.stats 
      echo "finished stats"
      exit 0;
    """
@@ -2109,7 +2008,7 @@ process yahs_hap_patch_simple_polish_stats_dot_sh {
      file '*.stats'
    """
      touch yahs_hap_simple_polish_stats.flag.txt
-     gfastats ${fasta} -o ${fasta}.stats
+     gfastats ${fasta} > ${fasta}.stats 
      echo "finished stats"
      exit 0;
    """
@@ -2127,7 +2026,7 @@ process yahs_hap_patch_merfin_polish_stats_dot_sh {
      file '*.stats'
    """
      touch yahs_hap_merfin_polish_stats.flag.txt
-     gfastats ${fasta} -o ${fasta}.stats
+     gfastats ${fasta} > ${fasta}.stats 
      echo "finished stats"
      exit 0;
    """
@@ -2145,7 +2044,7 @@ process yahs_hap_patch_dv_polish_stats_dot_sh {
      file '*.stats'
    """
      touch yahs_hap_dv_polish_stats.flag.txt
-     gfastats ${fasta} -o ${fasta}.stats
+     gfastats ${fasta} > ${fasta}.stats 
      echo "finished stats"
      exit 0;
    """
