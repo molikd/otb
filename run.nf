@@ -1150,7 +1150,7 @@ process juicer_tools_pre_yahs {
 
   '''
     touch juicer_tools_pre_yahs.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}') && (mv out_JBAT.hic.part no_polish_JBAT.hic)
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT} ${yahs_JBAT}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT}.hic.part no_polish_JBAT.hic)
     exit 0;
   '''
 }
@@ -1169,7 +1169,7 @@ process juicer_tools_pre_yahs_simple {
 
   '''
     touch juicer_tools_pre_yahs_simple.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}') && (mv out_JBAT.hic.part simple_JBAT.hic)
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT} ${yahs_JBAT}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT}.hic.part simple_JBAT.hic)
     exit 0;
   '''
 }
@@ -1188,7 +1188,7 @@ process juicer_tools_pre_yahs_merfin {
 
   '''
     touch juicer_tools_pre_yahs_merfin.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}') && (mv out_JBAT.hic.part merfin_JBAT.hic)
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT} ${yahs_JBAT}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT}.hic.part merfin_JBAT.hic)
     exit 0;
   '''
 }
@@ -1207,7 +1207,7 @@ process juicer_tools_pre_yahs_dv {
 
   '''
     touch juicer_tools_pre_yahs_dv.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre out_JBAT.txt out_JBAT.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print $2" "$3}') && (mv out_JBAT.hic.part dv_JBAT.hic)
+    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT} ${yahs_JBAT}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT}.hic.part dv_JBAT.hic)
     exit 0;
   '''
 }
