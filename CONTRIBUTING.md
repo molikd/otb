@@ -14,4 +14,4 @@ You mention the issue you are trying to address in the pull reqquest, be specifi
 
 In addition we use two space soft tabs and have actions setup to detect whitespace after lines of code.
 
-
+Please checkout: [otb.sh flags](https://github.com/molikd/otb/wiki/How-otb.sh-works)
