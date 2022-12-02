@@ -330,7 +330,7 @@ process ragtag_dot_py {
     file "${params.assembly}_ragtag_ec_patch/ragtag.patch.fasta" into ragtag_fasta_res_ch, ragtag_fasta_genome_ch, fasta_fai_genome_ch, fasta_sshquis_genome_ch
     stdout ragtag_dot_py_output
   when:
-    params.polish 
+    params.polish
 
   script:
 
@@ -408,8 +408,8 @@ process hicstuff {
     file left from left_fastq_hicstuff
     file right from right_fastq_hicstuff
   output:
-    file 'hicstuff_out/abs_fragments_contacts_weighted.bg2' into abs_ch 
-    file 'hicstuff_out/info_contigs.txt' into contigs_ch 
+    file 'hicstuff_out/abs_fragments_contacts_weighted.bg2' into abs_ch
+    file 'hicstuff_out/info_contigs.txt' into contigs_ch
     file 'hicstuff_out/fragments_list.txt'
     file 'hicstuff_out/plots/frags_hist.pdf'
     stdout hicstuff_output
@@ -1125,7 +1125,7 @@ process dv_yahs {
   output:
     file "yahs.dv*"
     file "yahs.dv_scaffolds_final.fa" into yahs_dv_polish_stats_ch, yahs_dv_polish_haps_genome_ch, yahs_dv_polish_busco_ch
-    file "*JBAT.txt" into yahs_dv_JBAT_txt_ch 
+    file "*JBAT.txt" into yahs_dv_JBAT_txt_ch
     file "yahs.dv.JBAT/tmp_juicer_pre_JBAT.log" into yahs_dv_JBAT_ch
     stdout yahs_dv_output
   when:
@@ -1188,10 +1188,10 @@ process juicer_tools_pre_yahs_merfin {
 
   input:
     file yahs_JBAT from yahs_merfin_JBAT_ch
-    file yahs_JBAT_txt from yahs_merfin_JBAT_txt_ch 
+    file yahs_JBAT_txt from yahs_merfin_JBAT_txt_ch
   output:
     file "*_JBAT.hic"
-    stdout juicer_tools_pre_yahs_merfin_output 
+    stdout juicer_tools_pre_yahs_merfin_output
 
   '''
     touch juicer_tools_pre_yahs_merfin.flag.txt
@@ -1208,7 +1208,7 @@ process juicer_tools_pre_yahs_dv {
 
   input:
     file yahs_JBAT from yahs_dv_JBAT_ch
-    file yahs_JBAT_txt from yahs_dv_JBAT_txt_ch 
+    file yahs_JBAT_txt from yahs_dv_JBAT_txt_ch
   output:
     file "*_JBAT.hic"
     stdout juicer_tools_pre_yahs_dv_output
@@ -1762,7 +1762,7 @@ process fasta_in_dot_sh {
     file '*.stats'
   """
     touch any2fasta_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1780,7 +1780,7 @@ process gfa2fasta_stats_dot_sh {
     file '*.stats'
   """
     touch any2fasta_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1798,7 +1798,7 @@ process ragtag_stats_dot_sh {
     file '*.stats'
   """
     touch ragtag_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1816,7 +1816,7 @@ process shhquis_stats_dot_sh {
     file '*.stats'
   """
     touch shhquis_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1834,7 +1834,7 @@ process merfin_vcf_stats_dot_sh {
     file '*.stats'
   """
     touch vcf_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1852,7 +1852,7 @@ process dv_vcf_stats_dot_sh {
     file '*.stats'
   """
     touch vcf_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1871,7 +1871,7 @@ process simple_hap_patch_stats_dot_sh {
     file '*.stats'
   """
     touch hap_patch_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1890,7 +1890,7 @@ process merfin_hap_patch_stats_dot_sh {
     file '*.stats'
   """
     touch hap_patch_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1908,7 +1908,7 @@ process dv_hap_patch_stats_dot_sh {
     file '*.stats'
   """
     touch hap_patch_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1926,7 +1926,7 @@ process yahs_no_polish_stats_dot_sh {
     file '*.stats'
   """
     touch yahs_no_polish_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1944,7 +1944,7 @@ process yahs_simple_polish_stats_dot_sh {
     file '*.stats'
   """
     touch yahs_simple_polish_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1962,7 +1962,7 @@ process yahs_merfin_polish_stats_dot_sh {
     file '*.stats'
   """
     touch yahs_merfin_polish_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1980,7 +1980,7 @@ process yahs_dv_polish_stats_dot_sh {
     file '*.stats'
   """
     touch yahs_dv_polish_stats.flag.txt
-    gfastats ${fasta} > ${fasta}.stats 
+    gfastats ${fasta} > ${fasta}.stats
     echo "finished stats"
     exit 0;
   """
@@ -1998,7 +1998,7 @@ process yahs_hap_patch_stats_dot_sh {
      file '*.stats'
    """
      touch yahs_hap_no_polish_stats.flag.txt
-     gfastats ${fasta} > ${fasta}.stats 
+     gfastats ${fasta} > ${fasta}.stats
      echo "finished stats"
      exit 0;
    """
@@ -2016,7 +2016,7 @@ process yahs_hap_patch_simple_polish_stats_dot_sh {
      file '*.stats'
    """
      touch yahs_hap_simple_polish_stats.flag.txt
-     gfastats ${fasta} > ${fasta}.stats 
+     gfastats ${fasta} > ${fasta}.stats
      echo "finished stats"
      exit 0;
    """
@@ -2034,7 +2034,7 @@ process yahs_hap_patch_merfin_polish_stats_dot_sh {
      file '*.stats'
    """
      touch yahs_hap_merfin_polish_stats.flag.txt
-     gfastats ${fasta} > ${fasta}.stats 
+     gfastats ${fasta} > ${fasta}.stats
      echo "finished stats"
      exit 0;
    """
@@ -2052,7 +2052,7 @@ process yahs_hap_patch_dv_polish_stats_dot_sh {
      file '*.stats'
    """
      touch yahs_hap_dv_polish_stats.flag.txt
-     gfastats ${fasta} > ${fasta}.stats 
+     gfastats ${fasta} > ${fasta}.stats
      echo "finished stats"
      exit 0;
    """

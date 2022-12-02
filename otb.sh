@@ -80,7 +80,7 @@ help(){
           \"merfin\": merfin variant calls ontop of ragtag, bcftools consensus
           \"dv\": deep variant calls ontop of ragtag, bcftools consensus
 
-    --patch 
+    --patch
        perform error corrected read patching as part of polishing
 
     --hapscaffold
@@ -195,8 +195,8 @@ else
   state "   ...not polishing"
 fi
 
-if [ -n "$PATCH" ]; then 
-  [ -n $POLISHTYPE ] || error "can't patch without polishing first, select a polish type"; 
+if [ -n "$PATCH" ]; then
+  [ -n $POLISHTYPE ] || error "can't patch without polishing first, select a polish type";
   RUN+="--patch ";
 fi
 
