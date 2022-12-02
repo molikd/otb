@@ -26,23 +26,23 @@ help(){
        don't perform anything with HiC
 
   required:
+    -in or --reads
+       path to HiFi reads (generally from pacbio), may include a wildcard for multiple files, can be fastq or bam
+
+  required if otb-lite isn't being used:
     -f or --forward
        a fastq or fastq.gz file for the pipline, in HiC runs this is one of the sequencing files, in a trio run, this is either the maternal or paternal sequences, order does not matter
 
     -r or --reverse
        another fastq or fastq.gz file for the pipeline, in HiC runs this is one of the sequencing files, in a trio run, this is either the maternal or paternal sequences, order does not matter
 
+  suggested:
     --matf and --matr
        optional maternal sequences forward and reverse
 
     --patf and --patr
        optional paternal sequences forward and reverse
 
-    -in or --reads
-       path to HiFi reads (generally from pacbio), may include a wildcard for multiple files, can be fastq or bam
-
-
-  suggested:
     -m or --mode
        mode to use, must be one of \"phasing\",\"default\",\"trio\",\"primary\". default: \"default\"
 
