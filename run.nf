@@ -1153,11 +1153,11 @@ process juicer_tools_pre_yahs {
     file "*_JBAT.hic"
     stdout juicer_tools_pre_yahs_output
 
-  '''
+  """
     touch juicer_tools_pre_yahs.flag.txt
     java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT_txt} ${yahs_JBAT_txt}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT_txt}.hic.part no_polish_JBAT.hic)
     exit 0;
-  '''
+  """
 }
 
 process juicer_tools_pre_yahs_simple {
@@ -1173,11 +1173,11 @@ process juicer_tools_pre_yahs_simple {
     file "*_JBAT.hic"
     stdout juicer_tools_pre_yahs_simple_output
 
-  '''
+  """
     touch juicer_tools_pre_yahs_simple.flag.txt
     java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT_txt} ${yahs_JBAT_txt}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT_txt}.hic.part simple_JBAT.hic)
     exit 0;
-  '''
+  """
 }
 
 process juicer_tools_pre_yahs_merfin {
@@ -1193,11 +1193,11 @@ process juicer_tools_pre_yahs_merfin {
     file "*_JBAT.hic"
     stdout juicer_tools_pre_yahs_merfin_output
 
-  '''
+  """
     touch juicer_tools_pre_yahs_merfin.flag.txt
     java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT_txt} ${yahs_JBAT_txt}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT_txt}.hic.part merfin_JBAT.hic)
     exit 0;
-  '''
+  """
 }
 
 process juicer_tools_pre_yahs_dv {
@@ -1213,11 +1213,11 @@ process juicer_tools_pre_yahs_dv {
     file "*_JBAT.hic"
     stdout juicer_tools_pre_yahs_dv_output
 
-  '''
+  """
     touch juicer_tools_pre_yahs_dv.flag.txt
     java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT_txt} ${yahs_JBAT_txt}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT_txt}.hic.part dv_JBAT.hic)
     exit 0;
-  '''
+  """
 }
 
 process ragtag_dot_py_hap_simple_polish {
