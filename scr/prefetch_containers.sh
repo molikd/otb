@@ -23,14 +23,14 @@ done
 
 location=$( pwd )
 describe "fetch location is:"
-if [ -n "$NXF_SINGULARITY_LIBRARYDIR" ]; then
- pizzaz $NXF_SINGULARITY_LIBRARYDIR
- cd $NXF_SINGULARITY_LIBRARYDIR
+if [ -n "$NXF_SINGULARITY_CACHEDIR" ]; then
+ pizzaz $NXF_SINGULARITY_CACHEDIR
+ cd $NXF_SINGULARITY_CACHEDIR
 elif [ -n "$LOCATION" ]; then
  pizzaz $LOCATION
  cd $LOCATION
 else
- error "..not set, please set NXF_SINGULARITY_LIBRARYDIR or give me a location"
+ error "..not set, please set NXF_SINGULARITY_CACHEDIR or give me a location"
 fi
 
 [ ! -f dmolik-gfastats.img ] && singularity pull dmolik-gfastats.img docker://dmolik/gfastats || state "   ...gfastats container found, not downloading"
