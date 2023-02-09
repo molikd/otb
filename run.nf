@@ -457,7 +457,7 @@ process Shhquis_dot_jl {
   label 'mediumq'
   publishDir "${params.outdir}/03_polish", mode: 'rellink'
   container = 'dmolik/shhquis'
-  cpus 1
+  cpus params.threads
 
   input:
     file abs from abs_ch
@@ -472,7 +472,7 @@ process Shhquis_dot_jl {
     params.polish
   """
     touch shhquis.flag.txt
-    shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage ${params.hclustlinkage}
+    shh.jl --reorient ${params.outfasta} --genome ${genome} --fai ${fai} --bg2 ${abs} --contig ${contig} --hclust-linkage ${params.hclustlinkage} --threads ${task.cpus}
     echo "finished reorientation"
     sleep 120;
     exit 0;
