@@ -49,7 +49,7 @@ fi
 
 if [ -n "$YAHS" ]; then
   state "need yahs container for this run"
-  [ ! -f dceoy-bwa-mem2.img ] && singularity pull --disable-cache --force dceoy-bwa-mem2.img docker://dceoy/bwa-mem2 || state "bwa-mem container found, not downloading"
+  [ ! -f mgibio-alignment_helper-cwl-2.2.1.img ] && singularity pull --disable-cache --force mgibio-alignment_helper-cwl-2.2.1.img docker://mgibio/alignment_helper-cwl:2.2.1 || state "alignment helper container found, not downloading"
   [ ! -f dmolik-yahs.img ] && singularity pull --disable-cache --force dmolik-yahs.img docker://dmolik/yahs || state "yahs container found, not downloading"
   [ ! -f dmolik-juicer-tools.img ] && singularity pull --disable-cache --force dmolik-juicer-tools.img docker://dmolik/juicer-tools || state "juicer tools container found, not downloading"
 fi

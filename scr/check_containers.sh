@@ -71,7 +71,7 @@ esac
 
 if [ -n "$YAHS" ]; then
   state "yahs containers will be required for this run, testing yahs"
-  singularity exec "dceoy-bwa-mem2.img" echo "   ...hello from the bwa container" || error "bwa container broken, exiting"
+  singularity exec "mgibio-alignment_helper-cwl-2.2.1.img" echo "   ...hello from the bwa container" || error "bwa container broken, exiting"
   singularity exec "dmolik-yahs.img" echo "   ...hello from the yahs container" || error "yahs container broken, exiting"
 fi
 

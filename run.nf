@@ -805,7 +805,7 @@ process merfin_bcftools {
 
 process bwa_for_yahs {
   label 'mediumq'
-  container = 'dceoy/bwa-mem2'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus = params.threads
 
   input:
@@ -819,8 +819,8 @@ process bwa_for_yahs {
       params.yahs
     """
       touch bwa.yahs.flag.sh
-      bwa-mem2 index ${genome}
-      bwa-mem2 mem -t ${task.cpus} -5 -S -P ${genome} ${left_reads} ${right_reads} > mapped.sam
+      bwa index ${genome}
+      bwa mem -5SP -t ${task.cpus} ${genome} ${left_reads} ${right_reads} > mapped.sam
       echo "finished bwa"
       sleep 120;
       exit 0;
@@ -829,7 +829,7 @@ process bwa_for_yahs {
 
 process bwa_for_simple_yahs {
   label 'mediumq'
-  container = 'dceoy/bwa-mem2'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus = params.threads
 
   input:
@@ -843,8 +843,8 @@ process bwa_for_simple_yahs {
       params.yahs
     """
       touch minimap.yahs.simple.flag.sh
-      bwa-mem2 index ${genome}
-      bwa-mem2 mem -t ${task.cpus} -5 -S -P ${genome} ${left_reads} ${right_reads} > mapped.sam
+      bwa index ${genome}
+      bwa mem -5SP -t ${task.cpus} ${genome} ${left_reads} ${right_reads} > mapped.sam
       echo "finished bwa"
       sleep 120;
       exit 0;
@@ -853,7 +853,7 @@ process bwa_for_simple_yahs {
 
 process bwa_for_merfin_yahs {
   label 'mediumq'
-  container = 'dceoy/bwa-mem2'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus = params.threads
 
   input:
@@ -867,8 +867,8 @@ process bwa_for_merfin_yahs {
       params.yahs
     """
       touch bwa.yahs.merfin.flag.sh
-      bwa-mem2 index ${genome}
-      bwa-mem2 mem -t ${task.cpus} -5 -S -P ${genome} ${left_reads} ${right_reads} > mapped.sam
+      bwa index ${genome}
+      bwa mem -5SP -t ${task.cpus} ${genome} ${left_reads} ${right_reads} > mapped.sam
       echo "finished bwa"
       sleep 120;
       exit 0;
@@ -877,7 +877,7 @@ process bwa_for_merfin_yahs {
 
 process bwa_for_dv_yahs {
   label 'mediumq'
-  container = 'dceoy/bwa-mem2'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus = params.threads
 
   input:
@@ -891,8 +891,8 @@ process bwa_for_dv_yahs {
       params.yahs
     """
       touch bwa.yahs.merfin.flag.sh
-      bwa-mem2 index ${genome}
-      bwa-mem2 mem -t ${task.cpus} -5 -S -P ${genome} ${left_reads} ${right_reads} > mapped.sam
+      bwa index ${genome}
+      bwa mem -5SP -t ${task.cpus} ${genome} ${left_reads} ${right_reads} > mapped.sam
       echo "finished bwa"
       sleep 120;
       exit 0;
@@ -901,7 +901,7 @@ process bwa_for_dv_yahs {
 
 process bam_sort_for_yahs {
   label 'shortq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus = params.threads
 
   input:
@@ -914,7 +914,7 @@ process bam_sort_for_yahs {
   shell:
   '''
     touch bam.sort.yahs.flag.txt
-    samtools sort -@ !{task.cpus} -o aln.bam !{sam_file}
+    samtools view -S -h -F 2316 !{sam_file} | samblaster | samtools sort -@ !{task.cpus} -o aln.bam
     echo "finished sort"
     sleep 120;
     exit 0;
@@ -923,7 +923,7 @@ process bam_sort_for_yahs {
 
 process bam_sort_for_simple_yahs {
   label 'shortq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus = params.threads
 
   input:
@@ -936,7 +936,7 @@ process bam_sort_for_simple_yahs {
   shell:
   '''
     touch bam.sort.simple.yahs.flag.txt
-    samtools sort -@ !{task.cpus} -o aln.bam !{sam_file}
+    samtools view -S -h -F 2316 !{sam_file} | samblaster | samtools sort -@ !{task.cpus} -o aln.bam
     echo "finished sort"
     sleep 120;
     exit 0;
@@ -945,7 +945,7 @@ process bam_sort_for_simple_yahs {
 
 process bam_sort_for_merfin_yahs {
   label 'shortq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus = params.threads
 
   input:
@@ -958,7 +958,7 @@ process bam_sort_for_merfin_yahs {
   shell:
   '''
     touch bam.sort.merfin.yahs.flag.txt
-    samtools sort -@ !{task.cpus} -o aln.bam !{sam_file}
+    samtools view -S -h -F 2316 !{sam_file} | samblaster | samtools sort -@ !{task.cpus} -o aln.bam
     echo "finished sort"
     sleep 120;
     exit 0;
@@ -967,7 +967,7 @@ process bam_sort_for_merfin_yahs {
 
 process bam_sort_for_dv_yahs {
   label 'shortq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus = params.threads
 
   input:
@@ -980,7 +980,7 @@ process bam_sort_for_dv_yahs {
   shell:
   '''
     touch bam.sort.dv.yahs.flag.txt
-    samtools sort -@ !{task.cpus} -o aln.bam !{sam_file}
+    samtools view -S -h -F 2316 !{sam_file} | samblaster | samtools sort -@ !{task.cpus} -o aln.bam
     echo "finished sort"
     sleep 120;
     exit 0;
@@ -1144,7 +1144,7 @@ process juicer_tools_pre_yahs {
   label 'shortq'
   publishDir "${params.outdir}/04_yahs", mode: 'rellink'
   container = 'dmolik/juicer-tools'
-  cpus = 1
+  cpus = params.threads 
 
   input:
     file yahs_JBAT from yahs_JBAT_ch
@@ -1155,7 +1155,7 @@ process juicer_tools_pre_yahs {
 
   """
     touch juicer_tools_pre_yahs.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT_txt} ${yahs_JBAT_txt}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT_txt}.hic.part no_polish_JBAT.hic)
+    java -Xms16384m -Xmx32768m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT_txt} ${yahs_JBAT_txt}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT_txt}.hic.part no_polish_JBAT.hic)
     exit 0;
   """
 }
@@ -1164,7 +1164,7 @@ process juicer_tools_pre_yahs_simple {
   label 'shortq'
   publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
   container = 'dmolik/juicer-tools'
-  cpus = 1
+  cpus = params.threads 
 
   input:
     file yahs_JBAT from yahs_simple_JBAT_ch
@@ -1175,7 +1175,7 @@ process juicer_tools_pre_yahs_simple {
 
   """
     touch juicer_tools_pre_yahs_simple.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT_txt} ${yahs_JBAT_txt}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT_txt}.hic.part simple_JBAT.hic)
+    java -Xms16384m -Xmx32768m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT_txt} ${yahs_JBAT_txt}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT_txt}.hic.part simple_JBAT.hic)
     exit 0;
   """
 }
@@ -1184,7 +1184,7 @@ process juicer_tools_pre_yahs_merfin {
   label 'shortq'
   publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
   container = 'dmolik/juicer-tools'
-  cpus = 1
+  cpus = params.threads 
 
   input:
     file yahs_JBAT from yahs_merfin_JBAT_ch
@@ -1195,7 +1195,7 @@ process juicer_tools_pre_yahs_merfin {
 
   """
     touch juicer_tools_pre_yahs_merfin.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT_txt} ${yahs_JBAT_txt}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT_txt}.hic.part merfin_JBAT.hic)
+    java -Xms16384m -Xmx32768m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT_txt} ${yahs_JBAT_txt}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT_txt}.hic.part merfin_JBAT.hic)
     exit 0;
   """
 }
@@ -1204,7 +1204,7 @@ process juicer_tools_pre_yahs_dv {
   label 'shortq'
   publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
   container = 'dmolik/juicer-tools'
-  cpus = 1
+  cpus = params.threads 
 
   input:
     file yahs_JBAT from yahs_dv_JBAT_ch
@@ -1215,7 +1215,7 @@ process juicer_tools_pre_yahs_dv {
 
   """
     touch juicer_tools_pre_yahs_dv.flag.txt
-    java -Xms512m -Xmx2048m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT_txt} ${yahs_JBAT_txt}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT_txt}.hic.part dv_JBAT.hic)
+    java -Xms16384m -Xmx32768m -jar /home/genomics/juicer_tools_1.22.01.jar pre ${yahs_JBAT_txt} ${yahs_JBAT_txt}.hic.part <(cat ${yahs_JBAT}  | grep PRE_C_SIZE | awk '{print \$2" "\$3}') && (mv ${yahs_JBAT_txt}.hic.part dv_JBAT.hic)
     exit 0;
   """
 }
@@ -2139,9 +2139,9 @@ process YaHS_Version {
   """
 }
 
-process bwa_mem_2_Version {
+process bwa_Version {
   label 'shortq'
-  container = 'dceoy/bwa-mem2'
+  container = 'mgibio-alignment_helper-cwl-2.2.1.img'
   cpus 1
 
   output:
@@ -2150,8 +2150,8 @@ process bwa_mem_2_Version {
     params.yahs
   """
     touch bwa_version.flag.txt
-    echo "bwa-mem2 Version:"
-    bwa-mem2 version
+    echo "bwa Version:"
+    bwa 2>&1 | head -n 5
     exit 0;
   """
 }
