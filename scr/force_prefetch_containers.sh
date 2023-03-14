@@ -41,6 +41,7 @@ fi
 [ ! -f mgibio-samtools-1.9.img ] && singularity pull --disable-cache --force mgibio-samtools-1.9.img docker://mgibio/samtools:1.9 || state "   ...samtools container found, not downloading"
 [ ! -f koszullab-hicstuff.img ] && singularity pull --disable-cache --force koszullab-hicstuff.img docker://koszullab/hicstuff || state "   ...hicstuff container found, not downloading"
 [ ! -f pvstodghill-any2fasta.img ] && singularity pull --disable-cache --force pvstodghill-any2fasta.img docker://pvstodghill/any2fasta || state "   ...any2fasta container found, not downloading"
+[ ! -f ncbi-fcs-adaptor.img ] && singularity pull --disable-cache --force ncbi-fcs-adaptor.img docker://ncbi/fcs-adaptor || state "   ...HiFi Filter container found, not downloading"
 
 if [ -n "$BUSCO" ]; then
   state "need busco container for this run"

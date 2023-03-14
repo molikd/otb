@@ -41,6 +41,7 @@ singularity exec "dmolik-pbadapterfilt.img" echo "   ...hello from pbadapterfilt
 singularity exec "mgibio-samtools-1.9.img" echo "   ...hello from samtools container" || error "samtools container broken, exiting"
 singularity exec "koszullab-hicstuff.img" echo "   ...hello from hicstuff container" || error "hicstuff container broken, exiting"
 singularity exec "pvstodghill-any2fasta.img" echo "   ...hello from any2fasta container" || error "any2fasta container borken, exiting"
+singularity exec "ncbi-fcs-adaptor.img" echo "   ...hello from ncbi fcs adaptor container" || error "ncbi fcs adaptor container broken, exiting"
 
 if [ -n "$BUSCO" ]; then
   state "busco container will be required for this run, testing busco"
