@@ -538,13 +538,38 @@ process genomescope2 {
   """
 }
 
+
+process simple_fcs_adaptor {
+  label 'shortq'
+  publishDir "${params.outdir}/03_polish", mode: 'rellink' 
+  container = 'ncbi/fcs-adapter'
+  cpus = 1
+
+  input:
+   file genome from shhquis_simple_ch
+  output:
+   file 'cleaned_sequences/*.fa' into simple_fcs_adaptor_ch
+   file '*'
+   stdout simple_fcs_adaptor_output
+  when:
+   params.polishtype == "simple"
+  """
+    touch dv_fcs_adaptor.flag.txt
+    /app/fcs/bin/av_screen_x -o . --euk ${genome}                                                                                 
+    gzip -d cleaned_sequences/*.fa.gz
+    echo "finished simple fcs adaptor"
+    sleep 120;
+    exit 0;
+  """
+}
+
 process simple_polish {
   label 'shortq'
   container = 'mgibio/samtools:1.9'
   cpus = 1
 
   input:
-    file genome from shhquis_simple_ch
+    file genome from simple_fcs_adaptor_ch
   output:
     file "${params.assembly}.polished.genome.fasta" into simple_polished_genome_ch, simple_polished_genome_busco_ch, yahs_simple_genome_ch, yahs_simple_align_genome_ch
     file "${params.assembly}.polished.genome.fasta.fai" into yahs_simple_fai_ch
@@ -788,13 +813,13 @@ process dv_fcs_adaptor {
   output:
    file 'cleaned_sequences/*.fa' into dv_vcf_polished_genome_ch, dv_vcf_res_ch, dv_vcf_polished_busco_genome_ch, yahs_dv_genome_ch, yahs_dv_align_genome_ch
    file '*'
-   stdout dv_fcs_adaptor
+   stdout dv_fcs_adaptor_output
   when:
    params.polishtype == "dv"
   """
     touch dv_fcs_adaptor.flag.txt
     /app/fcs/bin/av_screen_x -o . --euk ${genome}                                                                                 
-    gzip -d cleaned_sequences/fcsadaptor_prok_test.fa.gz
+    gzip -d cleaned_sequences/*.fa.gz
     echo "finished dv fcs adaptor"
     sleep 120;
     exit 0;
@@ -811,7 +836,7 @@ process merfin_bcftools {
     file genome from shhquis_bcftools_merfin_ch
     file vcf from merfin_vcf_ch
   output:
-    file "${params.assembly}.vcf_polished_assembly.fasta" into merfin_vcf_polished_genome_ch, merfin_vcf_res_ch, merfin_vcf_polished_busco_genome_ch, yahs_merfin_genome_ch, yahs_merfin_align_genome_ch
+    file "${params.assembly}.vcf_polished_assembly.fasta" into merfin_fcs_adaptor_ch
     file "${params.assembly}.vcf_polished_assembly.fasta"
     stdout merfin_bcftools_output
   when:
@@ -822,6 +847,30 @@ process merfin_bcftools {
     bcftools index --threads ${task.cpus} ${vcf}.gz
     bcftools consensus ${vcf}.gz -f ${genome} > ${params.assembly}.vcf_polished_assembly.fasta
     echo "finished bcftools from merfin"
+    sleep 120;
+    exit 0;
+  """
+}
+
+process merfin_fcs_adaptor {
+  label 'shortq'
+  publishDir "${params.outdir}/03_polish", mode: 'rellink' 
+  container = 'ncbi/fcs-adapter'
+  cpus = 1
+
+  input:
+   file genome from merfin_fcs_adaptor_ch
+  output:
+   file 'cleaned_sequences/*.fa' into merfin_vcf_polished_genome_ch, merfin_vcf_res_ch, merfin_vcf_polished_busco_genome_ch, yahs_merfin_genome_ch, yahs_merfin_align_genome_ch
+   file '*'
+   stdout merfin_fcs_adaptor_output
+  when:
+   params.polishtype == "merfin"
+  """
+    touch merfin_fcs_adaptor.flag.txt
+    /app/fcs/bin/av_screen_x -o . --euk ${genome}                                                                                 
+    gzip -d cleaned_sequences/*.fa.gz
+    echo "finished merfin fcs adaptor"
     sleep 120;
     exit 0;
   """
@@ -2425,6 +2474,9 @@ jellyfish_output
 genomescope2_output
    .collectFile(name:'genomescope2.log.txt', newLine: true, storeDir:"${params.outdir}/00_ordination/log/genomescope" )
 
+simple_fcs_adaptor_output
+   .collectFile(name:'fcs_adaptor.log.txt', newLine: true, storeDir:"${params.outdir}/03_polish/log")
+
 minimap_dot_sh_output
    .collectFile(name:'minimap.log.txt', newLine: true, storeDir:"${params.outdir}/03_polish/log" )
 
@@ -2446,8 +2498,14 @@ deep_variant_output
 merfin_bcftools_output
    .collectFile(name:'bcftools.log.txt', newLine: true, storeDir:"${params.outdir}/03_polish/log")
 
+merfin_fcs_adaptor_output
+   .collectFile(name:'fcs_adaptor.log.txt', newLine: true, storeDir:"${params.outdir}/03_polish/log")
+
 dv_bcftools_output
    .collectFile(name:'bcftools.log.txt', newLine: true, storeDir:"${params.outdir}/03_polish/log")
+
+dv_fcs_adaptor_output
+   .collectFile(name:'fcs_adaptor.log.txt', newLine: true, storeDir:"${params.outdir}/03_polish/log")
 
 bwa_for_yahs_output
    .collectFile(name:'bwa.log.txt', newLine: true, storeDir:"${params.outdir}/04_yahs/log")
