@@ -2298,6 +2298,25 @@ process deepvariant_Version {
    """
 }
 
+process fcs_adaptor_Version {
+   label 'shortq'
+   container = 'ncbi/fcs-adaptor'
+   cpus 1
+
+   output:
+     stdout fcs_adaptor_version
+   when:
+     params.polish == true
+
+   """
+     touch fcs_adaptor_version.flag.txt
+     echo "fcs-adaptor Version:"
+     /app/fcs/bin/av_screen_x --help
+     echo "note, some versions of fcs-adaptor do not display version number"
+     exit 0;
+   """
+}
+
 process k_mer_Version {
   label 'shortq'
   cpus 1
@@ -2613,6 +2632,10 @@ hicstuff_version
 
 gfastats_version
    .collectFile(name:'gfastats_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+   .view{ it.text }
+
+fcs_adaptor_version
+   .collectFile(name:'fcs-adaptor_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
 deepvariant_version
