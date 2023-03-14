@@ -761,7 +761,7 @@ process dv_bcftools {
     file genome from shhquis_bcftools_dv_ch
     file vcf from dv_vcf_ch
   output:
-    file "${params.assembly}.vcf_polished_assembly.fasta" into dv_vcf_polished_genome_ch, dv_vcf_res_ch, dv_vcf_polished_busco_genome_ch, yahs_dv_genome_ch, yahs_dv_align_genome_ch
+    file "${params.assembly}.vcf_polished_assembly.fasta" into dv_fcs_adaptor_ch
     file "${params.assembly}.vcf_polished_assembly.fasta"
     stdout dv_bcftools_output
   when:
@@ -772,6 +772,30 @@ process dv_bcftools {
     bcftools index --threads ${task.cpus} ${vcf}.gz
     bcftools consensus ${vcf}.gz -f ${genome} -H 1 > ${params.assembly}.vcf_polished_assembly.fasta
     echo "finished bcftools from deep variant"
+    sleep 120;
+    exit 0;
+  """
+}
+
+process dv_fcs_adaptor {
+  label 'shortq'
+  publishDir "${params.outdir}/03_polish", mode: 'rellink' 
+  container = 'ncbi/fcs-adapter'
+  cpus = 1
+
+  input:
+   file genome from dv_fcs_adaptor_ch
+  output:
+   file 'cleaned_sequences/*.fa' into dv_vcf_polished_genome_ch, dv_vcf_res_ch, dv_vcf_polished_busco_genome_ch, yahs_dv_genome_ch, yahs_dv_align_genome_ch
+   file '*'
+   stdout dv_fcs_adaptor
+  when:
+   params.polishtype == "dv"
+  """
+    touch dv_fcs_adaptor.flag.txt
+    /app/fcs/bin/av_screen_x -o . --euk ${genome}                                                                                 
+    gzip -d cleaned_sequences/fcsadaptor_prok_test.fa.gz
+    echo "finished dv fcs adaptor"
     sleep 120;
     exit 0;
   """
