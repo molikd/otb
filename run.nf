@@ -2214,7 +2214,7 @@ process YaHS_Version {
 
 process bwa_Version {
   label 'shortq'
-  container = 'mgibio-alignment_helper-cwl-2.2.1.img'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus 1
 
   output:
