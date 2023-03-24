@@ -2218,7 +2218,7 @@ process bwa_Version {
   cpus 1
 
   output:
-    stdout bwa_mem_2_version
+    stdout bwa_mem_version
   when:
     params.yahs
   """
