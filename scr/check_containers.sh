@@ -38,7 +38,8 @@ singularity exec "dmolik-genomescope2.img" echo "   ...hello from genomescope2 c
 singularity exec "dmolik-hifiasm.img"  echo "   ...hello from hifiasm container" || error "hifiasm container broken, exiting"
 singularity exec "dmolik-k-mer-counting-tools.img" echo "   ...hello from jellyfish container" || error "jellyfish container broken, exiting"
 singularity exec "dmolik-pbadapterfilt.img" echo "   ...hello from pbadapterfilt container" || error "pbadapterfilt container broken, exiting"
-singularity exec "mgibio-samtools-1.9.img" echo "   ...hello from samtools container" || error "samtools container broken, exiting"
+singularity exec "staphb-bwa.img" echo "   ...hello from bwa container" || error "samtools container broken, exiting"
+singularity exec "mgibio-alignment_helper-cwl-2.2.1.img" echo "   ...hello from the samtools container" || error "samtools container broken, exiting"
 singularity exec "koszullab-hicstuff.img" echo "   ...hello from hicstuff container" || error "hicstuff container broken, exiting"
 singularity exec "pvstodghill-any2fasta.img" echo "   ...hello from any2fasta container" || error "any2fasta container borken, exiting"
 singularity exec "ncbi-fcs-adaptor.img" echo "   ...hello from ncbi fcs adaptor container" || error "ncbi fcs adaptor container broken, exiting"
@@ -72,7 +73,6 @@ esac
 
 if [ -n "$YAHS" ]; then
   state "yahs containers will be required for this run, testing yahs"
-  singularity exec "mgibio-alignment_helper-cwl-2.2.1.img" echo "   ...hello from the bwa container" || error "bwa container broken, exiting"
   singularity exec "dmolik-yahs.img" echo "   ...hello from the yahs container" || error "yahs container broken, exiting"
 fi
 

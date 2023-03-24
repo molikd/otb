@@ -38,10 +38,11 @@ fi
 [ ! -f dmolik-hifiasm.img ] && singularity pull dmolik-hifiasm.img docker://dmolik/hifiasm || state "   ...hifiasm container found, not downloading"
 [ ! -f dmolik-k-mer-counting-tools.img ] && singularity pull dmolik-k-mer-counting-tools.img docker://dmolik/k-mer-counting-tools || state "   ...k-mer counting container found, not downloading"
 [ ! -f dmolik-pbadapterfilt.img ] && singularity pull dmolik-pbadapterfilt.img docker://dmolik/pbadapterfilt || state "   ...HiFi Filter container found, not downloading"
-[ ! -f mgibio-samtools-1.9.img ] && singularity pull mgibio-samtools-1.9.img docker://mgibio/samtools:1.9 || state "   ...samtools container found, not downloading"
+[ ! -f staphb-bwa.img ] && singularity pull staphb-bwa.img docker://staphb/bwa || state "   ...bwa container found, not downloading"
 [ ! -f koszullab-hicstuff.img ] && singularity pull koszullab-hicstuff.img docker://koszullab/hicstuff || state "   ...hicstuff container found, not downloading"
 [ ! -f pvstodghill-any2fasta.img ] && singularity pull pvstodghill-any2fasta.img docker://pvstodghill/any2fasta || state "   ...any2fasta container found, not downloading"
 [ ! -f ncbi-fcs-adaptor.img ] && singularity pull ncbi-fcs-adaptor.img docker://ncbi/fcs-adaptor || state "   ...HiFi Filter container found, not downloading"
+[ ! -f mgibio-alignment_helper-cwl-2.2.1.img ] && singularity pull mgibio-alignment_helper-cwl-2.2.1.img docker://mgibio/alignment_helper-cwl:2.2.1 || state "alignment helper container found, not downloading"
 
 if [ -n "$BUSCO" ]; then
   state "need busco container for this run"
@@ -50,7 +51,6 @@ fi
 
 if [ -n "$YAHS" ]; then
   state "need yahs container for this run"
-  [ ! -f mgibio-alignment_helper-cwl-2.2.1.img ] && singularity pull mgibio-alignment_helper-cwl-2.2.1.img docker://mgibio/alignment_helper-cwl:2.2.1 || state "alignment helper container found, not downloading"
   [ ! -f dmolik-yahs.img ] && singularity pull dmolik-yahs.img docker://dmolik/yahs || state "yahs container found, not downloading"
   [ ! -f dmolik-juicer-tools.img ] && singularity pull dmolik-juicer-tools.img docker://dmolik/juicer-tools || state "juicer tools container found, not downloading"
 fi

@@ -51,7 +51,7 @@ bam_ch.into {
 
 process check_in_file {
   label 'shortq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus = 1
 
   input:
@@ -356,7 +356,7 @@ process ragtag_dot_py {
 
 process faidx {
   label 'shortq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus 1
 
   input:
@@ -377,7 +377,7 @@ process faidx {
 
 process yahs_faidx {
   label 'shortq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus 1
 
   input:
@@ -565,7 +565,7 @@ process simple_fcs_adaptor {
 
 process simple_polish {
   label 'shortq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus = 1
 
   input:
@@ -609,7 +609,7 @@ process minimap_for_merfin {
 
 process samtools_mpileup_merfin {
   label 'mediumq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus = params.threads
 
   input:
@@ -725,7 +725,7 @@ process minimap_for_deep_variant {
 
 process samtools_index_for_deep_variant {
   label 'shortq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus = params.threads
 
   input:
@@ -878,7 +878,7 @@ process merfin_fcs_adaptor {
 
 process bwa_for_yahs {
   label 'mediumq'
-  container = 'mgibio/alignment_helper-cwl:2.2.1'
+  container = 'staphb/bwa'
   cpus = params.threads
 
   input:
@@ -902,7 +902,7 @@ process bwa_for_yahs {
 
 process bwa_for_simple_yahs {
   label 'mediumq'
-  container = 'mgibio/alignment_helper-cwl:2.2.1'
+  container = 'staphb/bwa'
   cpus = params.threads
 
   input:
@@ -926,7 +926,7 @@ process bwa_for_simple_yahs {
 
 process bwa_for_merfin_yahs {
   label 'mediumq'
-  container = 'mgibio/alignment_helper-cwl:2.2.1'
+  container = 'staphb/bwa'
   cpus = params.threads
 
   input:
@@ -950,7 +950,7 @@ process bwa_for_merfin_yahs {
 
 process bwa_for_dv_yahs {
   label 'mediumq'
-  container = 'mgibio/alignment_helper-cwl:2.2.1'
+  container = 'staphb/bwa'
   cpus = params.threads
 
   input:
@@ -1116,7 +1116,7 @@ process simple_yahs {
 
 process merfin_yahs_faidx {
   label 'mediumq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus 1
 
   input:
@@ -1138,7 +1138,7 @@ process merfin_yahs_faidx {
 
 process dv_yahs_faidx {
   label 'mediumq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus 1
 
   input:
@@ -2181,7 +2181,7 @@ process ragtag_Version {
 
 process samtools_Version {
   label 'shortq'
-  container = 'mgibio/samtools:1.9'
+  container = 'mgibio/alignment_helper-cwl:2.2.1'
   cpus 1
 
   output:
@@ -2214,7 +2214,7 @@ process YaHS_Version {
 
 process bwa_Version {
   label 'shortq'
-  container = 'mgibio/alignment_helper-cwl:2.2.1'
+  container = 'staphb/bwa'
   cpus 1
 
   output:
@@ -2618,8 +2618,8 @@ yahs_version
    .collectFile(name:'yahs_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
    .view{ it.text }
 
-bwa_mem_2_version
-    .collectFile(name:'bwa_mem_2_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
+bwa_mem_version
+    .collectFile(name:'bwa_mem_version.txt', newLine: true, storeDir: "${params.outdir}/software_versions")
     .view{ it.text }
 
 bcftools_version
