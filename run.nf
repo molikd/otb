@@ -541,7 +541,7 @@ process genomescope2 {
 
 process simple_fcs_adaptor {
   label 'shortq'
-  publishDir "${params.outdir}/03_polish", mode: 'rellink' 
+  publishDir "${params.outdir}/03_polish", mode: 'rellink'
   container = 'ncbi/fcs-adapter'
   cpus = 1
 
@@ -555,7 +555,7 @@ process simple_fcs_adaptor {
    params.polishtype == "simple"
   """
     touch dv_fcs_adaptor.flag.txt
-    /app/fcs/bin/av_screen_x -o . --euk ${genome}                                                                                 
+    /app/fcs/bin/av_screen_x -o . --euk ${genome}
     gzip -d cleaned_sequences/*.fa.gz
     echo "finished simple fcs adaptor"
     sleep 120;
@@ -804,7 +804,7 @@ process dv_bcftools {
 
 process dv_fcs_adaptor {
   label 'shortq'
-  publishDir "${params.outdir}/03_polish", mode: 'rellink' 
+  publishDir "${params.outdir}/03_polish", mode: 'rellink'
   container = 'ncbi/fcs-adapter'
   cpus = 1
 
@@ -818,7 +818,7 @@ process dv_fcs_adaptor {
    params.polishtype == "dv"
   """
     touch dv_fcs_adaptor.flag.txt
-    /app/fcs/bin/av_screen_x -o . --euk ${genome}                                                                                 
+    /app/fcs/bin/av_screen_x -o . --euk ${genome}
     gzip -d cleaned_sequences/*.fa.gz
     echo "finished dv fcs adaptor"
     sleep 120;
@@ -854,7 +854,7 @@ process merfin_bcftools {
 
 process merfin_fcs_adaptor {
   label 'shortq'
-  publishDir "${params.outdir}/03_polish", mode: 'rellink' 
+  publishDir "${params.outdir}/03_polish", mode: 'rellink'
   container = 'ncbi/fcs-adapter'
   cpus = 1
 
@@ -868,7 +868,7 @@ process merfin_fcs_adaptor {
    params.polishtype == "merfin"
   """
     touch merfin_fcs_adaptor.flag.txt
-    /app/fcs/bin/av_screen_x -o . --euk ${genome}                                                                                 
+    /app/fcs/bin/av_screen_x -o . --euk ${genome}
     gzip -d cleaned_sequences/*.fa.gz
     echo "finished merfin fcs adaptor"
     sleep 120;
@@ -1081,7 +1081,7 @@ process yahs {
     touch yahs.flag.txt
     yahs -o yahs.no_polish --no-contig-ec ${input_genome} ${input_bam}
     mkdir yahs.no_polish.JBAT
-    juicer_pre -a -o yahs.no_polish.JBAT yahs.no_polish.bin yahs.no_polish_scaffolds_final.agp ${input_fai} 2>yahs.no_polish.JBAT/tmp_juicer_pre_JBAT.log
+    juicer_pre -a -o yahs.no_polish.JBAT yahs.no_polish.bin yahs.no_polish_scaffolds_final.agp ${input_fai} 2> yahs.no_polish.JBAT/tmp_juicer_pre_JBAT.log
     sleep 120;
     exit 0;
   """
@@ -1217,7 +1217,7 @@ process juicer_tools_pre_yahs {
   label 'shortq'
   publishDir "${params.outdir}/04_yahs", mode: 'rellink'
   container = 'dmolik/juicer-tools'
-  cpus = params.threads 
+  cpus = params.threads
 
   input:
     file yahs_JBAT from yahs_JBAT_ch
@@ -1237,7 +1237,7 @@ process juicer_tools_pre_yahs_simple {
   label 'shortq'
   publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
   container = 'dmolik/juicer-tools'
-  cpus = params.threads 
+  cpus = params.threads
 
   input:
     file yahs_JBAT from yahs_simple_JBAT_ch
@@ -1257,7 +1257,7 @@ process juicer_tools_pre_yahs_merfin {
   label 'shortq'
   publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
   container = 'dmolik/juicer-tools'
-  cpus = params.threads 
+  cpus = params.threads
 
   input:
     file yahs_JBAT from yahs_merfin_JBAT_ch
@@ -1277,7 +1277,7 @@ process juicer_tools_pre_yahs_dv {
   label 'shortq'
   publishDir "${params.outdir}/05_yahs_on_polish", mode: 'rellink'
   container = 'dmolik/juicer-tools'
-  cpus = params.threads 
+  cpus = params.threads
 
   input:
     file yahs_JBAT from yahs_dv_JBAT_ch
