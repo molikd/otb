@@ -48,7 +48,7 @@ Q. Our product makes use of the USDA - ARS source code, and we made changes
    our needs. Can we copyright the code, and how?
 
 A. You can copyright only the *changes* or the *additions* you made to the
-   NCBI source code. You should identify unambiguously those sections of
+   USDA - ARS source code. You should identify unambiguously those sections of
    the code that were modified, e.g. by commenting any changes you made
    in the code you distribute. Therefore, your license has to make clear
    to users that your product is a combination of code that is public domain
