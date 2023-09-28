@@ -2569,10 +2569,10 @@ juicer_tools_pre_yahs_simple_output
    .collectFile(name:'juicer_tools.polished.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_polish/log")
 
 juicer_tools_pre_yahs_merfin_output
-   .collectFile(name:'juicer_tools.polished.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_pol     ish/log")
+   .collectFile(name:'juicer_tools.polished.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_polish/log")
 
 juicer_tools_pre_yahs_dv_output
-   .collectFile(name:'juicer_tools.polished.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_pol     ish/log")
+   .collectFile(name:'juicer_tools.polished.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_polish/log")
 
 yahs_ragtag_dot_py_hap_output
    .collectFile(name:'yahs.ragtag.log.txt', newLine: true, storeDir:"${params.outdir}/05_yahs_on_polish/log")
