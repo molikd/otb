@@ -7,7 +7,7 @@
 #SBATCH --mail-user=<username>
 #SBATCH --mail-type=START,END,FAIL               #will receive an email when job ends or fails
 
-module load nextflow/20.07.1
+module load nextflow/22.04.3
 
 #sometimes HiC data comes out as bz2, otb likes gz so here is how you would convert:
 #bzcat RawHiC/JNBN_HiC_NA_NA_GTGAAA_Bombus_huntii-Bombus_huntii_HiC_I1143_L4_R1.fastq.bz2 | gzip -c > RawHiC/JNBN_HiC_NA_NA_GTGAAA_Bombus_huntii-Bombus_huntii_HiC_I1143_L4_R1.fastq.gz

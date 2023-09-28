@@ -141,6 +141,9 @@ tags
 #nextflow things
 .nextflow.log*
 .nextflow
+/work
+/results
+/reports
 
 #bio files
 *.fasta
