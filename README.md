@@ -64,6 +64,11 @@ otb is fully featured and utilzes the following softwares:
 - bcftools
 - bwa
 - fcs-adaptor
+
+otb now has a preprint. 
+Preprint: https://doi.org/10.32942/X2T897
+
+
 ```
 otb is in the public domain in the United States per 17 U.S.C. § 105
 ```
