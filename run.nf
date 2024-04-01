@@ -202,7 +202,7 @@ process HiFiASM {
     if( params.mode == 'phasing' && params.hicreadr != 'NO_FILE_HIC_R1' && params.hicreadr != 'NO_FILE_HIC_R2' )
     """
       touch hifiasm.flag.txt
-      hifiasm -l${params.l} -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${params.hicreadr} --h2 ${params.hicreadf} ${fasta} 2>&1
+      hifiasm -l${params.l} -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${params.hicreadf} --h2 ${params.hicreadr} ${fasta} 2>&1
       echo "finished alignment"
       sleep 120;
       exit 0;
