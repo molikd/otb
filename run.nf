@@ -987,7 +987,7 @@ process bam_sort_for_yahs {
   shell:
   '''
     touch bam.sort.yahs.flag.txt
-    samtools view -S -h -F 2316 !{sam_file} | samblaster | samtools sort -@ !{task.cpus} -o aln.bam
+    samtools view -S -h -F 2316 !{sam_file} | samblaster | samtools sort -n -@ !{task.cpus} -o aln.bam
     echo "finished sort"
     sleep 120;
     exit 0;
@@ -1009,7 +1009,7 @@ process bam_sort_for_simple_yahs {
   shell:
   '''
     touch bam.sort.simple.yahs.flag.txt
-    samtools view -S -h -F 2316 !{sam_file} | samblaster | samtools sort -@ !{task.cpus} -o aln.bam
+    samtools view -S -h -F 2316 !{sam_file} | samblaster | samtools sort -n -@ !{task.cpus} -o aln.bam
     echo "finished sort"
     sleep 120;
     exit 0;
@@ -1031,7 +1031,7 @@ process bam_sort_for_merfin_yahs {
   shell:
   '''
     touch bam.sort.merfin.yahs.flag.txt
-    samtools view -S -h -F 2316 !{sam_file} | samblaster | samtools sort -@ !{task.cpus} -o aln.bam
+    samtools view -S -h -F 2316 !{sam_file} | samblaster | samtools sort -n -@ !{task.cpus} -o aln.bam
     echo "finished sort"
     sleep 120;
     exit 0;
@@ -1053,7 +1053,7 @@ process bam_sort_for_dv_yahs {
   shell:
   '''
     touch bam.sort.dv.yahs.flag.txt
-    samtools view -S -h -F 2316 !{sam_file} | samblaster | samtools sort -@ !{task.cpus} -o aln.bam
+    samtools view -S -h -F 2316 !{sam_file} | samblaster | samtools sort -n -@ !{task.cpus} -o aln.bam
     echo "finished sort"
     sleep 120;
     exit 0;
