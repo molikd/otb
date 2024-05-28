@@ -548,7 +548,7 @@ process simple_fcs_adaptor {
   input:
    file genome from shhquis_simple_ch
   output:
-   file 'cleaned_sequences/*.fa' into simple_fcs_adaptor_ch
+   file 'cleaned_sequences/*' into simple_fcs_adaptor_ch
    file '*'
    stdout simple_fcs_adaptor_output
   when:
@@ -556,7 +556,6 @@ process simple_fcs_adaptor {
   """
     touch dv_fcs_adaptor.flag.txt
     /app/fcs/bin/av_screen_x -o . --euk ${genome}
-    gzip -d cleaned_sequences/*.fa.gz
     echo "finished simple fcs adaptor"
     sleep 120;
     exit 0;
