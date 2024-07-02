@@ -202,7 +202,7 @@ process HiFiASM {
     if( params.mode == 'phasing' && params.hicreadr != 'NO_FILE_HIC_R1' && params.hicreadr != 'NO_FILE_HIC_R2' )
     """
       touch hifiasm.flag.txt
-      hifiasm -l${params.l} -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec --h1 ${params.hicreadf} --h2 ${params.hicreadr} ${fasta} 2>&1
+      hifiasm -l${params.l} -o ${params.assembly} -t 16 --write-paf --write-ec --h1 ${params.hicreadf} --h2 ${params.hicreadr} ${fasta} 2>&1
       echo "finished alignment"
       sleep 120;
       exit 0;
@@ -210,7 +210,7 @@ process HiFiASM {
     else if( params.mode == 'default')
     """
       touch hifiasm.flag.txt
-      hifiasm -l${params.l} -o ${params.assembly} -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
+      hifiasm -l${params.l} -o ${params.assembly} -t 16 --write-paf --write-ec ${fasta} 2>&1
       echo "finished alignment"
       sleep 120;
       exit 0;
@@ -218,7 +218,7 @@ process HiFiASM {
     else if( params.mode == 'primary')
     """
       touch hifiasm.flag.txt
-      hifiasm -l${parms.l} -o ${params.assembly} --primary -t ${task.cpus} --write-paf --write-ec ${fasta} 2>&1
+      hifiasm -l${parms.l} -o ${params.assembly} --primary -t 16 --write-paf --write-ec ${fasta} 2>&1
       echo "finished alignment"
       sleep 120;
       exit 0;
@@ -810,7 +810,7 @@ process dv_fcs_adaptor {
   input:
    file genome from dv_fcs_adaptor_ch
   output:
-   file 'cleaned_sequences/*.fa' into dv_vcf_polished_genome_ch, dv_vcf_res_ch, dv_vcf_polished_busco_genome_ch, yahs_dv_genome_ch, yahs_dv_align_genome_ch
+   file 'cleaned_sequences/*' into dv_vcf_polished_genome_ch, dv_vcf_res_ch, dv_vcf_polished_busco_genome_ch, yahs_dv_genome_ch, yahs_dv_align_genome_ch
    file '*'
    stdout dv_fcs_adaptor_output
   when:
@@ -818,7 +818,6 @@ process dv_fcs_adaptor {
   """
     touch dv_fcs_adaptor.flag.txt
     /app/fcs/bin/av_screen_x -o . --euk ${genome}
-    gzip -d cleaned_sequences/*.fa.gz
     echo "finished dv fcs adaptor"
     sleep 120;
     exit 0;
@@ -860,7 +859,7 @@ process merfin_fcs_adaptor {
   input:
    file genome from merfin_fcs_adaptor_ch
   output:
-   file 'cleaned_sequences/*.fa' into merfin_vcf_polished_genome_ch, merfin_vcf_res_ch, merfin_vcf_polished_busco_genome_ch, yahs_merfin_genome_ch, yahs_merfin_align_genome_ch
+   file 'cleaned_sequences/*' into merfin_vcf_polished_genome_ch, merfin_vcf_res_ch, merfin_vcf_polished_busco_genome_ch, yahs_merfin_genome_ch, yahs_merfin_align_genome_ch
    file '*'
    stdout merfin_fcs_adaptor_output
   when:
@@ -868,7 +867,6 @@ process merfin_fcs_adaptor {
   """
     touch merfin_fcs_adaptor.flag.txt
     /app/fcs/bin/av_screen_x -o . --euk ${genome}
-    gzip -d cleaned_sequences/*.fa.gz
     echo "finished merfin fcs adaptor"
     sleep 120;
     exit 0;
