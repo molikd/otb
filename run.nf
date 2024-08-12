@@ -542,7 +542,7 @@ process genomescope2 {
 process simple_fcs_adaptor {
   label 'shortq'
   publishDir "${params.outdir}/03_polish", mode: 'rellink'
-  container = 'ncbi/fcs-adaptor'
+  container = 'dmolik/fcs-adaptor'
   cpus = 1
 
   input:
@@ -804,7 +804,7 @@ process dv_bcftools {
 process dv_fcs_adaptor {
   label 'shortq'
   publishDir "${params.outdir}/03_polish", mode: 'rellink'
-  container = 'ncbi/fcs-adaptor'
+  container = 'dmolik/fcs-adaptor'
   cpus = 1
 
   input:
@@ -853,7 +853,7 @@ process merfin_bcftools {
 process merfin_fcs_adaptor {
   label 'shortq'
   publishDir "${params.outdir}/03_polish", mode: 'rellink'
-  container = 'ncbi/fcs-adaptor'
+  container = 'dmolik/fcs-adaptor'
   cpus = 1
 
   input:
@@ -2297,7 +2297,7 @@ process deepvariant_Version {
 
 process fcs_adaptor_Version {
    label 'shortq'
-   container = 'ncbi/fcs-adaptor'
+   container = 'dmolik/fcs-adaptor'
    cpus 1
 
    output:

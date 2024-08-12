@@ -41,7 +41,7 @@ fi
 [ ! -f koszullab-hicstuff.img ] && singularity pull --disable-cache --force koszullab-hicstuff.img docker://koszullab/hicstuff || state "   ...hicstuff container found, not downloading"
 [ ! -f staphb-bwa.img ] && singularity pull staphb-bwa.img --disable-cache --force docker://staphb/bwa || state "   ...bwa container found, not downloading"
 [ ! -f pvstodghill-any2fasta.img ] && singularity pull --disable-cache --force pvstodghill-any2fasta.img docker://pvstodghill/any2fasta || state "   ...any2fasta container found, not downloading"
-[ ! -f ncbi-fcs-adaptor.img ] && singularity pull --disable-cache --force ncbi-fcs-adaptor.img docker://ncbi/fcs-adaptor || state "   ...HiFi Filter container found, not downloading"
+[ ! -f dmolik-fcs-adaptor.img ] && singularity pull --disable-cache --force dmolik-fcs-adaptor.img docker://dmolik/fcs-adaptor || state "   ...HiFi Filter container found, not downloading"
 [ ! -f mgibio-alignment_helper-cwl-2.2.1.img ] && singularity pull --disable-cache --force mgibio-alignment_helper-cwl-2.2.1.img docker://mgibio/alignment_helper-cwl:2.2.1 || state "alignment helper container found, not downloading"
 
 if [ -n "$BUSCO" ]; then
