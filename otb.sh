@@ -177,9 +177,10 @@ if [ -n "$RUNNER" ]; then
     "slurm_usda") state "$RUNNER being used";;
     "slurm_usda_atlas") state "$RUNNER being used";;
     "slurm_usda_mem") state "$RUNNER being used";;
+    "slurm_usda_ceres") state "$RUNNER being used";;
     "none") state "$RUNNER being used";;
     *)
-      [ -f "config/${RUNNER}" ] && state "using custom config: $RUNNER" || error "runner type ${RUNNER} not found";;
+      [ -f "config/${RUNNER}.cfg" ] && state "using custom config: $RUNNER" || error "runner type ${RUNNER} not found";;
   esac
 fi
 
