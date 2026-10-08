@@ -33,7 +33,17 @@ Most HPC support groups will either already have these tools installed, or be wi
 
 otb operates from a local directory, and must be ran as ./otb.sh since it sources some shell scripts in the scr directory.
 
-we recomend that you set `NXF_SINGULARITY_LIBRARYDIR` in your bashrc (or similar CLI) environment, otb containers will be stored at that location.
+Set `NXF_SINGULARITY_CACHEDIR` to the directory where otb should download container images. Optionally set `NXF_SINGULARITY_LIBRARYDIR` to a directory of existing images.
+
+Export cache variables before launching otb or submitting a SLURM job so child scripts inherit them:
+
+```bash
+export NXF_SINGULARITY_CACHEDIR="/shared/path/to/container-cache"
+export NXF_SINGULARITY_LIBRARYDIR="/shared/path/to/container-library"
+sbatch --export=ALL otb.template.slurm
+```
+
+The library directory is optional and should point to existing images. If the cache directory is unset, otb creates and exports `./work/singularity` for its helper scripts and Nextflow. Keep HiFi input wildcards quoted (for example, `CCS='RawData/*.bam'` in the SLURM templates or `./otb.sh --reads 'RawData/*.bam' ...`) so Nextflow resolves each matching file separately.
 
 in order to use otb download this repository and use ./otb.sh, an example:
 
