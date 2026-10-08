@@ -24,11 +24,11 @@ done
 location=$( pwd )
 describe "fetch location is:"
 if [ -n "$NXF_SINGULARITY_CACHEDIR" ]; then
- pizzaz $NXF_SINGULARITY_CACHEDIR
- cd $NXF_SINGULARITY_CACHEDIR
+ pizzaz "$NXF_SINGULARITY_CACHEDIR"
+ cd "$NXF_SINGULARITY_CACHEDIR" || error "unable to enter Singularity cache directory"
 elif [ -n "$LOCATION" ]; then
- pizzaz $LOCATION
- cd $LOCATION
+ pizzaz "$LOCATION"
+ cd "$LOCATION" || error "unable to enter container location"
 else
  error "..not set, please set NXF_SINGULARITY_CACHEDIR or give me a location"
 fi
@@ -77,4 +77,4 @@ case $POLISHTYPE in
   ;;
 esac
 
-cd $location
+cd "$location" || error "unable to return to working directory"

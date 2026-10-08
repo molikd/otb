@@ -40,7 +40,7 @@ Runner="slurm_usda"
 Threads="32"
 
 if [[ -z "$Busco" ]]; then
-  ./otb.sh --lite -n ${Assembly_Name}  -in "$(echo "${CCS}")" -m ${HiFi_Type} -t ${Threads} --runner ${Runner} -c -s
+  ./otb.sh --lite -n ${Assembly_Name}  -in "${CCS}" -m ${HiFi_Type} -t ${Threads} --runner ${Runner} -c -s
 else
-  ./otb.sh --lite -n ${Assembly_Name}  -in "$(echo ${CCS})" -m ${HiFi_Type} -t ${Threads} --runner ${Runner} ${Busco} ${Busco_Location} ${Busco_DB} -c -s
+  ./otb.sh --lite -n ${Assembly_Name}  -in "${CCS}" -m ${HiFi_Type} -t ${Threads} --runner ${Runner} ${Busco} ${Busco_Location} ${Busco_DB} -c -s
 fi
